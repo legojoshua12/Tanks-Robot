@@ -37,6 +37,8 @@ async def on_message(message):
     else:
         if message.content.startswith(commandMessageStarter):
             # First we check to make sure someone isn't doing something in italics
+            # Check to make sure this is inline with config.ini
+            # TODO change this to be more robust for later
             stars = 0
             for c in message.content:
                 if c == '*':
@@ -48,7 +50,27 @@ async def on_message(message):
             command = message.content[2:].lower()
 
             # Commands
-            await commands.public_commands(message, command)
+            possibleCommand = await commands.public_commands(message, command)
+            if possibleCommand == 'startCommandReceived':
+                print(f'Starting new game on server {message.guild.name}#{message.guild.id}')
+                commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
+                embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+                embedVar = discord.Embed(title="Welcome to the game of Tanks!",
+                                         description="For constructing a game, add players as shown below and start "
+                                                     "it when you are ready to begin a game",
+                                         color=embedColor)
+                embedVar.add_field(name=f'{commandPrefix}join',
+                                   value=f'Each player who wishes to play can do a `{commandPrefix}join` to join this '
+                                         f'new game', inline=False)
+                embedVar.add_field(name=f'{commandPrefix}leave',
+                                   value='That player will be removed from the game and not be in once started. If '
+                                         'the player who created this lobby leaves then the lobby is ended and anyone '
+                                         'can recreate a game', inline=False)
+                embedVar.add_field(name=f'{commandPrefix}help',
+                                   value='Shows this menu again', inline=False)
+                embedVar.add_field(name=f'{commandPrefix}start',
+                                   value='Will start the game if enough players have joined', inline=False)
+                await message.channel.send(embed=embedVar)
 
 
 # For first time boot of the robot,

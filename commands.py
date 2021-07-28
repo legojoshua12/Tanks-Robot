@@ -46,7 +46,11 @@ async def direct_message_commands(message, command):
                            value="Using your actions is not time bound. You may chose to use them at any point in "
                                  "the day should you still be alive and have the available actions.",
                            inline=False)
-        embedVar.add_field(name="7. Last person standing wins!",
+        embedVar.add_field(name="7. There are 5-20 players",
+                           value="The game requires at least 5 unique players to get started and will work with up to "
+                                 "a maximum of 20 people.",
+                           inline=False)
+        embedVar.add_field(name="8. Last person standing wins!",
                            value="If you have the ability to make it to being the last person alive, you will "
                                  "win! Congratulations if you manage to make it here!",
                            inline=False)
@@ -68,6 +72,7 @@ async def public_commands(message, command):
         embedVar.add_field(name=f"{commandPrefix}help", value="Gives a list of commands", inline=False)
         embedVar.add_field(name=f"{commandPrefix}rules", value="Gives the game rules and how to play", inline=False)
         embedVar.add_field(name=f"{commandPrefix}dm", value="Sends a direct message for privacy", inline=False)
+        embedVar.add_field(name=f"{commandPrefix}start", value="Begins game setup lobby in this channel", inline=False)
         await message.channel.send(embed=embedVar)
     elif command == 'rules':
         waveEmoji = '\U0001F52B'
@@ -96,7 +101,11 @@ async def public_commands(message, command):
                            value="Using your actions is not time bound. You may chose to use them at any point in "
                                  "the day should you still be alive and have the available actions.",
                            inline=False)
-        embedVar.add_field(name="7. Last person standing wins!",
+        embedVar.add_field(name="7. There are 5-20 players",
+                           value="The game requires at least 5 unique players to get started and will work with up to "
+                                 "a maximum of 20 people.",
+                           inline=False)
+        embedVar.add_field(name="8. Last person standing wins!",
                            value="If you have the ability to make it to being the last person alive, you will "
                                  "win! Congratulations if you manage to make it here!",
                            inline=False)
@@ -106,6 +115,9 @@ async def public_commands(message, command):
         waveEmoji = '\U0001F44B'
         await message.channel.send(message.author.mention + f' I just sent you a private message! {letterEmoji}')
         await message.author.send(f"Hey there! {waveEmoji} How can I help you? Use `help` to get started!")
+    elif command == 'start':
+        await message.channel.send('Starting a game...')
+        return 'startCommandReceived'
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
