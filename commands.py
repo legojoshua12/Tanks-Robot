@@ -61,7 +61,7 @@ async def direct_message_commands(message, command):
         await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
                                                             'list of commands and options.')
 
-async def public_commands(message, command):
+async def public_commands_no_game(message, command):
     embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
         commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
@@ -122,7 +122,21 @@ async def public_commands(message, command):
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
 
-async def sendLobbyMenu(message):
+async def public_commands_lobby(message, command):
+    if command == 'help':
+        await sendLobbyHelpMenu(message)
+    elif command == 'join':
+        return command
+    elif command == 'leave':
+        return command
+    elif command == 'start':
+        return command
+    # Rest of these are for concurrency sake with the rest of the bot commands
+    else:
+        await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
+                                                            'list of commands and options.')
+
+async def sendLobbyHelpMenu(message):
     commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
     embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     embedVar = discord.Embed(title="Welcome to the game of Tanks!",
