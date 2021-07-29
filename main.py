@@ -54,11 +54,27 @@ async def on_message(message):
             # Check if there is a game going
             isGamePresent = jsonManager.checkIfGameIsInChannel(message)
             if isGamePresent == 'lobby':
-                print('game running')
+                action = await commands.public_commands_lobby(message, command)
+                if action == 'join':
+                    isPresent = jsonManager.addPlayerToGame(message, 1)
+                    if isPresent == 'playerAlreadyPresent':
+                        await message.channel.send(message.author.mention + ' is already in the game!')
+                    else:
+                        await message.channel.send('Adding ' + message.author.mention + ' to the new game of Tanks!')
+                elif action == 'leave':
+                    isPresent = jsonManager.removePlayerFromGame(message, 1)
+                    if isPresent == 'playerNotPresent':
+                        await message.channel.send(message.author.mention + ' cannot leave when you are not in the '
+                                                                            'game!')
+                    else:
+                        sadEmoji = '\U0001F622'
+                        await message.channel.send(message.author.mention + f' left the game. {sadEmoji}')
+                elif action == 'start':
+                    await message.channel.send('Starting...')
             elif isGamePresent == 'active':
                 print('game active')
             elif isGamePresent == 'none':
-                possibleCommand = await commands.public_commands(message, command)
+                possibleCommand = await commands.public_commands_no_game(message, command)
                 if possibleCommand == 'startCommandReceived':
                     wroteToJson = False
                     try:
@@ -69,7 +85,7 @@ async def on_message(message):
                     except:
                         await message.channel.send('An error has occurred in creating the game! Reverting now!')
                     if wroteToJson:
-                        await commands.sendLobbyMenu(message)
+                        await commands.sendLobbyHelpMenu(message)
 
 
 # For first time boot of the robot,

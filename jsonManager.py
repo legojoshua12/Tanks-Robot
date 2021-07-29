@@ -3,13 +3,30 @@ import json
 
 def createGame(message):
     players = {}
-    data = {'games': {message.guild.id: {message.channel.id: {}}}}
-    data['games'][message.guild.id][message.channel.id]['players'] = players
-    data['games'][message.guild.id][message.channel.id]['board'] = []
-    data['games'][message.guild.id][message.channel.id]['gameStatus'] = "lobby"
+    data = __readJson()
+    # These are redundancy checks to ensure no data corruption
+    if 'games' not in data:
+        data = {'games': {}}
+    if str(message.guild.id) not in data['games']:
+        newGuild = {
+            str(message.guild.id): {}
+        }
+        data['games'].update(newGuild)
+    if str(message.channel.id) not in data['games'][str(message.guild.id)]:
+        newChannel = {
+            str(message.channel.id): {}
+        }
+        data['games'][str(message.guild.id)].update(newChannel)
+    newSetup = {
+        'players': {},
+        'board': [],
+        'gameStatus': "lobby"
+    }
+    data['games'][str(message.guild.id)][str(message.channel.id)] = newSetup
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
     return data
+
 
 def addPlayerToGame(message, playerNumber):
     data = __readJson()
@@ -22,10 +39,33 @@ def addPlayerToGame(message, playerNumber):
         }
     }
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+    # Check if player is already there, then no need to do the rest and write
+    for player in playersList:
+        if player == str(message.author.id):
+            return 'playerAlreadyPresent'
     playersList.update(newPlayerData)
     data['games'][str(message.guild.id)][str(message.channel.id)]['players'] = playersList
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+def removePlayerFromGame(message, playerNumber):
+    data = __readJson()
+    playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+    for player in playersList:
+        if player == str(message.author.id):
+            del playersList[player]
+            data['games'][str(message.guild.id)][str(message.channel.id)]['players'] = playersList
+            # Here we want to purge data, e.i if there is no one in a lobby clear the json of it reducing overall load
+            if len(playersList) == 0:
+                del data['games'][str(message.guild.id)][str(message.channel.id)]
+                if len(data['games'][str(message.guild.id)]) == 0:
+                    del data['games'][str(message.guild.id)]
+            with open('Games.json', 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+            return
+    return 'playerNotPresent'
+
 
 def getNumberOfPlayersInGame(message):
     data = __readJson()
@@ -35,6 +75,7 @@ def getNumberOfPlayersInGame(message):
         numberOfPlayers = numberOfPlayers + 1
     return numberOfPlayers
 
+
 def checkIfGameIsInChannel(message):
     data = __readJson()
     try:
@@ -42,6 +83,7 @@ def checkIfGameIsInChannel(message):
         return gameState
     except:
         return 'none'
+
 
 def __readJson():
     file = open('Games.json', )
