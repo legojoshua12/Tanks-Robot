@@ -26,8 +26,6 @@ async def on_ready():
     numberOfPlayers = 5
     boardData = bC.constructBoardData(numberOfPlayers)
     boardData = bC.populateBoard(boardData, numberOfPlayers)
-    for row in range(len(boardData)):
-        print(boardData[row])
 
 
 @client.event
@@ -53,19 +51,25 @@ async def on_message(message):
             command = message.content[2:].lower()
 
             # Commands
-            possibleCommand = await commands.public_commands(message, command)
-            if possibleCommand == 'startCommandReceived':
-                print(f'Starting new game on server {message.guild.name}#{message.guild.id}')
-                wroteToJson = False
-                try:
-                    jsonManager.createGame(message)
-                    jsonManager.addPlayerToGame(message.author)
-                    await message.channel.send('Adding ' + message.author.mention + ' to the new game of Tanks!')
-                    wroteToJson = True
-                except:
-                    await message.channel.send('An error has occurred in creating the game! Reverting now!')
-                if wroteToJson:
-                    await commands.sendLobbyMenu(message)
+            # Check if there is a game going
+            isGamePresent = jsonManager.checkIfGameIsInChannel(message)
+            if isGamePresent == 'lobby':
+                print('game running')
+            elif isGamePresent == 'active':
+                print('game active')
+            elif isGamePresent == 'none':
+                possibleCommand = await commands.public_commands(message, command)
+                if possibleCommand == 'startCommandReceived':
+                    wroteToJson = False
+                    try:
+                        jsonManager.createGame(message)
+                        jsonManager.addPlayerToGame(message, 1)
+                        await message.channel.send('Adding ' + message.author.mention + ' to the new game of Tanks!')
+                        wroteToJson = True
+                    except:
+                        await message.channel.send('An error has occurred in creating the game! Reverting now!')
+                    if wroteToJson:
+                        await commands.sendLobbyMenu(message)
 
 
 # For first time boot of the robot,
