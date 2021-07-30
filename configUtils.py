@@ -12,6 +12,8 @@ def initialize():
         writeValue('startGame', 'playerSpawnDistance', '1')
     if not config.has_option('botSettings', 'botCommandPrefix'):
         writeValue('botSettings', 'botCommandPrefix', '*/')
+    if not config.has_option('botSettings', 'boardImageResolution'):
+        writeValue('botSettings', 'boardImageResolution', '2048')
 
 def writeValue(section, key, value):
     config.read('config.ini')

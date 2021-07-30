@@ -10,6 +10,7 @@ import boardConstructor as bC
 import commands
 import configUtils
 import jsonManager
+import renderPipeline
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -82,7 +83,9 @@ async def on_message(message):
                             await message.channel.send('Error! Could not start game!')
                         if booted:
                             board = jsonManager.getBoard(message)
+                            renderedBoard = renderPipeline.constructImage(board)
                             await message.channel.send('Welcome to tanks!')
+                            await commands.displayBoard(message, renderedBoard)
                     else:
                         if numberOfPlayers <= 4:
                             await message.channel.send('There are not enough players in the game to start!')
@@ -90,7 +93,10 @@ async def on_message(message):
                             await message.channel.send('There are too many players in the game to start!')
 
             elif isGamePresent == 'active':
-                print('game active')
+                action = await commands.public_commands_game(message, command)
+                if action == 'board':
+                    renderedBoard = renderPipeline.constructImage(jsonManager.getBoard(message))
+                    await commands.displayBoard(message, renderedBoard)
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)
                 if possibleCommand == 'startCommandReceived':
