@@ -94,7 +94,7 @@ def saveBoard(message, board):
 
 def getBoard(message):
     data = __readJson()
-    return data['games'][str(message.guild.id)][str(message.channel.id)]['board']
+    return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
 
 def updateStatus(message):
     data = __readJson()
