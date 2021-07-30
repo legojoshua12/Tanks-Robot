@@ -23,10 +23,6 @@ async def on_ready():
     print(f'{client.user} has connected to Discord!')
     await client.change_presence(activity=discord.Game(name='Tanks'),
                                  status=discord.Status.online, afk=False)
-    numberOfPlayers = 5
-    boardData = bC.constructBoardData(numberOfPlayers)
-    boardData = bC.populateBoard(boardData, numberOfPlayers)
-
 
 @client.event
 async def on_message(message):
@@ -70,7 +66,29 @@ async def on_message(message):
                         sadEmoji = '\U0001F622'
                         await message.channel.send(message.author.mention + f' left the game. {sadEmoji}')
                 elif action == 'start':
-                    await message.channel.send('Starting...')
+                    # Here we want to actually boot the game
+                    numberOfPlayers = jsonManager.getNumberOfPlayersInGame(message)
+                    #TODO this is an admin number
+                    numberOfPlayers = 5
+                    if 5 <= numberOfPlayers <= 20:
+                        booted = False
+                        try:
+                            boardData = bC.constructBoardData(numberOfPlayers)
+                            boardData = bC.populateBoard(boardData, numberOfPlayers)
+                            jsonManager.saveBoard(message, boardData)
+                            jsonManager.updateStatus(message)
+                            booted = True
+                        except:
+                            await message.channel.send('Error! Could not start game!')
+                        if booted:
+                            board = jsonManager.getBoard(message)
+                            await message.channel.send('Welcome to tanks!')
+                    else:
+                        if numberOfPlayers <= 4:
+                            await message.channel.send('There are not enough players in the game to start!')
+                        else:
+                            await message.channel.send('There are too many players in the game to start!')
+
             elif isGamePresent == 'active':
                 print('game active')
             elif isGamePresent == 'none':
