@@ -69,7 +69,7 @@ async def on_message(message):
                 elif action == 'start':
                     # Here we want to actually boot the game
                     numberOfPlayers = jsonManager.getNumberOfPlayersInGame(message)
-                    #TODO this is an admin number
+                    # TODO this is an admin number
                     numberOfPlayers = 5
                     if 5 <= numberOfPlayers <= 20:
                         booted = False

@@ -4,7 +4,6 @@ from CustomIndentEncoder import NoIndent, MyEncoder
 
 
 def createGame(message):
-    players = {}
     data = __readJson()
     # These are redundancy checks to ensure no data corruption
     if 'games' not in data:
@@ -86,15 +85,18 @@ def checkIfGameIsInChannel(message):
     except:
         return 'none'
 
+
 def saveBoard(message, board):
     data = __readJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
+
 def getBoard(message):
     data = __readJson()
     return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+
 
 def updateStatus(message):
     data = __readJson()
@@ -111,6 +113,7 @@ def __formatBoardJson(guildID, channelID, data):
     }
     data['games'][guildID][channelID]['board'] = formatData
     return data
+
 
 def __readJson():
     file = open('Games.json', )
