@@ -59,6 +59,7 @@ async def direct_message_commands(message, command):
     elif command == 'dm':
         await message.author.send("I'm already here talking to you! Use `help` to get a list of commands.")
     else:
+        print('Here!')
         await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
                                                             'list of commands and options.')
 
@@ -87,6 +88,7 @@ async def public_commands_no_game(message, command):
         await message.channel.send('Starting a game...')
         return 'startCommandReceived'
     else:
+        print('Here!!')
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
 
@@ -101,6 +103,7 @@ async def public_commands_lobby(message, command):
         return command
     # Rest of these are for concurrency sake with the rest of the bot commands
     else:
+        print('Here!!!')
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
 
@@ -141,6 +144,7 @@ async def public_commands_game(message, command):
     elif command == 'board':
         return command
     else:
+        print('Here!!!!')
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
 

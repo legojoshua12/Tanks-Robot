@@ -1,4 +1,6 @@
 import json
+import cmapy
+import random
 
 from CustomIndentEncoder import NoIndent, MyEncoder
 
@@ -98,10 +100,24 @@ def getBoard(message):
     return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
 
 
-def updateStatus(message):
+async def updateStatus(message):
     data = __readJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['gameStatus'] = 'active'
+    numberOfPlayers = getNumberOfPlayersInGame(message)
+    playerColors = {}
+    for player in range(numberOfPlayers):
+        rgb_color = cmapy.color('plasma', random.randrange(0, 256, 10), rgb_order=True)
+        playerColors[str(player)] = rgb_color
+        embed = discord.Embed(title=".", description=".", color=rgb_color)
+        await message.channel.send(embed=embed)
+    data['games'][str(message.guild.id)][str(message.channel.id)].update(playerColors)
     data = __formatBoardJson(str(message.guild.id), str(message.channel.id), data)
+    with open('Games.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+
+def clearAllData():
+    data = {}
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 

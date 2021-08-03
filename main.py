@@ -33,6 +33,10 @@ async def on_message(message):
     if isinstance(message.channel, discord.channel.DMChannel):
         await commands.direct_message_commands(message, message.content)
     else:
+        # TODO This is for audit purposes only, remove on final build
+        if message.content == 'clear':
+            jsonManager.clearAllData()
+
         if message.content.startswith(commandMessageStarter):
             # First we check to make sure someone isn't doing something in italics
             # Check to make sure this is inline with config.ini
