@@ -100,16 +100,14 @@ def getBoard(message):
     return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
 
 
-async def updateStatus(message):
+def updateStatus(message):
     data = __readJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['gameStatus'] = 'active'
     numberOfPlayers = getNumberOfPlayersInGame(message)
-    playerColors = {}
+    playerColors = {'playerColors': {}}
     for player in range(numberOfPlayers):
         rgb_color = cmapy.color('plasma', random.randrange(0, 256, 10), rgb_order=True)
-        playerColors[str(player)] = rgb_color
-        embed = discord.Embed(title=".", description=".", color=rgb_color)
-        await message.channel.send(embed=embed)
+        playerColors['playerColors'][str(player)] = rgb_color
     data['games'][str(message.guild.id)][str(message.channel.id)].update(playerColors)
     data = __formatBoardJson(str(message.guild.id), str(message.channel.id), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
@@ -120,6 +118,7 @@ def clearAllData():
     data = {}
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+    print('admin cleared board')
 
 
 def __formatBoardJson(guildID, channelID, data):
