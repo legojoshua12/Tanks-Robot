@@ -118,6 +118,15 @@ async def on_message(message):
                         await commands.sendLobbyHelpMenu(message)
 
 
+@client.event
+async def on_reaction_add(reaction, user):
+    if (reaction.message.author != client.user) or (user == client.user):
+        return
+    if len(reaction.message.embeds) > 0:
+        await reaction.message.remove_reaction(reaction.emoji, user)
+        await commands.flipThroughPlayerStatsCard()
+
+
 # For first time boot of the robot,
 # it is a good idea to run even if the values exist to ensure that nothing gets messed up
 configUtils.initialize()

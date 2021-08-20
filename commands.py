@@ -150,10 +150,6 @@ async def public_commands_game(message, command):
                                                             'list of commands and options.')
 
 async def showPlayerStatistics(message, data, client):
-    # First we grab user at index 0
-    # Next we display their info
-    # Finally we add reactions to the message
-    # Flipping through pages will be the job of another function
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
     for key in data['players']:
         if data['players'][str(key)]['playerNumber'] == 1:
@@ -178,6 +174,10 @@ async def showPlayerStatistics(message, data, client):
 
     await msg.add_reaction("\u2B05")
     await msg.add_reaction("\u27A1")
+
+
+async def flipThroughPlayerStatsCard():
+    print('Todo')
 
 
 def makeRulesEmbed(embedColor):
