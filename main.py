@@ -101,6 +101,8 @@ async def on_message(message):
                 if action == 'board':
                     renderedBoard = renderPipeline.constructImage(jsonManager.getBoard(message))
                     await commands.displayBoard(message, renderedBoard)
+                elif action == 'players':
+                    await commands.showPlayerStatistics(message, jsonManager.__readJson(), client)
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)
                 if possibleCommand == 'startCommandReceived':

@@ -59,7 +59,6 @@ async def direct_message_commands(message, command):
     elif command == 'dm':
         await message.author.send("I'm already here talking to you! Use `help` to get a list of commands.")
     else:
-        print('Here!')
         await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
                                                             'list of commands and options.')
 
@@ -88,7 +87,6 @@ async def public_commands_no_game(message, command):
         await message.channel.send('Starting a game...')
         return 'startCommandReceived'
     else:
-        print('Here!!')
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
 
@@ -103,7 +101,6 @@ async def public_commands_lobby(message, command):
         return command
     # Rest of these are for concurrency sake with the rest of the bot commands
     else:
-        print('Here!!!')
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
 
@@ -128,25 +125,41 @@ async def sendLobbyHelpMenu(message):
     await message.channel.send(embed=embed)
 
 async def public_commands_game(message, command):
+    commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
     embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
         embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
                                                                         "reference! Simply type one of these to get "
                                                                         "started.",
                                  color=embedColor)
-        embed.add_field(name="help", value="Gives a list of commands", inline=False)
-        embed.add_field(name="rules", value="Gives the game rules and how to play", inline=False)
-        embed.add_field(name="board", value="Gives the game rules and how to play", inline=False)
+        embed.add_field(name=f'{commandPrefix}help', value="Gives a list of commands", inline=False)
+        embed.add_field(name=f'{commandPrefix}rules', value="Gives the game rules and how to play", inline=False)
+        embed.add_field(name=f'{commandPrefix}board', value="Shows the board of the current game", inline=False)
+        embed.add_field(name=f'{commandPrefix}players', value="Shows the players of the game and their accompanying "
+                                                              "statistics", inline=False)
         await message.channel.send(embed=embed)
     elif command == 'rules':
         embed = makeRulesEmbed(embedColor)
         await message.channel.send(embed=embed)
     elif command == 'board':
         return command
+    elif command == 'players':
+        return command
     else:
-        print('Here!!!!')
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
+
+async def showPlayerStatistics(message, data, client):
+    embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    embed = discord.Embed(title="Players List", description="Here is a list of all the players with their colors and "
+                                                            "stats from the game so far!",
+                          color=embedColor)
+    for key in data['games'][str(message.guild.id)][str(message.channel.id)]['players']:
+        embed.add_field(name=str(await client.fetch_user(key))[:-5], value="Color: ", inline=True)
+        embed.add_field(name='Health', value='\u2665 ' + str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(key)]['lives']), inline=True)
+        embed.add_field(name='Actions', value='\u2694 ' + str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(key)]['actions']), inline=True)
+    await message.channel.send(embed=embed)
+
 
 def makeRulesEmbed(embedColor):
     waveEmoji = '\U0001F52B'
