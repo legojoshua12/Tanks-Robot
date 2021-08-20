@@ -150,15 +150,34 @@ async def public_commands_game(message, command):
                                                             'list of commands and options.')
 
 async def showPlayerStatistics(message, data, client):
-    embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
-    embed = discord.Embed(title="Players List", description="Here is a list of all the players with their colors and "
-                                                            "stats from the game so far!",
-                          color=embedColor)
-    for key in data['games'][str(message.guild.id)][str(message.channel.id)]['players']:
-        embed.add_field(name=str(await client.fetch_user(key))[:-5], value="Color: ", inline=True)
-        embed.add_field(name='Health', value='\u2665 ' + str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(key)]['lives']), inline=True)
-        embed.add_field(name='Actions', value='\u2694 ' + str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(key)]['actions']), inline=True)
-    await message.channel.send(embed=embed)
+    # First we grab user at index 0
+    # Next we display their info
+    # Finally we add reactions to the message
+    # Flipping through pages will be the job of another function
+    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    for key in data['players']:
+        if data['players'][str(key)]['playerNumber'] == 1:
+            playerID = key
+            break
+
+    user = await client.fetch_user(playerID)
+    colorInfo = data['playerColors']['1']
+    embedColor = int('0x' + str('%02x%02x%02x' % (colorInfo[0], colorInfo[1], colorInfo[2])).upper(), 16)
+    embed = discord.Embed(title=str(user)[:-5] + ' Statistics',
+                          description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
+                          color=embedColor
+                          )
+    embed.set_thumbnail(url=user.avatar_url)
+    embed.add_field(name='Player Number', value='\U0001F464 ' + str(
+        data['players'][str(key)]['playerNumber']), inline=True)
+    embed.add_field(name='Health', value='\u2665 ' + str(
+        data['players'][str(key)]['lives']), inline=True)
+    embed.add_field(name='Actions', value='\u2694 ' + str(
+        data['players'][str(key)]['actions']), inline=True)
+    msg = await message.channel.send(embed=embed)
+
+    await msg.add_reaction("\u2B05")
+    await msg.add_reaction("\u27A1")
 
 
 def makeRulesEmbed(embedColor):
