@@ -107,7 +107,7 @@ def updateStatus(message):
     playerColors = {'playerColors': {}}
     for player in range(numberOfPlayers):
         rgb_color = cmapy.color('plasma', random.randrange(0, 256, 10), rgb_order=True)
-        playerColors['playerColors'][str(player)] = rgb_color
+        playerColors['playerColors'][str(player+1)] = rgb_color
     data['games'][str(message.guild.id)][str(message.channel.id)].update(playerColors)
     data = __formatBoardJson(str(message.guild.id), str(message.channel.id), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
