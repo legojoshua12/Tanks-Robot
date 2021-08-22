@@ -1,3 +1,5 @@
+import sys
+import asyncio
 import os
 import random
 
@@ -11,6 +13,10 @@ import commands
 import configUtils
 import jsonManager
 import renderPipeline
+
+# This is a clean windows shutdown procedure as to not throw memory heap errors
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith('win'):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -124,7 +130,11 @@ async def on_reaction_add(reaction, user):
         return
     if len(reaction.message.embeds) > 0:
         await reaction.message.remove_reaction(reaction.emoji, user)
-        await commands.flipThroughPlayerStatsCard()
+        data = jsonManager.__readJson()
+        if ('U+{:X}'.format(ord(reaction.emoji))) == 'U+27A1':
+            await commands.flipThroughPlayerStatsCard(reaction.message, data, 1, client)
+        elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
+            await commands.flipThroughPlayerStatsCard(reaction.message, data, -1, client)
 
 
 # For first time boot of the robot,
