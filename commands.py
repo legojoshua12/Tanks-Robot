@@ -164,20 +164,43 @@ async def showPlayerStatistics(message, data, client):
                           color=embedColor
                           )
     embed.set_thumbnail(url=user.avatar_url)
-    embed.add_field(name='Player Number', value='\U0001F464 ' + str(
-        data['players'][str(key)]['playerNumber']), inline=True)
-    embed.add_field(name='Health', value='\u2665 ' + str(
-        data['players'][str(key)]['lives']), inline=True)
-    embed.add_field(name='Actions', value='\u2694 ' + str(
-        data['players'][str(key)]['actions']), inline=True)
+    embed = addPlayercardFields(embed, data['players'][str(key)]['playerNumber'], data['players'][str(key)]['lives'], data['players'][str(key)]['actions'])
     msg = await message.channel.send(embed=embed)
 
     await msg.add_reaction("\u2B05")
     await msg.add_reaction("\u27A1")
 
 
-async def flipThroughPlayerStatsCard():
-    print('Todo')
+async def flipThroughPlayerStatsCard(message, data, direction, client):
+    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    embed = message.embeds[0]
+    playerIndex = str(int(embed.fields[0].value[2:]) + direction)
+    if playerIndex == str(0) or int(playerIndex) > len(data['players']):
+        return
+
+    for key in data['players']:
+        if str(data['players'][str(key)]['playerNumber']) == playerIndex:
+            playerID = key
+            break
+
+    user = await client.fetch_user(playerID)
+    colorInfo = data['playerColors'][playerIndex]
+    embedColor = int('0x' + str('%02x%02x%02x' % (colorInfo[0], colorInfo[1], colorInfo[2])).upper(), 16)
+    embed = discord.Embed(title=str(user)[:-5] + ' Statistics',
+                          description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
+                          color=embedColor
+                          )
+    embed.set_thumbnail(url=user.avatar_url)
+    embed = addPlayercardFields(embed, data['players'][str(key)]['playerNumber'], data['players'][str(key)]['lives'],
+                                data['players'][str(key)]['actions'])
+    await message.edit(embed=embed)
+
+
+def addPlayercardFields(embed, playerNumber, lives, actions):
+    embed.add_field(name='Player Number', value='\U0001F464 ' + str(playerNumber), inline=True)
+    embed.add_field(name='Health', value='\u2665 ' + str(lives), inline=True)
+    embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
+    return embed
 
 
 def makeRulesEmbed(embedColor):
