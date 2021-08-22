@@ -26,7 +26,7 @@ def createGame(message):
         'gameStatus': "lobby"
     }
     data['games'][str(message.guild.id)][str(message.channel.id)] = newSetup
-    with open('Games.json', 'w', encoding='utf-8') as f:
+    with open('../Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
     return data
 
@@ -48,7 +48,7 @@ def addPlayerToGame(message, playerNumber):
             return 'playerAlreadyPresent'
     playersList.update(newPlayerData)
     data['games'][str(message.guild.id)][str(message.channel.id)]['players'] = playersList
-    with open('Games.json', 'w', encoding='utf-8') as f:
+    with open('../Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 
@@ -64,7 +64,7 @@ def removePlayerFromGame(message, playerNumber):
                 del data['games'][str(message.guild.id)][str(message.channel.id)]
                 if len(data['games'][str(message.guild.id)]) == 0:
                     del data['games'][str(message.guild.id)]
-            with open('Games.json', 'w', encoding='utf-8') as f:
+            with open('../Games.json', 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
             return
     return 'playerNotPresent'
@@ -91,7 +91,7 @@ def checkIfGameIsInChannel(message):
 def saveBoard(message, board):
     data = __readJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
-    with open('Games.json', 'w', encoding='utf-8') as f:
+    with open('../Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 
@@ -110,7 +110,7 @@ def updateStatus(message):
         playerColors['playerColors'][str(player+1)] = rgb_color
     data['games'][str(message.guild.id)][str(message.channel.id)].update(playerColors)
     data = __formatBoardJson(str(message.guild.id), str(message.channel.id), data)
-    with open('Games.json', 'w', encoding='utf-8') as f:
+    with open('../Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 def updatePlayerRange(message, data):
@@ -120,14 +120,14 @@ def updatePlayerRange(message, data):
     data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['range'] = (
             int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                     'range']) + 1)
-    with open('Games.json', 'w', encoding='utf-8') as f:
+    with open('../Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
     return data
 
 
 def clearAllData():
     data = {}
-    with open('Games.json', 'w', encoding='utf-8') as f:
+    with open('../Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
     print('admin cleared board')
 
@@ -142,7 +142,7 @@ def __formatBoardJson(guildID, channelID, data):
 
 
 def __readJson():
-    file = open('Games.json', )
+    file = open('../Games.json', )
     data = json.load(file)
     file.close()
     return data
