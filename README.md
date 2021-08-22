@@ -9,7 +9,7 @@ In order to run a local instance of this robot, you need [Python 3.8](https://ww
  - [numpy](https://github.com/numpy/numpy)
 
 In addition to the packages above, you will also need a discord developer token from the [discord developer portal](https://discord.com/developers/applications).
-You can add the token to your `.env` file to initialize the connection with the discord servers
+You can add the token to your `.env` file to initialize the connection with the discord servers.
 
 ## Heroku Deployment
 
