@@ -130,3 +130,6 @@ dmypy.json
 
 # Saved Games
 Games.json
+
+#IDEA settings
+.idea/
