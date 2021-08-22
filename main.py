@@ -55,6 +55,7 @@ async def on_message(message):
                 return
 
             # Here is a slicer of the message to make an easy reference
+            # TODO Make it dynamic in length
             command = message.content[2:].lower()
 
             # Commands
@@ -109,6 +110,8 @@ async def on_message(message):
                     await commands.displayBoard(message, renderedBoard)
                 elif action == 'players':
                     await commands.showPlayerStatistics(message, jsonManager.__readJson(), client)
+                elif action == 'increase range':
+                    await commands.increaseRange(message, jsonManager.__readJson())
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)
                 if possibleCommand == 'startCommandReceived':

@@ -4,6 +4,7 @@ import random
 import discord
 
 import configUtils
+import jsonManager
 
 
 async def direct_message_commands(message, command):
@@ -137,6 +138,8 @@ async def public_commands_game(message, command):
         embed.add_field(name=f'{commandPrefix}board', value="Shows the board of the current game", inline=False)
         embed.add_field(name=f'{commandPrefix}players', value="Shows the players of the game and their accompanying "
                                                               "statistics", inline=False)
+        embed.add_field(name=f'{commandPrefix}increase range', value="Spends 1 action point to increase your range",
+                        inline=False)
         await message.channel.send(embed=embed)
     elif command == 'rules':
         embed = makeRulesEmbed(embedColor)
@@ -145,9 +148,18 @@ async def public_commands_game(message, command):
         return command
     elif command == 'players':
         return command
+    elif command == 'increase range':
+        return command
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
+
+async def increaseRange(message, data):
+    if int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions']) > 0:
+        data = jsonManager.updatePlayerRange(message, data)
+        await message.channel.send('Your range is now ' + str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['range']) + ' tiles ' + message.author.mention + '!')
+    else:
+        await message.channel.send('You do not have any actions to increase your range ' + message.author.mention + '!')
 
 async def showPlayerStatistics(message, data, client):
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
@@ -157,14 +169,9 @@ async def showPlayerStatistics(message, data, client):
             break
 
     user = await client.fetch_user(playerID)
-    colorInfo = data['playerColors']['1']
-    embedColor = int('0x' + str('%02x%02x%02x' % (colorInfo[0], colorInfo[1], colorInfo[2])).upper(), 16)
-    embed = discord.Embed(title=str(user)[:-5] + ' Statistics',
-                          description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
-                          color=embedColor
-                          )
-    embed.set_thumbnail(url=user.avatar_url)
-    embed = addPlayercardFields(embed, data['players'][str(key)]['playerNumber'], data['players'][str(key)]['lives'], data['players'][str(key)]['actions'])
+    colorInfo = data['playerColors'][str(data['players'][str(key)]['playerNumber'])]
+    embed = addPlayercardFields(colorInfo, user, data['players'][str(key)]['playerNumber'], data['players'][str(key)]['lives'],
+                                data['players'][str(key)]['actions'], data['players'][str(key)]['range'])
     msg = await message.channel.send(embed=embed)
 
     await msg.add_reaction("\u2B05")
@@ -185,21 +192,25 @@ async def flipThroughPlayerStatsCard(message, data, direction, client):
 
     user = await client.fetch_user(playerID)
     colorInfo = data['playerColors'][playerIndex]
+    embed = addPlayercardFields(colorInfo, user, data['players'][str(key)]['playerNumber'], data['players'][str(key)]['lives'],
+                                data['players'][str(key)]['actions'], data['players'][str(key)]['range'])
+    await message.edit(embed=embed)
+
+
+def addPlayercardFields(colorInfo, user, playerNumber, lives, actions, range):
     embedColor = int('0x' + str('%02x%02x%02x' % (colorInfo[0], colorInfo[1], colorInfo[2])).upper(), 16)
     embed = discord.Embed(title=str(user)[:-5] + ' Statistics',
                           description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
                           color=embedColor
                           )
     embed.set_thumbnail(url=user.avatar_url)
-    embed = addPlayercardFields(embed, data['players'][str(key)]['playerNumber'], data['players'][str(key)]['lives'],
-                                data['players'][str(key)]['actions'])
-    await message.edit(embed=embed)
-
-
-def addPlayercardFields(embed, playerNumber, lives, actions):
     embed.add_field(name='Player Number', value='\U0001F464 ' + str(playerNumber), inline=True)
     embed.add_field(name='Health', value='\u2665 ' + str(lives), inline=True)
     embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
+    embed.add_field(name='Range', value='\U0001F3AF ' + str(range), inline=True)
+    # TODO have actual values here
+    embed.add_field(name='Hits', value='\U0001F4A5 ' + str('0'), inline=True)
+    embed.add_field(name='Times Moved', value='\U0001F4A8 ' + str('0'), inline=True)
     return embed
 
 
