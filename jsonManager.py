@@ -113,6 +113,17 @@ def updateStatus(message):
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
+def updatePlayerRange(message, data):
+    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] = (
+            int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                    'actions']) - 1)
+    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['range'] = (
+            int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                    'range']) + 1)
+    with open('Games.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+    return data
+
 
 def clearAllData():
     data = {}
