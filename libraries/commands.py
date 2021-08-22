@@ -3,8 +3,8 @@ import random
 
 import discord
 
-import configUtils
-import jsonManager
+import libraries.configUtils
+import libraries.jsonManager
 
 
 async def direct_message_commands(message, command):

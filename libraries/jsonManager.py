@@ -2,7 +2,7 @@ import json
 import cmapy
 import random
 
-from CustomIndentEncoder import NoIndent, MyEncoder
+from libraries.CustomIndentEncoder import NoIndent, MyEncoder
 
 
 def createGame(message):
