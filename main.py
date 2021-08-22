@@ -1,18 +1,12 @@
 import sys
 import asyncio
 import os
-import random
 
 import discord
-from discord.ext.commands import bot
 
 from dotenv import load_dotenv
 
-import boardConstructor as bC
-import commands
-import configUtils
-import jsonManager
-import renderPipeline
+from libraries import jsonManager, renderPipeline, commands, boardConstructor as bC, configUtils
 
 # This is a clean windows shutdown procedure as to not throw memory heap errors
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith('win'):
