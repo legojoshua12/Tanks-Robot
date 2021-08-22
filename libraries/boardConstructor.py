@@ -1,6 +1,6 @@
 import random
 
-import configUtils
+import libraries.configUtils
 
 
 def constructBoardData(players):
