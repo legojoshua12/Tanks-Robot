@@ -3,8 +3,8 @@ import random
 
 import discord
 
-import libraries.configUtils
-import libraries.jsonManager
+import libraries.configUtils as configUtils
+import libraries.jsonManager as jsonManager
 
 
 async def direct_message_commands(message, command):
@@ -160,6 +160,11 @@ async def increaseRange(message, data):
         await message.channel.send('Your range is now ' + str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['range']) + ' tiles ' + message.author.mention + '!')
     else:
         await message.channel.send('You do not have any actions to increase your range ' + message.author.mention + '!')
+
+
+async def move(message, data):
+    print('moving')
+
 
 async def showPlayerStatistics(message, data, client):
     data = data['games'][str(message.guild.id)][str(message.channel.id)]

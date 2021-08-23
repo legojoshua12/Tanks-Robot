@@ -16,7 +16,7 @@ You can add the token to your `.env` file to initialize the connection with the 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
 ### Planned Features
- - Setup a game with random map
+ - Setup a game with random map (mountains, rivers, hills, etc.)
  - Everyone gets 1 action a day at 12pm (noon) PST
  - Anyone can make a move whenever
  - Tokens can be traded in secret
