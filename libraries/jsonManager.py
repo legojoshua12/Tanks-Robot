@@ -93,8 +93,9 @@ def checkIfGameIsInChannel(message):
 def saveBoard(message, board):
     data = readJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
+    data = __formatBoardJson(str(message.guild.id), (str(message.channel.id)), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+        json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
 def getBoard(message):
@@ -152,6 +153,11 @@ def readJson():
 
 def __formatBoardJson(guildID, channelID, data):
     formatData = data['games'][guildID][channelID]['board']
+    try:
+        formatData = formatData['data']
+    except:
+        pass
+
     formatData = {
         'data': [NoIndent(elem) for elem in formatData]
     }

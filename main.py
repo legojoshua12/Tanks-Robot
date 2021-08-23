@@ -74,7 +74,9 @@ async def on_message(message):
             if isGamePresent == 'lobby':
                 action = await commands.public_commands_lobby(message, command)
                 if action == 'join':
-                    isPresent = jsonManager.addPlayerToGame(message, 1)
+                    data = jsonManager.readJson()
+                    newPlayerNumber = (len(data['games'][str(message.guild.id)][str(message.channel.id)]['players'])+1)
+                    isPresent = jsonManager.addPlayerToGame(message, newPlayerNumber)
                     if isPresent == 'playerAlreadyPresent':
                         await message.channel.send(message.author.mention + ' is already in the game!')
                     else:
@@ -122,8 +124,8 @@ async def on_message(message):
                     await commands.showPlayerStatistics(message, jsonManager.readJson(), client)
                 elif action == 'increase range':
                     await commands.increaseRange(message, jsonManager.readJson())
-                elif action[0:5] == 'move ':
-                    await commands.move(message, jsonManager.readJson())
+                elif action == 'move':
+                    await commands.move(message, jsonManager.readJson(), command)
 
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)
