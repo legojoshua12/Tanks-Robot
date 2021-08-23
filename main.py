@@ -12,11 +12,27 @@ from libraries import jsonManager, renderPipeline, commands, boardConstructor as
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith('win'):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+# Setup .env for instancing
+if os.path.exists('.env'):
+    print('Env file located, initializing...')
+    try:
+        load_dotenv()
+        TOKEN = os.getenv('DISCORD_TOKEN')
+    except:
+        print('DISCORD_TOKEN is not set, please set one first before continuing')
+        exit()
+else:
+    print('Env file not located, generating now...')
+    with open('.env', 'w') as f:
+        f.write('DISCORD_TOKEN=')
+    print('Exiting, please set a DISCORD_TOKEN in the env file')
+    exit()
+
 
 client = discord.Client()
-commandMessageStarter = ''
+configUtils.initialize()
+jsonManager.initialize()
+commandMessageStarter = configUtils.readValue('botSettings', 'botCommandPrefix')
 
 
 @client.event
@@ -103,9 +119,12 @@ async def on_message(message):
                     renderedBoard = renderPipeline.constructImage(jsonManager.getBoard(message))
                     await commands.displayBoard(message, renderedBoard)
                 elif action == 'players':
-                    await commands.showPlayerStatistics(message, jsonManager.__readJson(), client)
+                    await commands.showPlayerStatistics(message, jsonManager.readJson(), client)
                 elif action == 'increase range':
-                    await commands.increaseRange(message, jsonManager.__readJson())
+                    await commands.increaseRange(message, jsonManager.readJson())
+                elif action[0:5] == 'move ':
+                    await commands.move(message, jsonManager.readJson())
+
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)
                 if possibleCommand == 'startCommandReceived':
@@ -127,15 +146,12 @@ async def on_reaction_add(reaction, user):
         return
     if len(reaction.message.embeds) > 0:
         await reaction.message.remove_reaction(reaction.emoji, user)
-        data = jsonManager.__readJson()
+        data = jsonManager.readJson()
         if ('U+{:X}'.format(ord(reaction.emoji))) == 'U+27A1':
             await commands.flipThroughPlayerStatsCard(reaction.message, data, 1, client)
         elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
             await commands.flipThroughPlayerStatsCard(reaction.message, data, -1, client)
 
-
-# For first time boot of the robot,
-# it is a good idea to run even if the values exist to ensure that nothing gets messed up
-configUtils.initialize()
-commandMessageStarter = configUtils.readValue('botSettings', 'botCommandPrefix')
+# Start main program and connect to discord
+print('Connecting to discord...')
 client.run(TOKEN)

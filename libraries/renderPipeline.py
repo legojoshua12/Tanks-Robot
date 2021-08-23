@@ -1,6 +1,6 @@
 from PIL import Image
 
-import libraries.configUtils
+import libraries.configUtils as configUtils
 
 
 def constructImage(board):
