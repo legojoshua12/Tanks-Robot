@@ -5,6 +5,7 @@ import discord
 
 import libraries.configUtils as configUtils
 import libraries.jsonManager as jsonManager
+import libraries.renderPipeline as renderPipeline
 
 
 async def direct_message_commands(message, command):
@@ -140,6 +141,8 @@ async def public_commands_game(message, command):
                                                               "statistics", inline=False)
         embed.add_field(name=f'{commandPrefix}increase range', value="Spends 1 action point to increase your range",
                         inline=False)
+        embed.add_field(name=f'{commandPrefix}move', value="Spends 1 action point to 1 space north, south, west, or east",
+                        inline=False)
         await message.channel.send(embed=embed)
     elif command == 'rules':
         embed = makeRulesEmbed(embedColor)
@@ -150,6 +153,8 @@ async def public_commands_game(message, command):
         return command
     elif command == 'increase range':
         return command
+    elif command[0:5] == 'move ' or (len(command) == 4 and command == 'move'):
+        return 'move'
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
@@ -162,8 +167,80 @@ async def increaseRange(message, data):
         await message.channel.send('You do not have any actions to increase your range ' + message.author.mention + '!')
 
 
-async def move(message, data):
-    print('moving')
+async def move(message, data, command):
+    splitCommand = command.split(' ')
+    if len(splitCommand) == 1:
+        await message.channel.send('Please specify a tile or a direction to move in ' + message.author.mention + '!')
+        return
+    elif len(splitCommand) > 2:
+        await message.channel.send('Invalid information provided for where to go ' + message.author.mention + '! Please specify a tile or a direction to move.')
+        return
+
+    board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+    playerNumber = str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['playerNumber'])
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if str(board[i][j]) == playerNumber:
+                if splitCommand[1] == 'north':
+                    if i >= (len(board)-1):
+                        await message.channel.send(
+                            'You may not move any farther north ' + message.author.mention + ', as you are at the top!')
+                        return
+                    if board[i+1][j] != 0:
+                        await message.channel.send('There is a player above you ' + message.author.mention + '. You may not move onto players.')
+                        return
+                    board[i][j] = 0
+                    board[i+1][j] = int(playerNumber)
+                    jsonManager.saveBoard(message, board)
+                    await displayBoard(message, renderPipeline.constructImage(board), ('You have moved north 1 tile ' + message.author.mention + '!'))
+                    return
+                elif splitCommand[1] == 'south':
+                    if i <= 0:
+                        await message.channel.send(
+                            'You may not move any farther south ' + message.author.mention + ', as you are at the bottom!')
+                        return
+                    if board[i - 1][j] != 0:
+                        await message.channel.send(
+                            'There is a player below you ' + message.author.mention + '. You may not move onto players.')
+                        return
+                    board[i][j] = 0
+                    board[i - 1][j] = int(playerNumber)
+                    jsonManager.saveBoard(message, board)
+                    await displayBoard(message, renderPipeline.constructImage(board),
+                                       ('You have moved south 1 tile ' + message.author.mention + '!'))
+                    return
+                elif splitCommand[1] == 'east':
+                    if j >= (len(board[i])-1):
+                        await message.channel.send(
+                            'You may not move any farther east ' + message.author.mention + ', as you are at the edge!')
+                        return
+                    if board[i][j + 1] != 0:
+                        await message.channel.send(
+                            'There is a player to the right of you ' + message.author.mention + '. You may not move onto players.')
+                        return
+                    board[i][j] = 0
+                    board[i][j + 1] = int(playerNumber)
+                    jsonManager.saveBoard(message, board)
+                    await displayBoard(message, renderPipeline.constructImage(board),
+                                       ('You have moved east 1 tile ' + message.author.mention + '!'))
+                    return
+                elif splitCommand[1] == 'west':
+                    if j <= 0:
+                        await message.channel.send(
+                            'You may not move any farther west ' + message.author.mention + ', as you are at the edge!')
+                        return
+                    if board[i][j - 1] != 0:
+                        await message.channel.send(
+                            'There is a player to the left of you ' + message.author.mention + '. You may not move onto players.')
+                        return
+                    board[i][j] = 0
+                    board[i][j - 1] = int(playerNumber)
+                    jsonManager.saveBoard(message, board)
+                    await displayBoard(message, renderPipeline.constructImage(board),
+                                       ('You have moved west 1 tile ' + message.author.mention + '!'))
+                    return
+                elif splitCommand[1] == 'weast':
+                    await message.channel.send('I am sorry ' + message.author.mention + ', but you do not have the power to move weast.')
 
 
 async def showPlayerStatistics(message, data, client):
@@ -256,7 +333,10 @@ def makeRulesEmbed(embedColor):
                        inline=False)
     return embed
 
-async def displayBoard(message, board):
+async def displayBoard(message, board, ping=False):
+    if ping != False:
+        await message.channel.send(ping)
+
     with io.BytesIO() as image_binary:
         board.save(image_binary, 'PNG')
         image_binary.seek(0)
