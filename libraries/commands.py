@@ -192,7 +192,7 @@ async def move(message, data, command):
                     board[i][j] = 0
                     board[i+1][j] = int(playerNumber)
                     jsonManager.saveBoard(message, board)
-                    await displayBoard(message, renderPipeline.constructImage(board), ('You have moved north 1 tile ' + message.author.mention + '!'))
+                    await displayBoard(message, renderPipeline.constructImage(board, data['games'][str(message.guild.id)][str(message.channel.id)]['playerColors']), ('You have moved north 1 tile ' + message.author.mention + '!'))
                     return
                 elif splitCommand[1] == 'south':
                     if i <= 0:
@@ -206,7 +206,7 @@ async def move(message, data, command):
                     board[i][j] = 0
                     board[i - 1][j] = int(playerNumber)
                     jsonManager.saveBoard(message, board)
-                    await displayBoard(message, renderPipeline.constructImage(board),
+                    await displayBoard(message, renderPipeline.constructImage(board, data['games'][str(message.guild.id)][str(message.channel.id)]['playerColors']),
                                        ('You have moved south 1 tile ' + message.author.mention + '!'))
                     return
                 elif splitCommand[1] == 'east':
@@ -221,7 +221,7 @@ async def move(message, data, command):
                     board[i][j] = 0
                     board[i][j + 1] = int(playerNumber)
                     jsonManager.saveBoard(message, board)
-                    await displayBoard(message, renderPipeline.constructImage(board),
+                    await displayBoard(message, renderPipeline.constructImage(board, data['games'][str(message.guild.id)][str(message.channel.id)]['playerColors']),
                                        ('You have moved east 1 tile ' + message.author.mention + '!'))
                     return
                 elif splitCommand[1] == 'west':
@@ -236,7 +236,7 @@ async def move(message, data, command):
                     board[i][j] = 0
                     board[i][j - 1] = int(playerNumber)
                     jsonManager.saveBoard(message, board)
-                    await displayBoard(message, renderPipeline.constructImage(board),
+                    await displayBoard(message, renderPipeline.constructImage(board, data['games'][str(message.guild.id)][str(message.channel.id)]['playerColors']),
                                        ('You have moved west 1 tile ' + message.author.mention + '!'))
                     return
                 elif splitCommand[1] == 'weast':

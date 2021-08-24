@@ -106,7 +106,7 @@ async def on_message(message):
                             await message.channel.send('Error! Could not start game!')
                         if booted:
                             board = jsonManager.getBoard(message)
-                            renderedBoard = renderPipeline.constructImage(board)
+                            renderedBoard = renderPipeline.constructImage(board, jsonManager.readJson()['games'][str(message.guild.id)][str(message.channel.id)]['playerColors'])
                             await message.channel.send('Welcome to tanks!')
                             await commands.displayBoard(message, renderedBoard)
                     else:
@@ -118,7 +118,7 @@ async def on_message(message):
             elif isGamePresent == 'active':
                 action = await commands.public_commands_game(message, command)
                 if action == 'board':
-                    renderedBoard = renderPipeline.constructImage(jsonManager.getBoard(message))
+                    renderedBoard = renderPipeline.constructImage(jsonManager.getBoard(message), jsonManager.readJson()['games'][str(message.guild.id)][str(message.channel.id)]['playerColors'])
                     await commands.displayBoard(message, renderedBoard)
                 elif action == 'players':
                     await commands.showPlayerStatistics(message, jsonManager.readJson(), client)

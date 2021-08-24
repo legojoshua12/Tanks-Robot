@@ -3,7 +3,7 @@ from PIL import Image
 import libraries.configUtils as configUtils
 
 
-def constructImage(board):
+def constructImage(board, playerColors):
     filename = 'EmptySquare.png'
     tile = Image.open('textures/' + filename)
     completeImage = None
@@ -15,9 +15,15 @@ def constructImage(board):
                     image = __stitchTiles(image, tile)
                 else:
                     # TODO Update this to use a tank image
-                    (width1, height1) = tile.size
-                    temp = Image.new("RGB", (width1, height1))
-                    image = __stitchTiles(image, temp)
+                    try:
+                        tankFileName = 'TankOnBackground.png'
+                        tank = Image.open('textures/' + tankFileName)
+                        tank = __recolorTank(tank, playerColors[str(column)])
+                        image = __stitchTiles(image, tank)
+                    except KeyError:
+                        (width1, height1) = tile.size
+                        temp = Image.new("RGB", (width1, height1))
+                        image = __stitchTiles(image, temp)
             else:
                 if column == 0:
                     image = tile
@@ -32,6 +38,18 @@ def constructImage(board):
 
     completeImage = __rescaleImage(completeImage)
     return completeImage
+
+
+def __recolorTank(image, rgbColor):
+    newImageData = []
+    for color in image.getdata():
+        if color == (0, 0, 0, 255):
+            newImageData.append((rgbColor[0], rgbColor[1], rgbColor[2], 255))
+        else:
+            newImageData.append(color)
+    newImage = Image.new(image.mode, image.size)
+    newImage.putdata(newImageData)
+    return newImage
 
 
 def __stitchTiles(image1, image2):
