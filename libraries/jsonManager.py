@@ -1,11 +1,14 @@
 import json
+import os
 
-from CustomIndentEncoder import NoIndent, MyEncoder
+import cmapy
+import random
+
+from libraries.CustomIndentEncoder import NoIndent, MyEncoder
 
 
 def createGame(message):
-    players = {}
-    data = __readJson()
+    data = readJson()
     # These are redundancy checks to ensure no data corruption
     if 'games' not in data:
         data = {'games': {}}
@@ -31,7 +34,7 @@ def createGame(message):
 
 
 def addPlayerToGame(message, playerNumber):
-    data = __readJson()
+    data = readJson()
     newPlayerData = {
         message.author.id: {
             'playerNumber': playerNumber,
@@ -52,7 +55,7 @@ def addPlayerToGame(message, playerNumber):
 
 
 def removePlayerFromGame(message, playerNumber):
-    data = __readJson()
+    data = readJson()
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
     for player in playersList:
         if player == str(message.author.id):
@@ -70,7 +73,7 @@ def removePlayerFromGame(message, playerNumber):
 
 
 def getNumberOfPlayersInGame(message):
-    data = __readJson()
+    data = readJson()
     numberOfPlayers = 0
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
     for player in playersList:
@@ -79,41 +82,84 @@ def getNumberOfPlayersInGame(message):
 
 
 def checkIfGameIsInChannel(message):
-    data = __readJson()
+    data = readJson()
     try:
         gameState = data['games'][str(message.guild.id)][str(message.channel.id)]['gameStatus']
         return gameState
     except:
         return 'none'
 
+
 def saveBoard(message, board):
-    data = __readJson()
+    data = readJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
+    data = __formatBoardJson(str(message.guild.id), (str(message.channel.id)), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+        json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
 
 def getBoard(message):
-    data = __readJson()
+    data = readJson()
     return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
 
+
 def updateStatus(message):
-    data = __readJson()
+    data = readJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['gameStatus'] = 'active'
+    numberOfPlayers = getNumberOfPlayersInGame(message)
+    playerColors = {'playerColors': {}}
+    for player in range(numberOfPlayers):
+        rgb_color = cmapy.color('plasma', random.randrange(0, 256, 10), rgb_order=True)
+        playerColors['playerColors'][str(player+1)] = NoIndent(rgb_color)
+    data['games'][str(message.guild.id)][str(message.channel.id)].update(playerColors)
     data = __formatBoardJson(str(message.guild.id), str(message.channel.id), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
+def updatePlayerRange(message, data):
+    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] = (
+            int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                    'actions']) - 1)
+    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['range'] = (
+            int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                    'range']) + 1)
+    with open('Games.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+    return data
+
+
+def clearAllData():
+    data = {}
+    with open('Games.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+    print('admin cleared board')
+
+
+def initialize():
+    if os.path.exists('Games.json'):
+        print('Games file located, initializing...')
+    else:
+        print('Games file not located, generating now...')
+        with open('Games.json', 'w') as f:
+            f.write('{}')
+
+def readJson():
+    file = open('Games.json', )
+    data = json.load(file)
+    file.close()
+    return data
+
+
 def __formatBoardJson(guildID, channelID, data):
     formatData = data['games'][guildID][channelID]['board']
+    try:
+        formatData = formatData['data']
+    except:
+        pass
+
     formatData = {
         'data': [NoIndent(elem) for elem in formatData]
     }
     data['games'][guildID][channelID]['board'] = formatData
-    return data
-
-def __readJson():
-    file = open('Games.json', )
-    data = json.load(file)
-    file.close()
     return data
