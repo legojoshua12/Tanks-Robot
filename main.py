@@ -126,6 +126,8 @@ async def on_message(message):
                     await commands.increaseRange(message, jsonManager.readJson())
                 elif action == 'move':
                     await commands.move(message, jsonManager.readJson(), command)
+                elif action == 'shoot':
+                    await commands.shoot(message, jsonManager.readJson(), command)
 
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)
