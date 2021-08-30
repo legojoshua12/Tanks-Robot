@@ -14,7 +14,6 @@ def constructImage(board, playerColors):
                 if column == 0:
                     image = __stitchTiles(image, tile)
                 else:
-                    # TODO Update this to use a tank image
                     try:
                         tankFileName = 'TankOnBackground.png'
                         tank = Image.open('textures/' + tankFileName)
@@ -28,9 +27,13 @@ def constructImage(board, playerColors):
                 if column == 0:
                     image = tile
                 else:
-                    # TODO Update this to use a tank image
-                    (width1, height1) = tile.size
-                    image = Image.new("RGB", (width1, height1))
+                    try:
+                        tankFileName = 'TankOnBackground.png'
+                        tank = Image.open('textures/' + tankFileName)
+                        image = __recolorTank(tank, playerColors[str(column)])
+                    except KeyError:
+                        (width1, height1) = tile.size
+                        image = Image.new("RGB", (width1, height1))
         if completeImage is None:
             completeImage = image
         else:

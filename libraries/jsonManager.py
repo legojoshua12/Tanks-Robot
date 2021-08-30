@@ -98,6 +98,14 @@ def saveBoard(message, board):
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
+def savePlayer(message, userId, playerInfo):
+    data = readJson()
+    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(userId)] = playerInfo
+    data = __formatBoardJson(str(message.guild.id), (str(message.channel.id)), data)
+    with open('Games.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+
 def getBoard(message):
     data = readJson()
     return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
