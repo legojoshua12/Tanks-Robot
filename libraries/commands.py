@@ -191,6 +191,10 @@ async def move(message, data, command):
     board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
     playerNumber = str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                            'playerNumber'])
+    newPlayerStats = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
+    if newPlayerStats['actions'] <= 0:
+        await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
+        return
     for i in range(len(board)):
         for j in range(len(board[i])):
             if str(board[i][j]) == playerNumber:
@@ -211,6 +215,8 @@ async def move(message, data, command):
                                                                                   str(message.channel.id)][
                                                                                   'playerColors']),
                                        ('You have moved north 1 tile ' + message.author.mention + '!'))
+                    newPlayerStats['actions'] = int(newPlayerStats['actions']) - 1
+                    jsonManager.savePlayer(message, message.author.id, newPlayerStats)
                     return
                 elif splitCommand[1] == 'south':
                     if i <= 0:
@@ -229,6 +235,8 @@ async def move(message, data, command):
                                                                                   str(message.channel.id)][
                                                                                   'playerColors']),
                                        ('You have moved south 1 tile ' + message.author.mention + '!'))
+                    newPlayerStats['actions'] = int(newPlayerStats['actions']) - 1
+                    jsonManager.savePlayer(message, message.author.id, newPlayerStats)
                     return
                 elif splitCommand[1] == 'east':
                     if j >= (len(board[i]) - 1):
@@ -247,6 +255,8 @@ async def move(message, data, command):
                                                                                   str(message.channel.id)][
                                                                                   'playerColors']),
                                        ('You have moved east 1 tile ' + message.author.mention + '!'))
+                    newPlayerStats['actions'] = int(newPlayerStats['actions']) - 1
+                    jsonManager.savePlayer(message, message.author.id, newPlayerStats)
                     return
                 elif splitCommand[1] == 'west':
                     if j <= 0:
@@ -265,6 +275,8 @@ async def move(message, data, command):
                                                                                   str(message.channel.id)][
                                                                                   'playerColors']),
                                        ('You have moved west 1 tile ' + message.author.mention + '!'))
+                    newPlayerStats['actions'] = int(newPlayerStats['actions']) - 1
+                    jsonManager.savePlayer(message, message.author.id, newPlayerStats)
                     return
                 elif splitCommand[1] == 'weast':
                     await message.channel.send(
