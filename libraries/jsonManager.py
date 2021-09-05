@@ -74,7 +74,16 @@ def removePlayerFromGame(message, playerNumber):
     return 'playerNotPresent'
 
 
+def killPlayer(data):
+    print('hello there')
+
+
 def getNumberOfPlayersInGame(message):
+    """
+    This gives back an int of the number of players in a game at a given moment
+    :param message: Used to determine which game you want information on
+    :return:
+    """
     data = readJson()
     numberOfPlayers = 0
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
