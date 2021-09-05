@@ -64,22 +64,27 @@ async def handleMessage(message, client, commandMessageStarter):
                     if 5 <= numberOfPlayers <= 20:
                         booted = False
                         try:
-                            print('test1')
                             boardData = bC.constructBoardData(numberOfPlayers)
-                            print('test2')
                             boardData = bC.populateBoard(boardData, numberOfPlayers)
-                            print('test3')
                             jsonManager.saveBoard(message, boardData)
-                            print('test4')
                             jsonManager.updateStatus(message)
-                            print('test5')
                             booted = True
                         except:
                             await message.channel.send('Error! Could not start game!')
                         if booted:
                             board = jsonManager.getBoard(message)
                             renderedBoard = renderPipeline.constructImage(board, jsonManager.readJson()['games'][str(message.guild.id)][str(message.channel.id)]['playerColors'])
-                            await message.channel.send('Welcome to tanks!')
+                            data = jsonManager.readJson()
+                            data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+                            mentionString = 'Welcome to tanks '
+                            index = 0
+                            for player in data:
+                                if index == (len(data) - 1):
+                                    mentionString += (await client.fetch_user(player)).mention + '!'
+                                else:
+                                    index += 1
+                                    mentionString += (await client.fetch_user(player)).mention + ', '
+                            await message.channel.send(mentionString)
                             await commands.displayBoard(message, renderedBoard)
                     else:
                         if numberOfPlayers <= 4:

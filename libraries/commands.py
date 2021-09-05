@@ -295,17 +295,37 @@ async def shoot(message, data, command, client):
         return
     elif len(splitCommand) > 2:
         await message.channel.send(
-            'Invalid information provided for where to shoot ' + message.author.mention + '! Please specify a tile, player, or a direction to shoot.')
+            'Invalid information provided for where to shoot ' + message.author.mention + '! Please specify a tile, '
+                                                                                          'player, or a direction to '
+                                                                                          'shoot.')
         return
 
     board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
     playerNumber = str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                            'playerNumber'])
+    if data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                           'actions'] <= 0:
+        await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
+        return
     if splitCommand[1] == str(playerNumber):
         # Reason we don't say shoot yourself here is that is not something everyone can handle hearing,
         # so we say you cannot shoot your own player instead
         await message.channel.send('You cannot shoot your own player ' + message.author.mention + '!')
         return
+    try:
+        specifiedNumber = int(splitCommand[1])
+        if specifiedNumber > len(data['games'][str(message.guild.id)][str(message.channel.id)]['players']) or specifiedNumber <= 0:
+            await message.channel.send('The player number of ' + str(specifiedNumber) + ' does not exist ' + message.author.mention + '.')
+            return
+    except ValueError:
+        if str(splitCommand[1][:3]) == '<@!':
+            try:
+                splitCommand[1] = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str((splitCommand[1][3:])[:-1])]['playerNumber']
+            except KeyError:
+                await message.channel.send('That player is not currently in the game ' + message.author.mention + '!')
+                return
+        else:
+            return
     if isPlayerInRange(board, str(
             data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                 'range']), str(playerNumber), str(splitCommand[1])):
@@ -314,7 +334,8 @@ async def shoot(message, data, command, client):
                        'playerNumber']) == str(splitCommand[1]):
                 # TODO finish up shooting players
                 # Remove a life from an enemy
-                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] -= 1
+                lives = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] - 1
+                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] = lives
                 # Remove an action from the attacker
                 data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                     'actions'] -= 1
@@ -323,7 +344,12 @@ async def shoot(message, data, command, client):
                     'hits'] += 1
                 jsonManager.saveData(message, data)
                 user = await client.fetch_user(player)
-                await message.channel.send('Player ' + user.mention + ' has been shot!')
+                if lives > 0:
+                    await message.channel.send(
+                        'Player ' + user.mention + ' has been shot! They now have ' + str(lives) + '\u2665 lives left.')
+                else:
+                    jsonManager.killPlayer(data)
+                    await message.channel.send(user.mention + ' is now dead! They have 0\u2665 lives left!')
                 break
     else:
         await message.channel.send(
@@ -397,7 +423,6 @@ def addPlayercardFields(colorInfo, user, playerNumber, lives, actions, range, hi
     embed.add_field(name='Health', value='\u2665 ' + str(lives), inline=True)
     embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
     embed.add_field(name='Range', value='\U0001F3AF ' + str(range), inline=True)
-    # TODO have actual values here
     embed.add_field(name='Hits', value='\U0001F4A5 ' + str(hits), inline=True)
     embed.add_field(name='Times Moved', value='\U0001F4A8 ' + str(moves), inline=True)
     return embed
