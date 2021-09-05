@@ -9,7 +9,7 @@ import asyncio
 
 from dotenv import load_dotenv
 
-from libraries import configUtils, jsonManager, messageHandler
+from libraries import configUtils, jsonManager, messageHandler, commands
 
 # This is a clean windows shutdown procedure as to not throw memory heap errors
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith('win'):
@@ -18,10 +18,9 @@ if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.starts
 # Setup .env for instancing
 if os.path.exists('.env'):
     print('Env file located, initializing...')
-    try:
-        load_dotenv()
-        TOKEN = os.getenv('DISCORD_TOKEN')
-    except:
+    load_dotenv()
+    TOKEN = os.getenv('DISCORD_TOKEN')
+    if TOKEN is None:
         print('DISCORD_TOKEN is not set, please set one first before continuing')
         exit()
 else:
@@ -66,8 +65,6 @@ async def on_reaction_add(reaction, user):
         elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
             await commands.flipThroughPlayerStatsCard(reaction.message, data, -1, client)
 
-
-# Start the queue which will process any message on the queue over time in a FIFO pattern
 
 async def handleQueue():
     while True:

@@ -215,7 +215,8 @@ async def move(message, data, command):
                                                                                   str(message.channel.id)][
                                                                                   'playerColors']),
                                        ('You have moved north 1 tile ' + message.author.mention + '!'))
-                    newPlayerStats['actions'] = int(newPlayerStats['actions']) - 1
+                    newPlayerStats['actions'] -= 1
+                    newPlayerStats['moves'] += 1
                     jsonManager.savePlayer(message, message.author.id, newPlayerStats)
                     return
                 elif splitCommand[1] == 'south':
@@ -235,7 +236,8 @@ async def move(message, data, command):
                                                                                   str(message.channel.id)][
                                                                                   'playerColors']),
                                        ('You have moved south 1 tile ' + message.author.mention + '!'))
-                    newPlayerStats['actions'] = int(newPlayerStats['actions']) - 1
+                    newPlayerStats['actions'] -= 1
+                    newPlayerStats['moves'] += 1
                     jsonManager.savePlayer(message, message.author.id, newPlayerStats)
                     return
                 elif splitCommand[1] == 'east':
@@ -255,7 +257,8 @@ async def move(message, data, command):
                                                                                   str(message.channel.id)][
                                                                                   'playerColors']),
                                        ('You have moved east 1 tile ' + message.author.mention + '!'))
-                    newPlayerStats['actions'] = int(newPlayerStats['actions']) - 1
+                    newPlayerStats['actions'] -= 1
+                    newPlayerStats['moves'] += 1
                     jsonManager.savePlayer(message, message.author.id, newPlayerStats)
                     return
                 elif splitCommand[1] == 'west':
@@ -275,7 +278,8 @@ async def move(message, data, command):
                                                                                   str(message.channel.id)][
                                                                                   'playerColors']),
                                        ('You have moved west 1 tile ' + message.author.mention + '!'))
-                    newPlayerStats['actions'] = int(newPlayerStats['actions']) - 1
+                    newPlayerStats['actions'] -= 1
+                    newPlayerStats['moves'] += 1
                     jsonManager.savePlayer(message, message.author.id, newPlayerStats)
                     return
                 elif splitCommand[1] == 'weast':
@@ -283,7 +287,7 @@ async def move(message, data, command):
                         'I am sorry ' + message.author.mention + ', but you do not have the power to move weast.')
 
 
-async def shoot(message, data, command):
+async def shoot(message, data, command, client):
     splitCommand = command.split(' ')
     if len(splitCommand) == 1:
         await message.channel.send(
@@ -309,9 +313,17 @@ async def shoot(message, data, command):
             if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player][
                        'playerNumber']) == str(splitCommand[1]):
                 # TODO finish up shooting players
-                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] = \
-                    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] - 1
-                await message.channel.send('Player x has been shot!')
+                # Remove a life from an enemy
+                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] -= 1
+                # Remove an action from the attacker
+                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                    'actions'] -= 1
+                # Add a hit to the attacker's record
+                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                    'hits'] += 1
+                jsonManager.saveData(message, data)
+                user = await client.fetch_user(player)
+                await message.channel.send('Player ' + user.mention + ' has been shot!')
                 break
     else:
         await message.channel.send(
@@ -345,7 +357,8 @@ async def showPlayerStatistics(message, data, client):
     colorInfo = data['playerColors'][str(data['players'][str(key)]['playerNumber'])]
     embed = addPlayercardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
                                 data['players'][str(key)]['lives'],
-                                data['players'][str(key)]['actions'], data['players'][str(key)]['range'])
+                                data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
+                                data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
     msg = await message.channel.send(embed=embed)
 
     await msg.add_reaction("\u2B05")
@@ -368,11 +381,12 @@ async def flipThroughPlayerStatsCard(message, data, direction, client):
     colorInfo = data['playerColors'][playerIndex]
     embed = addPlayercardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
                                 data['players'][str(key)]['lives'],
-                                data['players'][str(key)]['actions'], data['players'][str(key)]['range'])
+                                data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
+                                data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
     await message.edit(embed=embed)
 
 
-def addPlayercardFields(colorInfo, user, playerNumber, lives, actions, range):
+def addPlayercardFields(colorInfo, user, playerNumber, lives, actions, range, hits, moves):
     embedColor = int('0x' + str('%02x%02x%02x' % (colorInfo[0], colorInfo[1], colorInfo[2])).upper(), 16)
     embed = discord.Embed(title=str(user)[:-5] + ' Statistics',
                           description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
@@ -384,8 +398,8 @@ def addPlayercardFields(colorInfo, user, playerNumber, lives, actions, range):
     embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
     embed.add_field(name='Range', value='\U0001F3AF ' + str(range), inline=True)
     # TODO have actual values here
-    embed.add_field(name='Hits', value='\U0001F4A5 ' + str('0'), inline=True)
-    embed.add_field(name='Times Moved', value='\U0001F4A8 ' + str('0'), inline=True)
+    embed.add_field(name='Hits', value='\U0001F4A5 ' + str(hits), inline=True)
+    embed.add_field(name='Times Moved', value='\U0001F4A8 ' + str(moves), inline=True)
     return embed
 
 
