@@ -1,7 +1,8 @@
 """This is the main loader for the robot, handling any and all incoming commands off of the command queue"""
 import discord
 
-from libraries import jsonManager, renderPipeline, commands, boardConstructor
+from libraries import boardConstructor as bC
+from libraries import jsonManager, renderPipeline, commands
 
 
 async def handleMessage(message, client, commandMessageStarter):
@@ -63,10 +64,15 @@ async def handleMessage(message, client, commandMessageStarter):
                     if 5 <= numberOfPlayers <= 20:
                         booted = False
                         try:
+                            print('test1')
                             boardData = bC.constructBoardData(numberOfPlayers)
+                            print('test2')
                             boardData = bC.populateBoard(boardData, numberOfPlayers)
+                            print('test3')
                             jsonManager.saveBoard(message, boardData)
+                            print('test4')
                             jsonManager.updateStatus(message)
+                            print('test5')
                             booted = True
                         except:
                             await message.channel.send('Error! Could not start game!')
@@ -93,7 +99,7 @@ async def handleMessage(message, client, commandMessageStarter):
                 elif action == 'move':
                     await commands.move(message, jsonManager.readJson(), command)
                 elif action == 'shoot':
-                    await commands.shoot(message, jsonManager.readJson(), command)
+                    await commands.shoot(message, jsonManager.readJson(), command, client)
 
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)
