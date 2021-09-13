@@ -40,7 +40,9 @@ def addPlayerToGame(message, playerNumber):
             'playerNumber': playerNumber,
             'lives': 3,
             'actions': 0,
-            'range': 1
+            'range': 1,
+            'hits': 0,
+            'moves': 0
         }
     }
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
@@ -72,7 +74,23 @@ def removePlayerFromGame(message, playerNumber):
     return 'playerNotPresent'
 
 
+async def killPlayer(message, playerNumber, user):
+    data = readJson()
+    board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if int(playerNumber) == board[i][j]:
+                board[i][j] = 0
+    saveBoard(message, board)
+    await message.channel.send(user.mention + ' is now dead! They have 0\u2665 lives left!')
+
+
 def getNumberOfPlayersInGame(message):
+    """
+    This gives back an int of the number of players in a game at a given moment
+    :param message: Used to determine which game you want information on
+    :return:
+    """
     data = readJson()
     numberOfPlayers = 0
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
@@ -93,6 +111,20 @@ def checkIfGameIsInChannel(message):
 def saveBoard(message, board):
     data = readJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
+    data = __formatBoardJson(str(message.guild.id), (str(message.channel.id)), data)
+    with open('Games.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+
+def savePlayer(message, userId, playerInfo):
+    data = readJson()
+    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(userId)] = playerInfo
+    data = __formatBoardJson(str(message.guild.id), (str(message.channel.id)), data)
+    with open('Games.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+
+def saveData(message, data):
     data = __formatBoardJson(str(message.guild.id), (str(message.channel.id)), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
