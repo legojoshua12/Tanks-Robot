@@ -131,6 +131,12 @@ async def sendLobbyHelpMenu(message):
 
 
 async def public_commands_game(message, command):
+    data = jsonManager.readJson()
+    try:
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
+    except KeyError:
+        await message.channel.send('You are not playing in this game ' + message.author.mention + '!')
+        return
     commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
     embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
@@ -159,9 +165,17 @@ async def public_commands_game(message, command):
     elif command == 'increase range':
         return command
     elif command[0:5] == 'move ' or (len(command) == 4 and command == 'move'):
-        return 'move'
+        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['lives']) == str(0):
+            await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
+            return
+        else:
+            return 'move'
     elif command[0:6] == 'shoot ' or (len(command) == 5 and command == 'shoot'):
-        return 'shoot'
+        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['lives']) == str(0):
+            await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
+            return
+        else:
+            return 'shoot'
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
@@ -285,6 +299,9 @@ async def move(message, data, command):
                 elif splitCommand[1] == 'weast':
                     await message.channel.send(
                         'I am sorry ' + message.author.mention + ', but you do not have the power to move weast.')
+                else:
+                    await message.channel.send('\'' + splitCommand[1] + '\' is not an ordinal direction or a '
+                                                                        'coordinate ' + message.author.mention + '!')
 
 
 async def shoot(message, data, command, client):
@@ -348,8 +365,7 @@ async def shoot(message, data, command, client):
                     await message.channel.send(
                         'Player ' + user.mention + ' has been shot! They now have ' + str(lives) + '\u2665 lives left.')
                 else:
-                    jsonManager.killPlayer(data)
-                    await message.channel.send(user.mention + ' is now dead! They have 0\u2665 lives left!')
+                    await jsonManager.killPlayer(message, str(splitCommand[1]), user)
                 break
     else:
         await message.channel.send(

@@ -74,8 +74,15 @@ def removePlayerFromGame(message, playerNumber):
     return 'playerNotPresent'
 
 
-def killPlayer(data):
-    print('hello there')
+async def killPlayer(message, playerNumber, user):
+    data = readJson()
+    board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if int(playerNumber) == board[i][j]:
+                board[i][j] = 0
+    saveBoard(message, board)
+    await message.channel.send(user.mention + ' is now dead! They have 0\u2665 lives left!')
 
 
 def getNumberOfPlayersInGame(message):
