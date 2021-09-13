@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 import libraries.configUtils as configUtils
 
@@ -14,10 +14,10 @@ def constructImage(board, playerColors):
                 if column == 0:
                     image = __stitchTiles(image, tile)
                 else:
-                    # TODO Update this to use a tank image
                     try:
                         tankFileName = 'TankOnBackground.png'
                         tank = Image.open('textures/' + tankFileName)
+                        tank = __addTankNumber(tank, column)
                         tank = __recolorTank(tank, playerColors[str(column)])
                         image = __stitchTiles(image, tank)
                     except KeyError:
@@ -28,9 +28,14 @@ def constructImage(board, playerColors):
                 if column == 0:
                     image = tile
                 else:
-                    # TODO Update this to use a tank image
-                    (width1, height1) = tile.size
-                    image = Image.new("RGB", (width1, height1))
+                    try:
+                        tankFileName = 'TankOnBackground.png'
+                        tank = Image.open('textures/' + tankFileName)
+                        tank = __addTankNumber(tank, column)
+                        image = __recolorTank(tank, playerColors[str(column)])
+                    except KeyError:
+                        (width1, height1) = tile.size
+                        image = Image.new("RGB", (width1, height1))
         if completeImage is None:
             completeImage = image
         else:
@@ -38,6 +43,20 @@ def constructImage(board, playerColors):
 
     completeImage = __rescaleImage(completeImage)
     return completeImage
+
+
+def __addTankNumber(image, tankNumber):
+    img = Image.new('RGBA', (10, 10), (255, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    draw.text((0, 0), str(tankNumber))
+    img.resize((200, 200))
+    image.paste(img, (image.size[0] - 20, image.size[1] - 20))
+    if str(tankNumber) == '1':
+        img.show()
+        img.resize((500, 500))
+        img.show()
+        image.show()
+    return image
 
 
 def __recolorTank(image, rgbColor):
