@@ -39,6 +39,9 @@ messageQueue = Queue(maxsize=0)
 
 @client.event
 async def on_ready():
+    """
+    Runs when the robot has connected to discord and begin setup of status and queue handler
+    """
     print(f'{client.user} has connected to Discord!')
     asyncio.get_event_loop().create_task(handleQueue())
     await client.change_presence(activity=discord.Game(name='Tanks'),
@@ -47,6 +50,9 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    """
+    Runs on any message sent that the robot can see, then it takes that message and sends it to the queue
+    """
     # So the bot doesn't talk to itself
     if message.author == client.user:
         return
@@ -55,6 +61,9 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
+    """
+    Runs whenever a reaction is added to a message sent by this robot, then handles it with the correct action
+    """
     if (reaction.message.author != client.user) or (user == client.user):
         return
     if len(reaction.message.embeds) > 0:
@@ -67,6 +76,10 @@ async def on_reaction_add(reaction, user):
 
 
 async def handleQueue():
+    """
+    Takes items off of the queue and sends the message to the processor. Once it has been fully handled, it will grab
+    the next message in the queue
+    """
     while True:
         if messageQueue.qsize() > 0:
             await messageHandler.handleMessage(messageQueue.get(), client, commandMessageStarter)
