@@ -42,7 +42,9 @@ def addPlayerToGame(message, playerNumber):
             'actions': 0,
             'range': 1,
             'hits': 0,
-            'moves': 0
+            'moves': 0,
+            'votes': 0,
+            'remainingVotes': 0
         }
     }
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
