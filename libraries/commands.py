@@ -116,7 +116,7 @@ async def public_commands_lobby(message, command):
         return command
     elif command == 'start':
         return command
-    # Rest of these are for concurrency sake with the rest of the bot commands
+    # Rest of these are for concurrency’s sake with the rest of the bot commands
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
@@ -157,22 +157,7 @@ async def public_commands_game(message, command):
     commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
     embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
-        embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
-                                                                     "reference! Simply type one of these to get "
-                                                                     "started.",
-                              color=embedColor)
-        embed.add_field(name=f'{commandPrefix}help', value="Gives a list of commands", inline=False)
-        embed.add_field(name=f'{commandPrefix}rules', value="Gives the game rules and how to play", inline=False)
-        embed.add_field(name=f'{commandPrefix}dm', value="Sends a direct message for privacy", inline=False)
-        embed.add_field(name=f'{commandPrefix}board', value="Shows the board of the current game", inline=False)
-        embed.add_field(name=f'{commandPrefix}players', value="Shows the players of the game and their accompanying "
-                                                              "statistics", inline=False)
-        embed.add_field(name=f'{commandPrefix}increase range', value="Spends 1 action point to increase your range",
-                        inline=False)
-        embed.add_field(name=f'{commandPrefix}move',
-                        value="Spends 1 action point to 1 space north, south, west, or east",
-                        inline=False)
-        await message.channel.send(embed=embed)
+        await ingame_help_embed(message, embedColor, commandPrefix)
     elif command == 'rules':
         embed = makeRulesEmbed(embedColor)
         await message.channel.send(embed=embed)
@@ -230,6 +215,25 @@ async def public_commands_game(message, command):
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
+
+
+async def ingame_help_embed(message, embedColor, commandPrefix):
+    embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
+                                                                 "reference! Simply type one of these to get "
+                                                                 "started.",
+                          color=embedColor)
+    embed.add_field(name=f'{commandPrefix}help', value="Gives a list of commands", inline=False)
+    embed.add_field(name=f'{commandPrefix}rules', value="Gives the game rules and how to play", inline=False)
+    embed.add_field(name=f'{commandPrefix}dm', value="Sends a direct message for privacy", inline=False)
+    embed.add_field(name=f'{commandPrefix}board', value="Shows the board of the current game", inline=False)
+    embed.add_field(name=f'{commandPrefix}players', value="Shows the players of the game and their accompanying "
+                                                          "statistics", inline=False)
+    embed.add_field(name=f'{commandPrefix}increase range', value="Spends 1 action point to increase your range",
+                    inline=False)
+    embed.add_field(name=f'{commandPrefix}move',
+                    value="Spends 1 action point to 1 space north, south, west, or east",
+                    inline=False)
+    await message.channel.send(embed=embed)
 
 
 async def increaseRange(message, data):
@@ -444,7 +448,42 @@ def isPlayerInRange(board, playerRange, attacker, defense):
 
 # TODO
 async def voteAction(message, data, command, client):
-    print(command[6:])
+    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    playerNumber = 0
+    if command[5:8] != '<@!':
+        try:
+            int(command[5:])
+        except ValueError:
+            await message.channel.send('*'+ str(command[5:]) + '* is not a player ' + message.author.mention + '!')
+            return
+        playerNumber = int(command[5:])
+    else:
+        userID = command[8:(len(command)-1)]
+        playerNumber = int(data['players'][str(userID)]['playerNumber'])
+
+    # Prevents the edge case of player number not being assigned
+    if playerNumber == 0:
+        await message.channel.send('Internal error processing request *playerNumber*')
+        return
+
+    # Prevents a player from voting for themselves
+    if int(data['players'][str(message.author.id)]['playerNumber']) == playerNumber:
+        await message.channel.send('You may not vote for yourself ' + message.author.mention + '!')
+        return
+
+    # Prevents a player from voting if they have no more votes today remaining
+    if int(data['players'][str(message.author.id)]['remainingVotes']) <= 0:
+        await message.channel.send('You have no more remaining votes today ' + message.author.mention + '!')
+        return
+
+    data['players'][str(message.author.id)]['remainingVotes'] = int(data['players'][str(message.author.id)]
+                                                                    ['remainingVotes']) - 1
+    jsonManager.savePlayer(message, message.author.id, data['players'][str(message.author.id)])
+    for player in data['players']:
+        if int(data['players'][player]['playerNumber']) == playerNumber:
+            data['players'][player]['votes'] = int(data['players'][player]['votes']) + 1
+            jsonManager.savePlayer(message, message.author.id, data['players'][player])
+            break
 
 
 async def listPlayersLobby(message, data, client):
