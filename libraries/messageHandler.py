@@ -63,6 +63,8 @@ async def handleMessage(message, client, commandMessageStarter):
                         await message.channel.send(message.author.mention + f' left the game. {sadEmoji}')
                 elif action == 'help':
                     await commands.sendLobbyHelpMenu(message)
+                elif action == 'dm':
+                    await commands.send_dm_starter(message)
                 elif action == 'players':
                     data = jsonManager.readJson()
                     await commands.listPlayersLobby(message, data, client)
@@ -109,6 +111,8 @@ async def handleMessage(message, client, commandMessageStarter):
                     await commands.displayBoard(message, renderedBoard)
                 elif action == 'players':
                     await commands.showPlayerStatistics(message, jsonManager.readJson(), client)
+                elif action == 'dm':
+                    await commands.send_dm_starter(message)
                 elif action == 'increase range':
                     await commands.increaseRange(message, jsonManager.readJson())
                 elif action == 'move':
