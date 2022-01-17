@@ -2,9 +2,12 @@
 import sys
 import asyncio
 import os
+import time
+from datetime import datetime, timezone
 from queue import Queue
 
 import discord
+import schedule
 import asyncio
 
 from dotenv import load_dotenv
@@ -43,7 +46,14 @@ async def on_ready():
     Runs when the robot has connected to discord and begin setup of status and queue handler
     """
     print(f'{client.user} has connected to Discord!')
+    # First set up a coroutine for handling jobs
     asyncio.get_event_loop().create_task(handleQueue())
+    # Add a schedule for daily upkeep
+    upkeepTime = str(configUtils.readValue('gameSettings', 'dailyUpkeepTime'))
+    schedule.every().day.at(upkeepTime).do(dailyActionsAndVoteUpkeep)
+    # Run a coroutine for checking the schedule
+    asyncio.get_event_loop().create_task(checkTime())
+    # Set discord presence
     await client.change_presence(activity=discord.Game(name='Tanks'),
                                  status=discord.Status.online, afk=False)
 
@@ -86,6 +96,24 @@ async def handleQueue():
         # This is a delay to slow down the processing speed of the queue if it is too processor intensive
         # Param is in seconds
         await asyncio.sleep(0)
+
+
+async def checkTime():
+    """
+    Checks for the current system time and if it is daily upkeep for the games to gain an action
+    """
+    while True:
+        schedule.run_pending()
+        await asyncio.sleep(1)
+
+
+def dailyActionsAndVoteUpkeep():
+    """
+    Performs the daily action giving and vote tally
+    """
+    print("It is now 12:00pm and I announced that to the world!")
+    return
+
 
 # Start main program and connect to discord
 print('Connecting to discord...')
