@@ -417,7 +417,7 @@ async def shoot(message, data, command, client):
                 # Add a hit to the attacker's record
                 data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                     'hits'] += 1
-                jsonManager.saveData(message, data)
+                jsonManager.saveData(data)
                 user = await client.fetch_user(player)
                 if lives > 0:
                     await message.channel.send(
