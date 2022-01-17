@@ -52,7 +52,7 @@ async def on_ready():
     upkeepTime = str(configUtils.readValue('gameSettings', 'dailyUpkeepTime'))
     schedule.every().day.at(upkeepTime).do(dailyActionsAndVoteUpkeep)
     # Run a coroutine for checking the schedule
-    asyncio.get_event_loop().create_task(checkTime())
+    asyncio.get_event_loop().create_task(checkScheduleTime())
     # Set discord presence
     await client.change_presence(activity=discord.Game(name='Tanks'),
                                  status=discord.Status.online, afk=False)
@@ -98,7 +98,7 @@ async def handleQueue():
         await asyncio.sleep(0)
 
 
-async def checkTime():
+async def checkScheduleTime():
     """
     Checks for the current system time and if it is daily upkeep for the games to gain an action
     """
@@ -111,10 +111,29 @@ def dailyActionsAndVoteUpkeep():
     """
     Performs the daily action giving and vote tally
     """
-    print("It is now 12:00pm and I announced that to the world!")
+    data = jsonManager.readJson()
+    try:
+        data = data['games']
+    except KeyError:
+        print("No games running for today's upkeep! Skipping processing")
+        return
+    for server in data:
+        for channel in data[server]:
+            if data[server][channel]['gameStatus'] == "active":
+                for player in data[server][channel]['players']:
+                    if data[server][channel]['players'][player]['lives'] <= 0:
+                        # TODO
+                        print('Do Something')
+                    else:
+                        data[server][channel]['players'][player]['actions'] = (int(data[server][channel]['players']
+                                                                                   [player]['actions']) + 1)
+    newData = {'games': data}
+    jsonManager.saveData(newData)
+    print('Completed Daily Upkeep at: ' + str(datetime.now()))
     return
 
 
 # Start main program and connect to discord
+dailyActionsAndVoteUpkeep()
 print('Connecting to discord...')
 client.run(TOKEN)
