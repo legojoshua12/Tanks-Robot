@@ -2,9 +2,12 @@
 import sys
 import asyncio
 import os
+import time
+from datetime import datetime, timezone
 from queue import Queue
 
 import discord
+import schedule
 import asyncio
 
 from dotenv import load_dotenv
@@ -39,14 +42,27 @@ messageQueue = Queue(maxsize=0)
 
 @client.event
 async def on_ready():
+    """
+    Runs when the robot has connected to discord and begin setup of status and queue handler
+    """
     print(f'{client.user} has connected to Discord!')
+    # First set up a coroutine for handling jobs
     asyncio.get_event_loop().create_task(handleQueue())
+    # Add a schedule for daily upkeep
+    upkeepTime = str(configUtils.readValue('gameSettings', 'dailyUpkeepTime'))
+    schedule.every().day.at(upkeepTime).do(dailyActionsAndVoteUpkeep)
+    # Run a coroutine for checking the schedule
+    asyncio.get_event_loop().create_task(checkScheduleTime())
+    # Set discord presence
     await client.change_presence(activity=discord.Game(name='Tanks'),
                                  status=discord.Status.online, afk=False)
 
 
 @client.event
 async def on_message(message):
+    """
+    Runs on any message sent that the robot can see, then it takes that message and sends it to the queue
+    """
     # So the bot doesn't talk to itself
     if message.author == client.user:
         return
@@ -55,6 +71,9 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
+    """
+    Runs whenever a reaction is added to a message sent by this robot, then handles it with the correct action
+    """
     if (reaction.message.author != client.user) or (user == client.user):
         return
     if len(reaction.message.embeds) > 0:
@@ -67,12 +86,76 @@ async def on_reaction_add(reaction, user):
 
 
 async def handleQueue():
+    """
+    Takes items off of the queue and sends the message to the processor. Once it has been fully handled, it will grab
+    the next message in the queue
+    """
     while True:
         if messageQueue.qsize() > 0:
             await messageHandler.handleMessage(messageQueue.get(), client, commandMessageStarter)
         # This is a delay to slow down the processing speed of the queue if it is too processor intensive
         # Param is in seconds
         await asyncio.sleep(0)
+
+
+async def checkScheduleTime():
+    """
+    Checks for the current system time and if it is daily upkeep for the games to gain an action
+    """
+    while True:
+        schedule.run_pending()
+        await asyncio.sleep(1)
+
+
+def dailyActionsAndVoteUpkeep():
+    """
+    Performs the daily action giving and vote tally
+    """
+    data = jsonManager.readJson()
+    try:
+        data = data['games']
+    except KeyError:
+        print("No games running for today's upkeep! Skipping processing")
+        return
+    for server in data:
+        for channel in data[server]:
+            if data[server][channel]['gameStatus'] == "active":
+                # Here the votes are tallied for the day if they received enough dead votes
+                championPlayer = None
+                champions = 0
+                championVotes = 0
+                for player in data[server][channel]['players']:
+                    if int(data[server][channel]['players'][player]['votes']) > 0:
+                        if champions == 0 and championPlayer is None:
+                            champions = 1
+                            championPlayer = player
+                            championVotes = int(data[server][channel]['players'][player]['votes'])
+                        elif champions == 1:
+                            if int(data[server][channel]['players'][player]['votes']) > championVotes:
+                                championPlayer = player
+                                championVotes = int(data[server][channel]['players'][player]['votes'])
+                            elif int(data[server][channel]['players'][player]['votes']) == championVotes:
+                                champions += 1
+                            else:
+                                data[server][channel]['players'][player]['votes'] = 0
+                        data[server][channel]['players'][player]['votes'] = 0
+                # TODO add messages here in the channel saying if there was a winner, loser, or tie
+                if champions == 1:
+                    data[server][channel]['players'][championPlayer]['actions'] = int(data[server][channel]['players']
+                                                                                      [championPlayer]['actions']) + 1
+
+                # Here each person receives either a vote if they are dead or an action if they are alive
+                for player in data[server][channel]['players']:
+                    if data[server][channel]['players'][player]['lives'] <= 0:
+                        data[server][channel]['players'][player]['remainingVotes'] = 1
+                    else:
+                        data[server][channel]['players'][player]['actions'] = (int(data[server][channel]['players']
+                                                                                   [player]['actions']) + 1)
+    newData = {'games': data}
+    jsonManager.saveData(newData)
+    print('Completed Daily Upkeep at: ' + str(datetime.now()))
+    return
+
 
 # Start main program and connect to discord
 print('Connecting to discord...')

@@ -21,19 +21,24 @@ async def handleMessage(message, client, commandMessageStarter):
             jsonManager.clearAllData()
 
         if message.content.startswith(commandMessageStarter):
-            # First we check to make sure someone isn't doing something in italics
             # Check to make sure this is inline with config.ini
-            # TODO change this to be more robust for later
-            stars = 0
-            for c in message.content:
-                if c == '*':
-                    stars = stars + 1
-            if stars == 2:
+            if commandMessageStarter[0] == '*':
+                # Only check for star if there is one, otherwise no need to do an italics check
+                stars = 0
+                for c in message.content:
+                    if c == '*':
+                        stars = stars + 1
+                if stars >= 2:
+                    return
+
+            # Don't say anything, there was no command and only the prefix given
+            if len(message.content) == len(commandMessageStarter) or message.content[len(commandMessageStarter):].isspace():
+                await message.channel.send(message.author.mention + ' No input command. Please use `*/help` to view a '
+                                                                    'list of commands and options.')
                 return
 
-            # Here is a slicer of the message to make an easy reference
-            # TODO Make it dynamic in length
-            command = message.content[2:].lower()
+            # A slicer of the message to make an easy reference
+            command = message.content[len(commandMessageStarter):].lower()
 
             # Commands
             # Check if there is a game going
@@ -56,6 +61,13 @@ async def handleMessage(message, client, commandMessageStarter):
                     else:
                         sadEmoji = '\U0001F622'
                         await message.channel.send(message.author.mention + f' left the game. {sadEmoji}')
+                elif action == 'help':
+                    await commands.sendLobbyHelpMenu(message)
+                elif action == 'dm':
+                    await commands.send_dm_starter(message)
+                elif action == 'players':
+                    data = jsonManager.readJson()
+                    await commands.listPlayersLobby(message, data, client)
                 elif action == 'start':
                     # Here we want to actually boot the game
                     numberOfPlayers = jsonManager.getNumberOfPlayersInGame(message)
@@ -99,12 +111,16 @@ async def handleMessage(message, client, commandMessageStarter):
                     await commands.displayBoard(message, renderedBoard)
                 elif action == 'players':
                     await commands.showPlayerStatistics(message, jsonManager.readJson(), client)
+                elif action == 'dm':
+                    await commands.send_dm_starter(message)
                 elif action == 'increase range':
                     await commands.increaseRange(message, jsonManager.readJson())
                 elif action == 'move':
                     await commands.move(message, jsonManager.readJson(), command)
                 elif action == 'shoot':
                     await commands.shoot(message, jsonManager.readJson(), command, client)
+                elif action == 'vote':
+                    await commands.voteAction(message, jsonManager.readJson(), command, client)
 
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)

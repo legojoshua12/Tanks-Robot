@@ -1,3 +1,4 @@
+"""These are the commands that do actions given to the robot, AKA do the command shoot or do the command move"""
 import io
 import random
 
@@ -82,10 +83,7 @@ async def public_commands_no_game(message, command):
         embed = makeRulesEmbed(embedColor)
         await message.channel.send(embed=embed)
     elif command == 'dm':
-        letterEmoji = '\U00002709'
-        waveEmoji = '\U0001F44B'
-        await message.channel.send(message.author.mention + f' I just sent you a private message! {letterEmoji}')
-        await message.author.send(f"Hey there! {waveEmoji} How can I help you? Use `help` to get started!")
+        await send_dm_starter(message)
     elif command == 'start':
         await message.channel.send('Starting a game...')
         return 'startCommandReceived'
@@ -94,16 +92,31 @@ async def public_commands_no_game(message, command):
                                                             'list of commands and options.')
 
 
+async def send_dm_starter(message):
+    """
+    Sends a direct message to the person who sent the command with a hello from the robot
+    :param message: The message of the command that was sent
+    """
+    letterEmoji = '\U00002709'
+    waveEmoji = '\U0001F44B'
+    await message.channel.send(message.author.mention + f' I just sent you a private message! {letterEmoji}')
+    await message.author.send(f"Hey there! {waveEmoji} How can I help you? Use `help` to get started!")
+
+
 async def public_commands_lobby(message, command):
     if command == 'help':
-        await sendLobbyHelpMenu(message)
+        return command
+    elif command == 'players':
+        return command
+    elif command == 'dm':
+        return command
     elif command == 'join':
         return command
     elif command == 'leave':
         return command
     elif command == 'start':
         return command
-    # Rest of these are for concurrency sake with the rest of the bot commands
+    # Rest of these are for concurrency’s sake with the rest of the bot commands
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
@@ -123,8 +136,12 @@ async def sendLobbyHelpMenu(message):
                     value='That player will be removed from the game and not be in once started. If '
                           'the player who created this lobby leaves then the lobby is ended and anyone '
                           'can recreate a game', inline=False)
+    embed.add_field(name=f'{commandPrefix}players',
+                    value='Lists all players currently in queue to play', inline=False)
     embed.add_field(name=f'{commandPrefix}help',
                     value='Shows this menu again', inline=False)
+    embed.add_field(name=f'{commandPrefix}dm',
+                    value="Sends a direct message for privacy", inline=False)
     embed.add_field(name=f'{commandPrefix}start',
                     value='Will start the game if enough players have joined', inline=False)
     await message.channel.send(embed=embed)
@@ -140,21 +157,7 @@ async def public_commands_game(message, command):
     commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
     embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
-        embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
-                                                                     "reference! Simply type one of these to get "
-                                                                     "started.",
-                              color=embedColor)
-        embed.add_field(name=f'{commandPrefix}help', value="Gives a list of commands", inline=False)
-        embed.add_field(name=f'{commandPrefix}rules', value="Gives the game rules and how to play", inline=False)
-        embed.add_field(name=f'{commandPrefix}board', value="Shows the board of the current game", inline=False)
-        embed.add_field(name=f'{commandPrefix}players', value="Shows the players of the game and their accompanying "
-                                                              "statistics", inline=False)
-        embed.add_field(name=f'{commandPrefix}increase range', value="Spends 1 action point to increase your range",
-                        inline=False)
-        embed.add_field(name=f'{commandPrefix}move',
-                        value="Spends 1 action point to 1 space north, south, west, or east",
-                        inline=False)
-        await message.channel.send(embed=embed)
+        await ingame_help_embed(message, embedColor, commandPrefix)
     elif command == 'rules':
         embed = makeRulesEmbed(embedColor)
         await message.channel.send(embed=embed)
@@ -162,23 +165,75 @@ async def public_commands_game(message, command):
         return command
     elif command == 'players':
         return command
-    elif command == 'increase range':
+    elif command == 'dm':
         return command
+    elif command == 'increase range':
+        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                   'lives']) == str(0):
+            await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
+            return
+        else:
+            return command
     elif command[0:5] == 'move ' or (len(command) == 4 and command == 'move'):
-        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['lives']) == str(0):
+        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                   'lives']) == str(0):
             await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
             return
         else:
             return 'move'
     elif command[0:6] == 'shoot ' or (len(command) == 5 and command == 'shoot'):
-        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['lives']) == str(0):
+        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                   'lives']) == str(0):
             await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
             return
         else:
             return 'shoot'
+    elif command[0:4] == 'vote':
+        if len(command) == 4:
+            if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                       'lives']) == str(0):
+                await message.channel.send('Please specify a player to vote for '
+                                           + message.author.mention + '.')
+                return
+            else:
+                await message.channel.send('Only players with no more lives may vote on an extra action for a player '
+                                           + message.author.mention + '.')
+                return
+        else:
+            if command[0:5] == 'vote ':
+                if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                           'lives']) == str(0):
+                    return 'vote'
+                else:
+                    await message.channel.send(
+                        'Only players with no more lives may vote on an extra action for a player '
+                        + message.author.mention + '.')
+                    return
+            else:
+                # TODO pass to next if
+                pass
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
+
+
+async def ingame_help_embed(message, embedColor, commandPrefix):
+    embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
+                                                                 "reference! Simply type one of these to get "
+                                                                 "started.",
+                          color=embedColor)
+    embed.add_field(name=f'{commandPrefix}help', value="Gives a list of commands", inline=False)
+    embed.add_field(name=f'{commandPrefix}rules', value="Gives the game rules and how to play", inline=False)
+    embed.add_field(name=f'{commandPrefix}dm', value="Sends a direct message for privacy", inline=False)
+    embed.add_field(name=f'{commandPrefix}board', value="Shows the board of the current game", inline=False)
+    embed.add_field(name=f'{commandPrefix}players', value="Shows the players of the game and their accompanying "
+                                                          "statistics", inline=False)
+    embed.add_field(name=f'{commandPrefix}increase range', value="Spends 1 action point to increase your range",
+                    inline=False)
+    embed.add_field(name=f'{commandPrefix}move',
+                    value="Spends 1 action point to 1 space north, south, west, or east",
+                    inline=False)
+    await message.channel.send(embed=embed)
 
 
 async def increaseRange(message, data):
@@ -321,7 +376,7 @@ async def shoot(message, data, command, client):
     playerNumber = str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                            'playerNumber'])
     if data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                           'actions'] <= 0:
+        'actions'] <= 0:
         await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
         return
     if splitCommand[1] == str(playerNumber):
@@ -331,13 +386,16 @@ async def shoot(message, data, command, client):
         return
     try:
         specifiedNumber = int(splitCommand[1])
-        if specifiedNumber > len(data['games'][str(message.guild.id)][str(message.channel.id)]['players']) or specifiedNumber <= 0:
-            await message.channel.send('The player number of ' + str(specifiedNumber) + ' does not exist ' + message.author.mention + '.')
+        if specifiedNumber > len(
+                data['games'][str(message.guild.id)][str(message.channel.id)]['players']) or specifiedNumber <= 0:
+            await message.channel.send(
+                'The player number of ' + str(specifiedNumber) + ' does not exist ' + message.author.mention + '.')
             return
     except ValueError:
         if str(splitCommand[1][:3]) == '<@!':
             try:
-                splitCommand[1] = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str((splitCommand[1][3:])[:-1])]['playerNumber']
+                splitCommand[1] = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][
+                    str((splitCommand[1][3:])[:-1])]['playerNumber']
             except KeyError:
                 await message.channel.send('That player is not currently in the game ' + message.author.mention + '!')
                 return
@@ -359,7 +417,7 @@ async def shoot(message, data, command, client):
                 # Add a hit to the attacker's record
                 data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                     'hits'] += 1
-                jsonManager.saveData(message, data)
+                jsonManager.saveData(data)
                 user = await client.fetch_user(player)
                 if lives > 0:
                     await message.channel.send(
@@ -388,7 +446,69 @@ def isPlayerInRange(board, playerRange, attacker, defense):
     return True
 
 
+# TODO
+async def voteAction(message, data, command, client):
+    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    playerNumber = 0
+    if command[5:8] != '<@!':
+        try:
+            int(command[5:])
+        except ValueError:
+            await message.channel.send('*'+ str(command[5:]) + '* is not a player ' + message.author.mention + '!')
+            return
+        playerNumber = int(command[5:])
+    else:
+        userID = command[8:(len(command)-1)]
+        playerNumber = int(data['players'][str(userID)]['playerNumber'])
+
+    # Prevents the edge case of player number not being assigned
+    if playerNumber == 0:
+        await message.channel.send('Internal error processing request *playerNumber*')
+        return
+
+    # Prevents a player from voting for themselves
+    if int(data['players'][str(message.author.id)]['playerNumber']) == playerNumber:
+        await message.channel.send('You may not vote for yourself ' + message.author.mention + '!')
+        return
+
+    # Prevents a player from voting if they have no more votes today remaining
+    if int(data['players'][str(message.author.id)]['remainingVotes']) <= 0:
+        await message.channel.send('You have no more remaining votes today ' + message.author.mention + '!')
+        return
+
+    data['players'][str(message.author.id)]['remainingVotes'] = int(data['players'][str(message.author.id)]
+                                                                    ['remainingVotes']) - 1
+    jsonManager.savePlayer(message, message.author.id, data['players'][str(message.author.id)])
+    for player in data['players']:
+        if int(data['players'][player]['playerNumber']) == playerNumber:
+            data['players'][player]['votes'] = int(data['players'][player]['votes']) + 1
+            jsonManager.savePlayer(message, message.author.id, data['players'][player])
+            break
+
+
+async def listPlayersLobby(message, data, client):
+    """
+    Shows the players in queue before a game has been started that used */join
+    """
+    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+
+    embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    embed = discord.Embed(title="Players List", description="Here is a list of all the players "
+                                                            "currently queued to play", color=embedColor)
+    for key in data['players']:
+        username = await client.fetch_user(key)
+        playerNumber = data['players'][key]['playerNumber']
+        embed.add_field(name=f"Player {playerNumber}", value=username, inline=False)
+    await message.channel.send(embed=embed)
+
+
 async def showPlayerStatistics(message, data, client):
+    """
+    Shows player 1 in the game and their information, along with the template for the player card moving forward
+    :param message: The original message sent
+    :param data: The complete JSON file
+    :param client: The discord rpc client
+    """
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
     for key in data['players']:
         if data['players'][str(key)]['playerNumber'] == 1:

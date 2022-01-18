@@ -39,10 +39,12 @@ def addPlayerToGame(message, playerNumber):
         message.author.id: {
             'playerNumber': playerNumber,
             'lives': 3,
-            'actions': 0,
+            'actions': 1,
             'range': 1,
             'hits': 0,
-            'moves': 0
+            'moves': 0,
+            'votes': 0,
+            'remainingVotes': 0
         }
     }
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
@@ -124,13 +126,23 @@ def savePlayer(message, userId, playerInfo):
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
-def saveData(message, data):
-    data = __formatBoardJson(str(message.guild.id), (str(message.channel.id)), data)
+def saveData(data):
+    """
+    Saves all data that has been manipulated over the original json file
+    :param data: The complete dataset with the {games: ...} tag
+    """
+    for server in data['games']:
+        for channel in data['games'][server]:
+            data = __formatBoardJson(server, channel, data)
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
 def getBoard(message):
+    """
+    Pass in a message to get the board of that ongoing game
+    :param message: The message asking for the respective game board
+    """
     data = readJson()
     return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
 
@@ -142,7 +154,7 @@ def updateStatus(message):
     playerColors = {'playerColors': {}}
     for player in range(numberOfPlayers):
         rgb_color = cmapy.color('plasma', random.randrange(0, 256, 10), rgb_order=True)
-        playerColors['playerColors'][str(player+1)] = NoIndent(rgb_color)
+        playerColors['playerColors'][str(player + 1)] = NoIndent(rgb_color)
     data['games'][str(message.guild.id)][str(message.channel.id)].update(playerColors)
     data = __formatBoardJson(str(message.guild.id), str(message.channel.id), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
@@ -175,6 +187,7 @@ def initialize():
         print('Games file not located, generating now...')
         with open('Games.json', 'w') as f:
             f.write('{}')
+
 
 def readJson():
     file = open('Games.json', )
