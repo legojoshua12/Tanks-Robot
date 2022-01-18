@@ -120,10 +120,38 @@ def dailyActionsAndVoteUpkeep():
     for server in data:
         for channel in data[server]:
             if data[server][channel]['gameStatus'] == "active":
+                # Here the votes are tallied for the day if they received enough dead votes
+                championPlayer = None
+                champions = 0
+                championVotes = 0
+                for player in data[server][channel]['players']:
+                    if int(data[server][channel]['players'][player]['votes']) > 0:
+                        if champions == 0 and championPlayer is None:
+                            champions = 1
+                            championPlayer = player
+                            championVotes = int(data[server][channel]['players'][player]['votes'])
+                        elif champions == 1:
+                            if int(data[server][channel]['players'][player]['votes']) > championVotes:
+                                championPlayer = player
+                                championVotes = int(data[server][channel]['players'][player]['votes'])
+                            elif int(data[server][channel]['players'][player]['votes']) == championVotes:
+                                champions += 1
+                            else:
+                                data[server][channel]['players'][player]['votes'] = 0
+                        data[server][channel]['players'][player]['votes'] = 0
+                # TODO add messages here in the channel saying if there was a winner, loser, or tie
+                if champions == 1:
+                    data[server][channel]['players'][championPlayer]['actions'] = int(data[server][channel]['players']
+                                                                                      [championPlayer]['actions']) + 1
+                elif champions >= 2:
+                    pass
+                else:
+                    pass
+
+                # Here each person receives either a vote if they are dead or an action if they are alive
                 for player in data[server][channel]['players']:
                     if data[server][channel]['players'][player]['lives'] <= 0:
-                        # TODO
-                        print('Do Something')
+                        data[server][channel]['players'][player]['remainingVotes'] = 1
                     else:
                         data[server][channel]['players'][player]['actions'] = (int(data[server][channel]['players']
                                                                                    [player]['actions']) + 1)
@@ -134,6 +162,5 @@ def dailyActionsAndVoteUpkeep():
 
 
 # Start main program and connect to discord
-dailyActionsAndVoteUpkeep()
 print('Connecting to discord...')
 client.run(TOKEN)
