@@ -22,8 +22,6 @@ You can add the token to your `.env` file to initialize the connection with the 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
 ### Planned Features
- - Setup a game with random map (mountains, rivers, hills, etc.)
- - Everyone gets 1 action a day at 12pm (noon) PST
- - Tokens can be traded in secret
- - Health is tracked publicly
- - Dead players can vote on an extra action per day (3 votes to pass)
+ - Set up a game with random map (mountains, rivers, hills, etc.)
+ - Different kinds of tanks with different abilities
+ - Fire mechanic that makes some tiles temporarily unusable
