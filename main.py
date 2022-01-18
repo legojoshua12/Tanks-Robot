@@ -143,10 +143,6 @@ def dailyActionsAndVoteUpkeep():
                 if champions == 1:
                     data[server][channel]['players'][championPlayer]['actions'] = int(data[server][channel]['players']
                                                                                       [championPlayer]['actions']) + 1
-                elif champions >= 2:
-                    pass
-                else:
-                    pass
 
                 # Here each person receives either a vote if they are dead or an action if they are alive
                 for player in data[server][channel]['players']:
