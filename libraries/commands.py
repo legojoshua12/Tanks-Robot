@@ -212,6 +212,8 @@ async def public_commands_game(message, command):
             else:
                 # TODO pass to next if
                 pass
+    elif command[0:4] == 'send':
+        return 'send'
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
@@ -230,9 +232,14 @@ async def ingame_help_embed(message, embedColor, commandPrefix):
                                                           "statistics", inline=False)
     embed.add_field(name=f'{commandPrefix}increase range', value="Spends 1 action point to increase your range",
                     inline=False)
-    embed.add_field(name=f'{commandPrefix}move',
-                    value="Spends 1 action point to 1 space north, south, west, or east",
+    embed.add_field(name=f'{commandPrefix}move [direction]',
+                    value=f'Spends 1 action point to 1 space north, south, west, or east '
+                          f'(Example: {commandPrefix}move west)',
                     inline=False)
+    embed.add_field(name=f'{commandPrefix}send [player or player number] [number of actions]',
+                    value=f'Sends a player the number of specified actions '
+                          f'(Example: {commandPrefix}send @testsubject 2) '
+                          f'(Example: {commandPrefix}send 3 1)', inline=False)
     await message.channel.send(embed=embed)
 
 
@@ -446,19 +453,18 @@ def isPlayerInRange(board, playerRange, attacker, defense):
     return True
 
 
-# TODO
-async def voteAction(message, data, command, client):
+async def voteAction(message, data, command):
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
     playerNumber = 0
     if command[5:8] != '<@!':
         try:
             int(command[5:])
         except ValueError:
-            await message.channel.send('*'+ str(command[5:]) + '* is not a player ' + message.author.mention + '!')
+            await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
             return
         playerNumber = int(command[5:])
     else:
-        userID = command[8:(len(command)-1)]
+        userID = command[8:(len(command) - 1)]
         playerNumber = int(data['players'][str(userID)]['playerNumber'])
 
     # Prevents the edge case of player number not being assigned
@@ -484,6 +490,56 @@ async def voteAction(message, data, command, client):
             data['players'][player]['votes'] = int(data['players'][player]['votes']) + 1
             jsonManager.savePlayer(message, message.author.id, data['players'][player])
             break
+
+
+async def sendActions(message, data):
+    """
+    Sends a number of actions from the message sender to their desired target
+    :param message: The original message sent by the commander
+    :param data: The complete json dataset
+    """
+    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    locators = str(message.content)[2:].split()
+    if len(locators) != 3:
+        commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
+        await message.channel.send('Invalid command ' + message.author.mention +
+                                   f'! Please use {commandPrefix}send [player or player number] [number of actions]')
+        return
+    else:
+        if locators[1][:3] == '<@!':
+            playerID = locators[1][3:len(locators[1])-1]
+            for player in data['players']:
+                if player == playerID:
+                    locators[1] = int(data['players'][player]['playerNumber'])
+                    break
+            if not isinstance(locators[1], int):
+                await message.channel.send(locators[1] + ' is not in this game ' + message.author.mention + '!')
+                return
+        else:
+            try:
+                # noinspection PyTypeChecker
+                locators[1] = int(locators[1])
+            except ValueError:
+                await message.channel.send('Invalid player number given ' + message.author.mention)
+                return
+        try:
+            # noinspection PyTypeChecker
+            locators[2] = int(locators[2])
+        except ValueError:
+            await message.channel.send('Invalid number of actions specified ' + message.author.mention)
+            return
+        if int(data['players'][str(message.author.id)]['actions']) < int(locators[2]):
+            await message.channel.send('You do not have enough actions to do that ' + message.author.mention)
+            return
+
+        for player in data['players']:
+            if int(data['players'][player]['playerNumber']) == locators[1]:
+                data['players'][player]['actions'] = int(data['players'][player]['actions']) + int(locators[2])
+                data['players'][str(message.author.id)]['actions'] = \
+                    int(data['players'][str(message.author.id)]['actions']) - int(locators[2])
+                await message.channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to ' +
+                                           '<@!' + player + '>')
+                break
 
 
 async def listPlayersLobby(message, data, client):
