@@ -545,6 +545,9 @@ async def sendActions(message, data):
 async def listPlayersLobby(message, data, client):
     """
     Shows the players in queue before a game has been started that used */join
+    :param message: The original message with command
+    :param data: The complete JSON dataset
+    :param client: The discord RPC client
     """
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
 
@@ -573,7 +576,7 @@ async def showPlayerStatistics(message, data, client):
 
     user = await client.fetch_user(playerID)
     colorInfo = data['playerColors'][str(data['players'][str(key)]['playerNumber'])]
-    embed = addPlayercardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
+    embed = addPlayerCardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
                                 data['players'][str(key)]['lives'],
                                 data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
                                 data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
@@ -584,6 +587,13 @@ async def showPlayerStatistics(message, data, client):
 
 
 async def flipThroughPlayerStatsCard(message, data, direction, client):
+    """
+    Edits an original sent message by the robot to a new embed of player statistics
+    :param message: The message sent by the discord robot
+    :param data: The complete JSON dataset
+    :param direction: A positive or negative 1 for which index to grab
+    :param client: Discord RPC client connection
+    """
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
     embed = message.embeds[0]
     playerIndex = str(int(embed.fields[0].value[2:]) + direction)
@@ -597,14 +607,17 @@ async def flipThroughPlayerStatsCard(message, data, direction, client):
 
     user = await client.fetch_user(playerID)
     colorInfo = data['playerColors'][playerIndex]
-    embed = addPlayercardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
+    embed = addPlayerCardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
                                 data['players'][str(key)]['lives'],
                                 data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
                                 data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
     await message.edit(embed=embed)
 
 
-def addPlayercardFields(colorInfo, user, playerNumber, lives, actions, range, hits, moves):
+def addPlayerCardFields(colorInfo, user, playerNumber, lives, actions, range, hits, moves):
+    """
+    Adds information to an embed of player statistics
+    """
     embedColor = int('0x' + str('%02x%02x%02x' % (colorInfo[0], colorInfo[1], colorInfo[2])).upper(), 16)
     embed = discord.Embed(title=str(user)[:-5] + ' Statistics',
                           description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
@@ -621,6 +634,10 @@ def addPlayercardFields(colorInfo, user, playerNumber, lives, actions, range, hi
 
 
 def makeRulesEmbed(embedColor):
+    """
+    Returns a discord embed of the game rules
+    :param embedColor: The color used for the embed
+    """
     waveEmoji = '\U0001F52B'
     embed = discord.Embed(title="Rules", description=f"This is the rules on how to play tanks! {waveEmoji}",
                           color=embedColor)
