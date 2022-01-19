@@ -1,9 +1,15 @@
+"""This builds the image and downscales it for showing the board or any image related processing"""
 from PIL import Image, ImageDraw, ImageFont
 
 import libraries.configUtils as configUtils
 
 
 def constructImage(board, playerColors):
+    """
+    Returns a rendered board image with the specified resolution from config file
+    :param board: The 2x2 array of the board from the JSON
+    :param playerColors: An array of all the player colors from the JSON
+    """
     filename = 'EmptySquare.png'
     tile = Image.open('textures/' + filename)
     completeImage = None
@@ -46,16 +52,22 @@ def constructImage(board, playerColors):
 
 
 def __addTankNumber(image, tankNumber):
-    img = Image.new('RGBA', (10, 10), (255, 0, 0, 0))
+    if tankNumber < 10:
+        img = Image.new('RGBA', (6, 10), color=(255, 255, 255, 0))
+    else:
+        img = Image.new('RGBA', (12, 10), color=(255, 255, 255, 0))
     draw = ImageDraw.Draw(img)
-    draw.text((0, 0), str(tankNumber))
-    img.resize((200, 200))
-    image.paste(img, (image.size[0] - 20, image.size[1] - 20))
-    if str(tankNumber) == '1':
-        img.show()
-        img.resize((500, 500))
-        img.show()
-        image.show()
+    draw.text((0, 0), str(tankNumber), fill=(0, 0, 0, 255))
+    if tankNumber < 10:
+        img = img.resize((60, 100), resample=Image.BOX)
+        image.paste(img,
+                    (int((image.size[0] / 2) - ((img.size[1] / 2) - 25)), int((image.size[1] / 2) + ((img.size[1] / 2) + 25))),
+                    mask=img)
+    else:
+        img = img.resize((120, 100), resample=Image.BOX)
+        image.paste(img,
+                    (int((image.size[0] / 2) - ((img.size[1] / 2) + 5)), int((image.size[1] / 2) + ((img.size[1] / 2) + 25))),
+                    mask=img)
     return image
 
 
