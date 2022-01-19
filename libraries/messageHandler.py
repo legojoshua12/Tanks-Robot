@@ -120,7 +120,9 @@ async def handleMessage(message, client, commandMessageStarter):
                 elif action == 'shoot':
                     await commands.shoot(message, jsonManager.readJson(), command, client)
                 elif action == 'vote':
-                    await commands.voteAction(message, jsonManager.readJson(), command, client)
+                    await commands.voteAction(message, jsonManager.readJson(), command)
+                elif action == 'send':
+                    await commands.sendActions(message, jsonManager.readJson())
 
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)
