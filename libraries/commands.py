@@ -212,6 +212,8 @@ async def public_commands_game(message, command):
             else:
                 # TODO pass to next if
                 pass
+    elif command[0:4] == 'send':
+        return 'send'
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
                                                             'list of commands and options.')
@@ -230,9 +232,14 @@ async def ingame_help_embed(message, embedColor, commandPrefix):
                                                           "statistics", inline=False)
     embed.add_field(name=f'{commandPrefix}increase range', value="Spends 1 action point to increase your range",
                     inline=False)
-    embed.add_field(name=f'{commandPrefix}move',
-                    value="Spends 1 action point to 1 space north, south, west, or east",
+    embed.add_field(name=f'{commandPrefix}move [direction]',
+                    value=f'Spends 1 action point to 1 space north, south, west, or east '
+                          f'(Example: {commandPrefix}move west)',
                     inline=False)
+    embed.add_field(name=f'{commandPrefix}send [player or player number] [number of actions]',
+                    value=f'Sends a player the number of specified actions '
+                          f'(Example: {commandPrefix}send @testsubject 2) '
+                          f'(Example: {commandPrefix}send 3 1)', inline=False)
     await message.channel.send(embed=embed)
 
 
@@ -446,19 +453,18 @@ def isPlayerInRange(board, playerRange, attacker, defense):
     return True
 
 
-# TODO
-async def voteAction(message, data, command, client):
+async def voteAction(message, data, command):
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
     playerNumber = 0
     if command[5:8] != '<@!':
         try:
             int(command[5:])
         except ValueError:
-            await message.channel.send('*'+ str(command[5:]) + '* is not a player ' + message.author.mention + '!')
+            await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
             return
         playerNumber = int(command[5:])
     else:
-        userID = command[8:(len(command)-1)]
+        userID = command[8:(len(command) - 1)]
         playerNumber = int(data['players'][str(userID)]['playerNumber'])
 
     # Prevents the edge case of player number not being assigned
@@ -486,9 +492,62 @@ async def voteAction(message, data, command, client):
             break
 
 
+async def sendActions(message, data):
+    """
+    Sends a number of actions from the message sender to their desired target
+    :param message: The original message sent by the commander
+    :param data: The complete json dataset
+    """
+    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    locators = str(message.content)[2:].split()
+    if len(locators) != 3:
+        commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
+        await message.channel.send('Invalid command ' + message.author.mention +
+                                   f'! Please use {commandPrefix}send [player or player number] [number of actions]')
+        return
+    else:
+        if locators[1][:3] == '<@!':
+            playerID = locators[1][3:len(locators[1])-1]
+            for player in data['players']:
+                if player == playerID:
+                    locators[1] = int(data['players'][player]['playerNumber'])
+                    break
+            if not isinstance(locators[1], int):
+                await message.channel.send(locators[1] + ' is not in this game ' + message.author.mention + '!')
+                return
+        else:
+            try:
+                # noinspection PyTypeChecker
+                locators[1] = int(locators[1])
+            except ValueError:
+                await message.channel.send('Invalid player number given ' + message.author.mention)
+                return
+        try:
+            # noinspection PyTypeChecker
+            locators[2] = int(locators[2])
+        except ValueError:
+            await message.channel.send('Invalid number of actions specified ' + message.author.mention)
+            return
+        if int(data['players'][str(message.author.id)]['actions']) < int(locators[2]):
+            await message.channel.send('You do not have enough actions to do that ' + message.author.mention)
+            return
+
+        for player in data['players']:
+            if int(data['players'][player]['playerNumber']) == locators[1]:
+                data['players'][player]['actions'] = int(data['players'][player]['actions']) + int(locators[2])
+                data['players'][str(message.author.id)]['actions'] = \
+                    int(data['players'][str(message.author.id)]['actions']) - int(locators[2])
+                await message.channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to ' +
+                                           '<@!' + player + '>')
+                break
+
+
 async def listPlayersLobby(message, data, client):
     """
     Shows the players in queue before a game has been started that used */join
+    :param message: The original message with command
+    :param data: The complete JSON dataset
+    :param client: The discord RPC client
     """
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
 
@@ -517,7 +576,7 @@ async def showPlayerStatistics(message, data, client):
 
     user = await client.fetch_user(playerID)
     colorInfo = data['playerColors'][str(data['players'][str(key)]['playerNumber'])]
-    embed = addPlayercardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
+    embed = addPlayerCardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
                                 data['players'][str(key)]['lives'],
                                 data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
                                 data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
@@ -528,6 +587,13 @@ async def showPlayerStatistics(message, data, client):
 
 
 async def flipThroughPlayerStatsCard(message, data, direction, client):
+    """
+    Edits an original sent message by the robot to a new embed of player statistics
+    :param message: The message sent by the discord robot
+    :param data: The complete JSON dataset
+    :param direction: A positive or negative 1 for which index to grab
+    :param client: Discord RPC client connection
+    """
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
     embed = message.embeds[0]
     playerIndex = str(int(embed.fields[0].value[2:]) + direction)
@@ -541,14 +607,17 @@ async def flipThroughPlayerStatsCard(message, data, direction, client):
 
     user = await client.fetch_user(playerID)
     colorInfo = data['playerColors'][playerIndex]
-    embed = addPlayercardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
+    embed = addPlayerCardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
                                 data['players'][str(key)]['lives'],
                                 data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
                                 data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
     await message.edit(embed=embed)
 
 
-def addPlayercardFields(colorInfo, user, playerNumber, lives, actions, range, hits, moves):
+def addPlayerCardFields(colorInfo, user, playerNumber, lives, actions, range, hits, moves):
+    """
+    Adds information to an embed of player statistics
+    """
     embedColor = int('0x' + str('%02x%02x%02x' % (colorInfo[0], colorInfo[1], colorInfo[2])).upper(), 16)
     embed = discord.Embed(title=str(user)[:-5] + ' Statistics',
                           description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
@@ -565,6 +634,10 @@ def addPlayercardFields(colorInfo, user, playerNumber, lives, actions, range, hi
 
 
 def makeRulesEmbed(embedColor):
+    """
+    Returns a discord embed of the game rules
+    :param embedColor: The color used for the embed
+    """
     waveEmoji = '\U0001F52B'
     embed = discord.Embed(title="Rules", description=f"This is the rules on how to play tanks! {waveEmoji}",
                           color=embedColor)
