@@ -2,8 +2,6 @@
 import sys
 import asyncio
 import os
-import time
-from datetime import datetime, timezone
 from queue import Queue
 import schedule
 
@@ -12,7 +10,7 @@ import asyncio
 
 from dotenv import load_dotenv
 
-from libraries import configUtils, jsonManager, messageHandler, commands
+from libraries import configUtils, jsonManager, messageHandler, commands, dailyUpkeepManager
 
 # This is a clean windows shutdown procedure as to not throw memory heap errors
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith('win'):
@@ -37,8 +35,8 @@ client = discord.Client()
 configUtils.initialize()
 jsonManager.initialize()
 commandMessageStarter = configUtils.readValue('botSettings', 'botCommandPrefix')
-messageQueue = Queue(maxsize=0)
-dailyQueue = Queue(maxsize=0)
+messageQueue = Queue()
+dailyQueue = Queue()
 
 
 @client.event
@@ -103,7 +101,7 @@ def addDailyQueue():
     """
     Adds a value to the daily queue for when it is time to start daily upkeep
     """
-    dailyQueue.put('Daily Upkeep at: ' + str(datetime.utcnow()))
+    dailyQueue.put('Daily upkeep ordered')
 
 
 async def checkScheduleTime():
@@ -114,70 +112,8 @@ async def checkScheduleTime():
         schedule.run_pending()
         if dailyQueue.qsize() > 0:
             dailyQueue.get()
-            await dailyActionsAndVoteUpkeep()
+            await dailyUpkeepManager.dailyActionsAndVoteUpkeep(client)
         await asyncio.sleep(1)
-
-
-async def dailyActionsAndVoteUpkeep():
-    """
-    Performs the daily action giving and vote tally
-    """
-    print('Daily upkeep started at: ' + str(datetime.utcnow()))
-    data = jsonManager.readJson()
-    try:
-        data = data['games']
-    except KeyError:
-        print("No games running for today's upkeep! Skipping processing")
-        return
-    for server in data:
-        for channel in data[server]:
-            if data[server][channel]['gameStatus'] == "active":
-                # Here the votes are tallied for the day if they received enough dead votes
-                championPlayer = None
-                champions = 0
-                championVotes = 0
-                for player in data[server][channel]['players']:
-                    if int(data[server][channel]['players'][player]['votes']) > 0:
-                        if champions == 0 and championPlayer is None:
-                            champions = 1
-                            championPlayer = player
-                            championVotes = int(data[server][channel]['players'][player]['votes'])
-                        elif champions == 1:
-                            if int(data[server][channel]['players'][player]['votes']) > championVotes:
-                                champions = 1
-                                championPlayer = player
-                                championVotes = int(data[server][channel]['players'][player]['votes'])
-                            elif int(data[server][channel]['players'][player]['votes']) == championVotes:
-                                champions += 1
-                            else:
-                                data[server][channel]['players'][player]['votes'] = 0
-                        data[server][channel]['players'][player]['votes'] = 0
-                if champions == 1:
-                    data[server][channel]['players'][championPlayer]['actions'] = int(data[server][channel]['players']
-                                                                                      [championPlayer]['actions']) + 1
-                    await client.get_channel(id=int(channel)).send(
-                        '<@!' + str(championPlayer) + '> won the vote of the dead today and gets an extra action!')
-                elif champions >= 2:
-                    await client.get_channel(id=int(channel)).send('There was a tie for votes today! No one got extra '
-                                                                   'actions!')
-                else:
-                    await client.get_channel(id=int(channel)).send('There were no votes today and no one got an extra '
-                                                                   'action!')
-
-                    # Here each person receives either a vote if they are dead or an action if they are alive
-                for player in data[server][channel]['players']:
-                    if data[server][channel]['players'][player]['lives'] <= 0:
-                        data[server][channel]['players'][player]['remainingVotes'] = 1
-                    else:
-                        data[server][channel]['players'][player]['actions'] = (int(data[server][channel]['players']
-                                                                                   [player]['actions']) + 1)
-                await client.get_channel(id=int(channel)).send('Daily upkeep finished! All living players have '
-                                                               'received an action and all others received a vote for'
-                                                               ' the day!')
-    newData = {'games': data}
-    jsonManager.saveData(newData)
-    print('Completed Daily Upkeep at: ' + str(datetime.utcnow()))
-    return
 
 
 # Start main program and connect to discord
