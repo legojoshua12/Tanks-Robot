@@ -189,6 +189,13 @@ def initialize():
         with open('Games.json', 'w') as f:
             f.write('{}')
 
+    if os.path.exists('PlayerData.json'):
+        print('Player data file located, initializing...')
+    else:
+        logging.warning('Player data file not located, generating now...')
+        with open('PlayerData.json', 'w') as f:
+            f.write('{}')
+
 
 def readGamesJson():
     """
