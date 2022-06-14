@@ -9,7 +9,7 @@ async def dailyActionsAndVoteUpkeep(client):
     Performs the daily action giving and vote tally
     """
     print('Daily upkeep started at: ' + str(datetime.utcnow()))
-    data = jsonManager.readJson()
+    data = jsonManager.readGamesJson()
     try:
         data = data['games']
     except KeyError:

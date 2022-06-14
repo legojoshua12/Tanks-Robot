@@ -1,4 +1,5 @@
 """This is the main function that should be run to start the robot"""
+import logging
 import sys
 import asyncio
 import os
@@ -21,14 +22,14 @@ if os.path.exists('.env'):
     print('Env file located, initializing...')
     load_dotenv()
     TOKEN = os.getenv('DISCORD_TOKEN')
-    if TOKEN is None:
-        print('DISCORD_TOKEN is not set, please set one first before continuing')
+    if TOKEN == '':
+        logging.critical('DISCORD_TOKEN is not set, please set one first before continuing')
         exit()
 else:
-    print('Env file not located, generating now...')
+    logging.critical('Env file not located, generating now...')
     with open('.env', 'w') as f:
         f.write('DISCORD_TOKEN=')
-    print('Exiting, please set a DISCORD_TOKEN in the env file')
+    logging.critical('Exiting, please set a DISCORD_TOKEN in the env file')
     exit()
 
 client = discord.Client()
@@ -77,7 +78,7 @@ async def on_reaction_add(reaction, user):
         return
     if len(reaction.message.embeds) > 0:
         await reaction.message.remove_reaction(reaction.emoji, user)
-        data = jsonManager.readJson()
+        data = jsonManager.readGamesJson()
         if ('U+{:X}'.format(ord(reaction.emoji))) == 'U+27A1':
             await commands.flipThroughPlayerStatsCard(reaction.message, data, 1, client)
         elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
