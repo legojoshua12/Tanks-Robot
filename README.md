@@ -11,6 +11,7 @@ In order to run a local instance of this robot, you need [Python 3.8](https://ww
  - [python-dotenv](https://github.com/theskumar/python-dotenv)
  - [numpy](https://github.com/numpy/numpy)
  - [schedule](https://github.com/dbader/schedule)
+ - [cmapy](https://gitlab.com/cvejarano-oss/cmapy/)
 
 The above libraries come with lower level libraries needed for operation and pip will automatically install those as needed.
 
