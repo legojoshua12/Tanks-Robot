@@ -148,7 +148,7 @@ async def sendLobbyHelpMenu(message):
 
 
 async def public_commands_game(message, command):
-    data = jsonManager.readJson()
+    data = jsonManager.readGamesJson()
     try:
         data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
     except KeyError:

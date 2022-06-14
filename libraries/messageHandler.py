@@ -46,7 +46,7 @@ async def handleMessage(message, client, commandMessageStarter):
             if isGamePresent == 'lobby':
                 action = await commands.public_commands_lobby(message, command)
                 if action == 'join':
-                    data = jsonManager.readJson()
+                    data = jsonManager.readGamesJson()
                     newPlayerNumber = (len(data['games'][str(message.guild.id)][str(message.channel.id)]['players'])+1)
                     isPresent = jsonManager.addPlayerToGame(message, newPlayerNumber)
                     if isPresent == 'playerAlreadyPresent':
@@ -66,7 +66,7 @@ async def handleMessage(message, client, commandMessageStarter):
                 elif action == 'dm':
                     await commands.send_dm_starter(message)
                 elif action == 'players':
-                    data = jsonManager.readJson()
+                    data = jsonManager.readGamesJson()
                     await commands.listPlayersLobby(message, data, client)
                 elif action == 'start':
                     # Here we want to actually boot the game
@@ -85,8 +85,8 @@ async def handleMessage(message, client, commandMessageStarter):
                             await message.channel.send('Error! Could not start game!')
                         if booted:
                             board = jsonManager.getBoard(message)
-                            renderedBoard = renderPipeline.constructImage(board, jsonManager.readJson()['games'][str(message.guild.id)][str(message.channel.id)]['playerColors'])
-                            data = jsonManager.readJson()
+                            renderedBoard = renderPipeline.constructImage(board, jsonManager.readGamesJson()['games'][str(message.guild.id)][str(message.channel.id)]['playerColors'])
+                            data = jsonManager.readGamesJson()
                             data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
                             mentionString = 'Welcome to tanks '
                             index = 0
@@ -107,22 +107,22 @@ async def handleMessage(message, client, commandMessageStarter):
             elif isGamePresent == 'active':
                 action = await commands.public_commands_game(message, command)
                 if action == 'board':
-                    renderedBoard = renderPipeline.constructImage(jsonManager.getBoard(message), jsonManager.readJson()['games'][str(message.guild.id)][str(message.channel.id)]['playerColors'])
+                    renderedBoard = renderPipeline.constructImage(jsonManager.getBoard(message), jsonManager.readGamesJson()['games'][str(message.guild.id)][str(message.channel.id)]['playerColors'])
                     await commands.displayBoard(message, renderedBoard)
                 elif action == 'players':
-                    await commands.showPlayerStatistics(message, jsonManager.readJson(), client)
+                    await commands.showPlayerStatistics(message, jsonManager.readGamesJson(), client)
                 elif action == 'dm':
                     await commands.send_dm_starter(message)
                 elif action == 'increase range':
-                    await commands.increaseRange(message, jsonManager.readJson())
+                    await commands.increaseRange(message, jsonManager.readGamesJson())
                 elif action == 'move':
-                    await commands.move(message, jsonManager.readJson(), command)
+                    await commands.move(message, jsonManager.readGamesJson(), command)
                 elif action == 'shoot':
-                    await commands.shoot(message, jsonManager.readJson(), command, client)
+                    await commands.shoot(message, jsonManager.readGamesJson(), command, client)
                 elif action == 'vote':
-                    await commands.voteAction(message, jsonManager.readJson(), command)
+                    await commands.voteAction(message, jsonManager.readGamesJson(), command)
                 elif action == 'send':
-                    await commands.sendActions(message, jsonManager.readJson())
+                    await commands.sendActions(message, jsonManager.readGamesJson())
 
             elif isGamePresent == 'none':
                 possibleCommand = await commands.public_commands_no_game(message, command)

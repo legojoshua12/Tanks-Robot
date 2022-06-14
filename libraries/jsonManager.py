@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 import cmapy
@@ -8,7 +9,7 @@ from libraries.CustomIndentEncoder import NoIndent, MyEncoder
 
 
 def createGame(message):
-    data = readJson()
+    data = readGamesJson()
     # These are redundancy checks to ensure no data corruption
     if 'games' not in data:
         data = {'games': {}}
@@ -34,7 +35,7 @@ def createGame(message):
 
 
 def addPlayerToGame(message, playerNumber):
-    data = readJson()
+    data = readGamesJson()
     newPlayerData = {
         message.author.id: {
             'playerNumber': playerNumber,
@@ -59,7 +60,7 @@ def addPlayerToGame(message, playerNumber):
 
 
 def removePlayerFromGame(message, playerNumber):
-    data = readJson()
+    data = readGamesJson()
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
     for player in playersList:
         if player == str(message.author.id):
@@ -77,7 +78,7 @@ def removePlayerFromGame(message, playerNumber):
 
 
 async def killPlayer(message, playerNumber, user):
-    data = readJson()
+    data = readGamesJson()
     board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
     for i in range(len(board)):
         for j in range(len(board[i])):
@@ -93,7 +94,7 @@ def getNumberOfPlayersInGame(message):
     :param message: Used to determine which game you want information on
     :return:
     """
-    data = readJson()
+    data = readGamesJson()
     numberOfPlayers = 0
     playersList = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
     for player in playersList:
@@ -102,7 +103,7 @@ def getNumberOfPlayersInGame(message):
 
 
 def checkIfGameIsInChannel(message):
-    data = readJson()
+    data = readGamesJson()
     try:
         gameState = data['games'][str(message.guild.id)][str(message.channel.id)]['gameStatus']
         return gameState
@@ -111,7 +112,7 @@ def checkIfGameIsInChannel(message):
 
 
 def saveBoard(message, board):
-    data = readJson()
+    data = readGamesJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
     data = __formatBoardJson(str(message.guild.id), (str(message.channel.id)), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
@@ -119,7 +120,7 @@ def saveBoard(message, board):
 
 
 def savePlayer(message, userId, playerInfo):
-    data = readJson()
+    data = readGamesJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(userId)] = playerInfo
     data = __formatBoardJson(str(message.guild.id), (str(message.channel.id)), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
@@ -143,12 +144,12 @@ def getBoard(message):
     Pass in a message to get the board of that ongoing game
     :param message: The message asking for the respective game board
     """
-    data = readJson()
+    data = readGamesJson()
     return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
 
 
 def updateStatus(message):
-    data = readJson()
+    data = readGamesJson()
     data['games'][str(message.guild.id)][str(message.channel.id)]['gameStatus'] = 'active'
     numberOfPlayers = getNumberOfPlayersInGame(message)
     playerColors = {'playerColors': {}}
@@ -184,12 +185,15 @@ def initialize():
     if os.path.exists('Games.json'):
         print('Games file located, initializing...')
     else:
-        print('Games file not located, generating now...')
+        logging.warning('Games file not located, generating now...')
         with open('Games.json', 'w') as f:
             f.write('{}')
 
 
-def readJson():
+def readGamesJson():
+    """
+    Reads all games across all servers and returns an array of all game data
+    """
     file = open('Games.json', )
     data = json.load(file)
     file.close()
