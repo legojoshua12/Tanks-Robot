@@ -29,12 +29,16 @@ def writeValue(section, key, value):
         config.write(f)
 
 
-def readValue(section, key):
+def readValue(section, key, uniqueLocation=None):
     """
     Grabs a configuration option out of the config file
     :param section: Which header to grab
     :param key: Which value is desired
+    :param uniqueLocation: Default None but can pass a string type for a location reader of a config file
     """
-    config.read('config.ini')
+    if uniqueLocation is None:
+        config.read('config.ini')
+    else:
+        config.read(uniqueLocation)
 
     return config.get(section, key)
