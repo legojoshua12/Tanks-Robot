@@ -41,4 +41,10 @@ def readValue(section, key, uniqueLocation=None):
     else:
         config.read(uniqueLocation)
 
-    return config.get(section, key)
+    try:
+        value = config.get(section, key)
+        return value
+    except:
+        config.read('../config.ini')
+        value = config.get(section, key)
+        return value
