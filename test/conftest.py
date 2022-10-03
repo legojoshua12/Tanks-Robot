@@ -13,7 +13,7 @@ from libraries import configUtils as cfg
 @pytest.fixture
 def bot(event_loop):
     """Create the bot test environment to use with every test"""
-    messageStarter = cfg.readValue('botSettings', 'botCommandPrefix', '../config.ini')
+    messageStarter = cfg.read_value('botSettings', 'botCommandPrefix', '../config.ini')
     bot = commands.Bot(
         command_prefix=messageStarter, event_loop=event_loop, intents=discord.Intents.all()
     )

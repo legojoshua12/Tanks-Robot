@@ -5,6 +5,7 @@ import re
 
 class NoIndent(object):
     """ Value wrapper. """
+
     def __init__(self, value):
         if not isinstance(value, (list, tuple)):
             raise TypeError('Only lists and tuples can be wrapped')
@@ -28,7 +29,7 @@ class MyEncoder(json.JSONEncoder):
 
     def default(self, obj):
         return (self.FORMAT_SPEC.format(id(obj)) if isinstance(obj, NoIndent)
-                    else super(MyEncoder, self).default(obj))
+                else super(MyEncoder, self).default(obj))
 
     def iterencode(self, obj, **kwargs):
         format_spec = self.FORMAT_SPEC  # Local var to expedite access.
@@ -38,12 +39,12 @@ class MyEncoder(json.JSONEncoder):
         for encoded in super(MyEncoder, self).iterencode(obj, **kwargs):
             match = self.regex.search(encoded)
             if match:
-                id = int(match.group(1))
-                no_indent = PyObj_FromPtr(id)
+                match_id = int(match.group(1))
+                no_indent = PyObj_FromPtr(match_id)
                 json_repr = json.dumps(no_indent.value, **self._kwargs)
                 # Replace the matched id string with json formatted representation
                 # of the corresponding Python object.
                 encoded = encoded.replace(
-                            '"{}"'.format(format_spec.format(id)), json_repr)
+                    '"{}"'.format(format_spec.format(match_id)), json_repr)
 
             yield encoded
