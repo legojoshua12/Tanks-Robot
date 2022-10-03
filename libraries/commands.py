@@ -10,8 +10,8 @@ import libraries.renderPipeline as renderPipeline
 
 
 async def direct_message_commands(message, command):
-    embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
-    if command.startswith(configUtils.readValue('botSettings', 'botCommandPrefix')):
+    embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    if command.startswith(configUtils.read_value('botSettings', 'botCommandPrefix')):
         command = command[2:].lower()
     else:
         command = command.lower()
@@ -19,14 +19,14 @@ async def direct_message_commands(message, command):
         embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
                                                                      "reference! Simply type one of these to get "
                                                                      "started.",
-                              color=embedColor)
+                              color=embed_color)
         embed.add_field(name="help", value="Gives a list of commands", inline=False)
         embed.add_field(name="rules", value="Gives the game rules and how to play", inline=False)
         await message.channel.send(embed=embed)
     elif command == 'rules':
         emoji = '\U0001F52B'
         embed = discord.Embed(title="Rules", description=f"This is the rules on how to play tanks! {emoji}",
-                              color=embedColor)
+                              color=embed_color)
         embed.add_field(name="1. You use actions to do things", value="Actions are the the core of the game, "
                                                                       "they can be used to move, shoot, or "
                                                                       "increase your tank's range.",
@@ -67,20 +67,20 @@ async def direct_message_commands(message, command):
 
 
 async def public_commands_no_game(message, command):
-    embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
-        commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
+        command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
         embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
                                                                      "reference! All commands may be done in "
                                                                      "private as well using a direct message.",
-                              color=embedColor)
-        embed.add_field(name=f"{commandPrefix}help", value="Gives a list of commands", inline=False)
-        embed.add_field(name=f"{commandPrefix}rules", value="Gives the game rules and how to play", inline=False)
-        embed.add_field(name=f"{commandPrefix}dm", value="Sends a direct message for privacy", inline=False)
-        embed.add_field(name=f"{commandPrefix}start", value="Begins game setup lobby in this channel", inline=False)
+                              color=embed_color)
+        embed.add_field(name=f"{command_prefix}help", value="Gives a list of commands", inline=False)
+        embed.add_field(name=f"{command_prefix}rules", value="Gives the game rules and how to play", inline=False)
+        embed.add_field(name=f"{command_prefix}dm", value="Sends a direct message for privacy", inline=False)
+        embed.add_field(name=f"{command_prefix}start", value="Begins game setup lobby in this channel", inline=False)
         await message.channel.send(embed=embed)
     elif command == 'rules':
-        embed = makeRulesEmbed(embedColor)
+        embed = make_rules_embed(embed_color)
         await message.channel.send(embed=embed)
     elif command == 'dm':
         await send_dm_starter(message)
@@ -97,10 +97,10 @@ async def send_dm_starter(message):
     Sends a direct message to the person who sent the command with a hello from the robot
     :param message: The message of the command that was sent
     """
-    letterEmoji = '\U00002709'
-    waveEmoji = '\U0001F44B'
-    await message.channel.send(message.author.mention + f' I just sent you a private message! {letterEmoji}')
-    await message.author.send(f"Hey there! {waveEmoji} How can I help you? Use `help` to get started!")
+    letter_emoji = '\U00002709'
+    wave_emoji = '\U0001F44B'
+    await message.channel.send(message.author.mention + f' I just sent you a private message! {letter_emoji}')
+    await message.author.send(f"Hey there! {wave_emoji} How can I help you? Use `help` to get started!")
 
 
 async def public_commands_lobby(message, command):
@@ -122,44 +122,44 @@ async def public_commands_lobby(message, command):
                                                             'list of commands and options.')
 
 
-async def sendLobbyHelpMenu(message):
-    commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
-    embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+async def send_lobby_help_menu(message):
+    command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
+    embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     embed = discord.Embed(title="Welcome to the game of Tanks!",
                           description="For constructing a game, add players as shown below and start "
                                       "it when you are ready to begin a game",
-                          color=embedColor)
-    embed.add_field(name=f'{commandPrefix}join',
-                    value=f'Each player who wishes to play can do a `{commandPrefix}join` to join this '
+                          color=embed_color)
+    embed.add_field(name=f'{command_prefix}join',
+                    value=f'Each player who wishes to play can do a `{command_prefix}join` to join this '
                           f'new game', inline=False)
-    embed.add_field(name=f'{commandPrefix}leave',
+    embed.add_field(name=f'{command_prefix}leave',
                     value='That player will be removed from the game and not be in once started. If '
                           'the player who created this lobby leaves then the lobby is ended and anyone '
                           'can recreate a game', inline=False)
-    embed.add_field(name=f'{commandPrefix}players',
+    embed.add_field(name=f'{command_prefix}players',
                     value='Lists all players currently in queue to play', inline=False)
-    embed.add_field(name=f'{commandPrefix}help',
+    embed.add_field(name=f'{command_prefix}help',
                     value='Shows this menu again', inline=False)
-    embed.add_field(name=f'{commandPrefix}dm',
+    embed.add_field(name=f'{command_prefix}dm',
                     value="Sends a direct message for privacy", inline=False)
-    embed.add_field(name=f'{commandPrefix}start',
+    embed.add_field(name=f'{command_prefix}start',
                     value='Will start the game if enough players have joined', inline=False)
     await message.channel.send(embed=embed)
 
 
 async def public_commands_game(message, command):
-    data = jsonManager.readGamesJson()
+    data = jsonManager.read_games_json()
     try:
         data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
     except KeyError:
         await message.channel.send('You are not playing in this game ' + message.author.mention + '!')
         return
-    commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
-    embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
+    embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
-        await ingame_help_embed(message, embedColor, commandPrefix)
+        await active_game_help_embed(message, embed_color, command_prefix)
     elif command == 'rules':
-        embed = makeRulesEmbed(embedColor)
+        embed = make_rules_embed(embed_color)
         await message.channel.send(embed=embed)
     elif command == 'board':
         return command
@@ -219,34 +219,34 @@ async def public_commands_game(message, command):
                                                             'list of commands and options.')
 
 
-async def ingame_help_embed(message, embedColor, commandPrefix):
+async def active_game_help_embed(message, embed_color, command_prefix):
     embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
                                                                  "reference! Simply type one of these to get "
                                                                  "started.",
-                          color=embedColor)
-    embed.add_field(name=f'{commandPrefix}help', value="Gives a list of commands", inline=False)
-    embed.add_field(name=f'{commandPrefix}rules', value="Gives the game rules and how to play", inline=False)
-    embed.add_field(name=f'{commandPrefix}dm', value="Sends a direct message for privacy", inline=False)
-    embed.add_field(name=f'{commandPrefix}board', value="Shows the board of the current game", inline=False)
-    embed.add_field(name=f'{commandPrefix}players', value="Shows the players of the game and their accompanying "
-                                                          "statistics", inline=False)
-    embed.add_field(name=f'{commandPrefix}increase range', value="Spends 1 action point to increase your range",
+                          color=embed_color)
+    embed.add_field(name=f'{command_prefix}help', value="Gives a list of commands", inline=False)
+    embed.add_field(name=f'{command_prefix}rules', value="Gives the game rules and how to play", inline=False)
+    embed.add_field(name=f'{command_prefix}dm', value="Sends a direct message for privacy", inline=False)
+    embed.add_field(name=f'{command_prefix}board', value="Shows the board of the current game", inline=False)
+    embed.add_field(name=f'{command_prefix}players', value="Shows the players of the game and their accompanying "
+                                                           "statistics", inline=False)
+    embed.add_field(name=f'{command_prefix}increase range', value="Spends 1 action point to increase your range",
                     inline=False)
-    embed.add_field(name=f'{commandPrefix}move [direction]',
+    embed.add_field(name=f'{command_prefix}move [direction]',
                     value=f'Spends 1 action point to 1 space north, south, west, or east '
-                          f'(Example: {commandPrefix}move west)',
+                          f'(Example: {command_prefix}move west)',
                     inline=False)
-    embed.add_field(name=f'{commandPrefix}send [player or player number] [number of actions]',
+    embed.add_field(name=f'{command_prefix}send [player or player number] [number of actions]',
                     value=f'Sends a player the number of specified actions '
-                          f'(Example: {commandPrefix}send @testsubject 2) '
-                          f'(Example: {commandPrefix}send 3 1)', inline=False)
+                          f'(Example: {command_prefix}send @testsubject 2) '
+                          f'(Example: {command_prefix}send 3 1)', inline=False)
     await message.channel.send(embed=embed)
 
 
-async def increaseRange(message, data):
+async def increase_range(message, data):
     if int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                'actions']) > 0:
-        data = jsonManager.updatePlayerRange(message, data)
+        data = jsonManager.update_player_range(message, data)
         await message.channel.send('Your range is now ' + str(
             data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                 'range']) + ' tiles ' + message.author.mention + '!')
@@ -255,124 +255,131 @@ async def increaseRange(message, data):
 
 
 async def move(message, data, command):
-    splitCommand = command.split(' ')
-    if len(splitCommand) == 1:
+    split_command = command.split(' ')
+    if len(split_command) == 1:
         await message.channel.send('Please specify a tile or a direction to move in ' + message.author.mention + '!')
         return
-    elif len(splitCommand) > 2:
+    elif len(split_command) > 2:
         await message.channel.send(
-            'Invalid information provided for where to go ' + message.author.mention + '! Please specify a tile or a direction to move.')
+            'Invalid information provided for where to go ' + message.author.mention + '! Please specify a tile or a '
+                                                                                       'direction to move.')
         return
 
     board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
-    playerNumber = str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                           'playerNumber'])
-    newPlayerStats = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
-    if newPlayerStats['actions'] <= 0:
+    player_number = str(
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+            'playerNumber'])
+    new_player_stats = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
+    if new_player_stats['actions'] <= 0:
         await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
         return
     for i in range(len(board)):
         for j in range(len(board[i])):
-            if str(board[i][j]) == playerNumber:
-                if splitCommand[1] == 'north':
+            if str(board[i][j]) == player_number:
+                if split_command[1] == 'north':
                     if i >= (len(board) - 1):
                         await message.channel.send(
                             'You may not move any farther north ' + message.author.mention + ', as you are at the top!')
                         return
                     if board[i + 1][j] != 0:
                         await message.channel.send(
-                            'There is a player above you ' + message.author.mention + '. You may not move onto players.')
+                            'There is a player above you ' + message.author.mention +
+                            '. You may not move onto players.')
                         return
                     board[i][j] = 0
-                    board[i + 1][j] = int(playerNumber)
-                    jsonManager.saveBoard(message, board)
-                    await displayBoard(message, renderPipeline.constructImage(board,
-                                                                              data['games'][str(message.guild.id)][
-                                                                                  str(message.channel.id)][
-                                                                                  'playerColors']),
-                                       ('You have moved north 1 tile ' + message.author.mention + '!'))
-                    newPlayerStats['actions'] -= 1
-                    newPlayerStats['moves'] += 1
-                    jsonManager.savePlayer(message, message.author.id, newPlayerStats)
+                    board[i + 1][j] = int(player_number)
+                    jsonManager.save_board(message, board)
+                    await display_board(message, renderPipeline.construct_image(board,
+                                                                                data['games'][str(message.guild.id)][
+                                                                                   str(message.channel.id)][
+                                                                                   'playerColors']),
+                                        ('You have moved north 1 tile ' + message.author.mention + '!'))
+                    new_player_stats['actions'] -= 1
+                    new_player_stats['moves'] += 1
+                    jsonManager.save_player(message, message.author.id, new_player_stats)
                     return
-                elif splitCommand[1] == 'south':
+                elif split_command[1] == 'south':
                     if i <= 0:
                         await message.channel.send(
-                            'You may not move any farther south ' + message.author.mention + ', as you are at the bottom!')
+                            'You may not move any farther south ' + message.author.mention + ', as you are at the '
+                                                                                             'bottom!')
                         return
                     if board[i - 1][j] != 0:
                         await message.channel.send(
-                            'There is a player below you ' + message.author.mention + '. You may not move onto players.')
+                            'There is a player below you ' + message.author.mention +
+                            '. You may not move onto players.')
                         return
                     board[i][j] = 0
-                    board[i - 1][j] = int(playerNumber)
-                    jsonManager.saveBoard(message, board)
-                    await displayBoard(message, renderPipeline.constructImage(board,
-                                                                              data['games'][str(message.guild.id)][
-                                                                                  str(message.channel.id)][
-                                                                                  'playerColors']),
-                                       ('You have moved south 1 tile ' + message.author.mention + '!'))
-                    newPlayerStats['actions'] -= 1
-                    newPlayerStats['moves'] += 1
-                    jsonManager.savePlayer(message, message.author.id, newPlayerStats)
+                    board[i - 1][j] = int(player_number)
+                    jsonManager.save_board(message, board)
+                    await display_board(message, renderPipeline.construct_image(board,
+                                                                                data['games'][str(message.guild.id)][
+                                                                                   str(message.channel.id)][
+                                                                                   'playerColors']),
+                                        ('You have moved south 1 tile ' + message.author.mention + '!'))
+                    new_player_stats['actions'] -= 1
+                    new_player_stats['moves'] += 1
+                    jsonManager.save_player(message, message.author.id, new_player_stats)
                     return
-                elif splitCommand[1] == 'east':
+                elif split_command[1] == 'east':
                     if j >= (len(board[i]) - 1):
                         await message.channel.send(
                             'You may not move any farther east ' + message.author.mention + ', as you are at the edge!')
                         return
                     if board[i][j + 1] != 0:
                         await message.channel.send(
-                            'There is a player to the right of you ' + message.author.mention + '. You may not move onto players.')
+                            'There is a player to the right of you ' + message.author.mention + '. You may not move '
+                                                                                                'onto players.')
                         return
                     board[i][j] = 0
-                    board[i][j + 1] = int(playerNumber)
-                    jsonManager.saveBoard(message, board)
-                    await displayBoard(message, renderPipeline.constructImage(board,
-                                                                              data['games'][str(message.guild.id)][
-                                                                                  str(message.channel.id)][
-                                                                                  'playerColors']),
-                                       ('You have moved east 1 tile ' + message.author.mention + '!'))
-                    newPlayerStats['actions'] -= 1
-                    newPlayerStats['moves'] += 1
-                    jsonManager.savePlayer(message, message.author.id, newPlayerStats)
+                    board[i][j + 1] = int(player_number)
+                    jsonManager.save_board(message, board)
+                    await display_board(message, renderPipeline.construct_image(board,
+                                                                                data['games'][str(message.guild.id)][
+                                                                                   str(message.channel.id)][
+                                                                                   'playerColors']),
+                                        ('You have moved east 1 tile ' + message.author.mention + '!'))
+                    new_player_stats['actions'] -= 1
+                    new_player_stats['moves'] += 1
+                    jsonManager.save_player(message, message.author.id, new_player_stats)
                     return
-                elif splitCommand[1] == 'west':
+                elif split_command[1] == 'west':
                     if j <= 0:
                         await message.channel.send(
                             'You may not move any farther west ' + message.author.mention + ', as you are at the edge!')
                         return
                     if board[i][j - 1] != 0:
                         await message.channel.send(
-                            'There is a player to the left of you ' + message.author.mention + '. You may not move onto players.')
+                            'There is a player to the left of you ' + message.author.mention + '. You may not move '
+                                                                                               'onto players.')
                         return
                     board[i][j] = 0
-                    board[i][j - 1] = int(playerNumber)
-                    jsonManager.saveBoard(message, board)
-                    await displayBoard(message, renderPipeline.constructImage(board,
-                                                                              data['games'][str(message.guild.id)][
-                                                                                  str(message.channel.id)][
-                                                                                  'playerColors']),
-                                       ('You have moved west 1 tile ' + message.author.mention + '!'))
-                    newPlayerStats['actions'] -= 1
-                    newPlayerStats['moves'] += 1
-                    jsonManager.savePlayer(message, message.author.id, newPlayerStats)
+                    board[i][j - 1] = int(player_number)
+                    jsonManager.save_board(message, board)
+                    await display_board(message, renderPipeline.construct_image(board,
+                                                                                data['games'][str(message.guild.id)][
+                                                                                   str(message.channel.id)][
+                                                                                   'playerColors']),
+                                        ('You have moved west 1 tile ' + message.author.mention + '!'))
+                    new_player_stats['actions'] -= 1
+                    new_player_stats['moves'] += 1
+                    jsonManager.save_player(message, message.author.id, new_player_stats)
                     return
-                elif splitCommand[1] == 'weast':
+                elif split_command[1] == 'weast':
                     await message.channel.send(
                         'I am sorry ' + message.author.mention + ', but you do not have the power to move weast.')
                 else:
-                    await message.channel.send('\'' + splitCommand[1] + '\' is not an ordinal direction or a '
-                                                                        'coordinate ' + message.author.mention + '!')
+                    await message.channel.send('\'' + split_command[1] + '\' is not an ordinal direction or a '
+                                                                         'coordinate ' + message.author.mention + '!')
 
 
 async def shoot(message, data, command, client):
-    splitCommand = command.split(' ')
-    if len(splitCommand) == 1:
+    split_command = command.split(' ')
+    if len(split_command) == 1:
         await message.channel.send(
             'Please specify a tile, player, or a direction to shoot at ' + message.author.mention + '!')
         return
-    elif len(splitCommand) > 2:
+    elif len(split_command) > 2:
         await message.channel.send(
             'Invalid information provided for where to shoot ' + message.author.mention + '! Please specify a tile, '
                                                                                           'player, or a direction to '
@@ -380,40 +387,40 @@ async def shoot(message, data, command, client):
         return
 
     board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
-    playerNumber = str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                           'playerNumber'])
-    if data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-        'actions'] <= 0:
+    player_number = str(
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+            'playerNumber'])
+    if data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] <= 0:
         await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
         return
-    if splitCommand[1] == str(playerNumber):
+    if split_command[1] == str(player_number):
         # Reason we don't say shoot yourself here is that is not something everyone can handle hearing,
         # so we say you cannot shoot your own player instead
         await message.channel.send('You cannot shoot your own player ' + message.author.mention + '!')
         return
     try:
-        specifiedNumber = int(splitCommand[1])
-        if specifiedNumber > len(
-                data['games'][str(message.guild.id)][str(message.channel.id)]['players']) or specifiedNumber <= 0:
+        specified_number = int(split_command[1])
+        if specified_number > len(
+                data['games'][str(message.guild.id)][str(message.channel.id)]['players']) or specified_number <= 0:
             await message.channel.send(
-                'The player number of ' + str(specifiedNumber) + ' does not exist ' + message.author.mention + '.')
+                'The player number of ' + str(specified_number) + ' does not exist ' + message.author.mention + '.')
             return
     except ValueError:
-        if str(splitCommand[1][:3]) == '<@!':
+        if str(split_command[1][:3]) == '<@!':
             try:
-                splitCommand[1] = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][
-                    str((splitCommand[1][3:])[:-1])]['playerNumber']
+                split_command[1] = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][
+                    str((split_command[1][3:])[:-1])]['playerNumber']
             except KeyError:
                 await message.channel.send('That player is not currently in the game ' + message.author.mention + '!')
                 return
         else:
             return
-    if isPlayerInRange(board, str(
+    if is_player_in_range(board, str(
             data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                'range']), str(playerNumber), str(splitCommand[1])):
+                'range']), str(player_number), str(split_command[1])):
         for player in data['games'][str(message.guild.id)][str(message.channel.id)]['players']:
             if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player][
-                       'playerNumber']) == str(splitCommand[1]):
+                       'playerNumber']) == str(split_command[1]):
                 # TODO finish up shooting players
                 # Remove a life from an enemy
                 lives = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] - 1
@@ -424,56 +431,56 @@ async def shoot(message, data, command, client):
                 # Add a hit to the attacker's record
                 data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                     'hits'] += 1
-                jsonManager.saveData(data)
+                jsonManager.save_data(data)
                 user = await client.fetch_user(player)
                 if lives > 0:
                     await message.channel.send(
                         'Player ' + user.mention + ' has been shot! They now have ' + str(lives) + '\u2665 lives left.')
                 else:
-                    await jsonManager.killPlayer(message, str(splitCommand[1]), user)
+                    await jsonManager.kill_player(message, str(split_command[1]), user)
                 break
     else:
         await message.channel.send(
-            'Player ' + str(splitCommand[1]) + ' is out of range ' + message.author.mention + '!')
+            'Player ' + str(split_command[1]) + ' is out of range ' + message.author.mention + '!')
 
 
-def isPlayerInRange(board, playerRange, attacker, defense):
-    attackerPos = None
-    defenderPos = None
+def is_player_in_range(board, player_range, attacker, defense):
+    attacker_pos = None
+    defender_pos = None
     for i in range(len(board)):
         for j in range(len(board)):
             if board[i][j] == int(attacker):
-                attackerPos = (j, i)
+                attacker_pos = (j, i)
             elif board[i][j] == int(defense):
-                defenderPos = (j, i)
-    if abs(defenderPos[0] - attackerPos[0]) > int(playerRange):
+                defender_pos = (j, i)
+    if abs(defender_pos[0] - attacker_pos[0]) > int(player_range):
         return False
-    elif abs(defenderPos[1] - attackerPos[1]) > int(playerRange):
+    elif abs(defender_pos[1] - attacker_pos[1]) > int(player_range):
         return False
     return True
 
 
-async def voteAction(message, data, command):
+async def vote_action(message, data, command):
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
-    playerNumber = 0
+    player_number = 0
     if command[5:8] != '<@!':
         try:
             int(command[5:])
         except ValueError:
             await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
             return
-        playerNumber = int(command[5:])
+        player_number = int(command[5:])
     else:
-        userID = command[8:(len(command) - 1)]
-        playerNumber = int(data['players'][str(userID)]['playerNumber'])
+        user_id = command[8:(len(command) - 1)]
+        player_number = int(data['players'][str(user_id)]['playerNumber'])
 
     # Prevents the edge case of player number not being assigned
-    if playerNumber == 0:
+    if player_number == 0:
         await message.channel.send('Internal error processing request *playerNumber*')
         return
 
     # Prevents a player from voting for themselves
-    if int(data['players'][str(message.author.id)]['playerNumber']) == playerNumber:
+    if int(data['players'][str(message.author.id)]['playerNumber']) == player_number:
         await message.channel.send('You may not vote for yourself ' + message.author.mention + '!')
         return
 
@@ -484,15 +491,15 @@ async def voteAction(message, data, command):
 
     data['players'][str(message.author.id)]['remainingVotes'] = int(data['players'][str(message.author.id)]
                                                                     ['remainingVotes']) - 1
-    jsonManager.savePlayer(message, message.author.id, data['players'][str(message.author.id)])
+    jsonManager.save_player(message, message.author.id, data['players'][str(message.author.id)])
     for player in data['players']:
-        if int(data['players'][player]['playerNumber']) == playerNumber:
+        if int(data['players'][player]['playerNumber']) == player_number:
             data['players'][player]['votes'] = int(data['players'][player]['votes']) + 1
-            jsonManager.savePlayer(message, message.author.id, data['players'][player])
+            jsonManager.save_player(message, message.author.id, data['players'][player])
             break
 
 
-async def sendActions(message, data):
+async def send_actions(message, data):
     """
     Sends a number of actions from the message sender to their desired target
     :param message: The original message sent by the commander
@@ -501,15 +508,15 @@ async def sendActions(message, data):
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
     locators = str(message.content)[2:].split()
     if len(locators) != 3:
-        commandPrefix = configUtils.readValue('botSettings', 'botCommandPrefix')
+        command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
         await message.channel.send('Invalid command ' + message.author.mention +
-                                   f'! Please use {commandPrefix}send [player or player number] [number of actions]')
+                                   f'! Please use {command_prefix}send [player or player number] [number of actions]')
         return
     else:
         if locators[1][:3] == '<@!':
-            playerID = locators[1][3:len(locators[1])-1]
+            player_id = locators[1][3:len(locators[1]) - 1]
             for player in data['players']:
-                if player == playerID:
+                if player == player_id:
                     locators[1] = int(data['players'][player]['playerNumber'])
                     break
             if not isinstance(locators[1], int):
@@ -542,7 +549,7 @@ async def sendActions(message, data):
                 break
 
 
-async def listPlayersLobby(message, data, client):
+async def list_players_lobby(message, data, client):
     """
     Shows the players in queue before a game has been started that used */join
     :param message: The original message with command
@@ -551,17 +558,17 @@ async def listPlayersLobby(message, data, client):
     """
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
 
-    embedColor = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     embed = discord.Embed(title="Players List", description="Here is a list of all the players "
-                                                            "currently queued to play", color=embedColor)
+                                                            "currently queued to play", color=embed_color)
     for key in data['players']:
         username = await client.fetch_user(key)
-        playerNumber = data['players'][key]['playerNumber']
-        embed.add_field(name=f"Player {playerNumber}", value=username, inline=False)
+        player_number = data['players'][key]['playerNumber']
+        embed.add_field(name=f"Player {player_number}", value=username, inline=False)
     await message.channel.send(embed=embed)
 
 
-async def showPlayerStatistics(message, data, client):
+async def show_player_statistics(message, data, client):
     """
     Shows player 1 in the game and their information, along with the template for the player card moving forward
     :param message: The original message sent
@@ -571,22 +578,22 @@ async def showPlayerStatistics(message, data, client):
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
     for key in data['players']:
         if data['players'][str(key)]['playerNumber'] == 1:
-            playerID = key
+            player_id = key
             break
 
-    user = await client.fetch_user(playerID)
-    colorInfo = data['playerColors'][str(data['players'][str(key)]['playerNumber'])]
-    embed = addPlayerCardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
-                                data['players'][str(key)]['lives'],
-                                data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
-                                data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
+    user = await client.fetch_user(player_id)
+    color_info = data['playerColors'][str(data['players'][str(key)]['playerNumber'])]
+    embed = add_player_card_fields(color_info, user, data['players'][str(key)]['playerNumber'],
+                                   data['players'][str(key)]['lives'],
+                                   data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
+                                   data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
     msg = await message.channel.send(embed=embed)
 
     await msg.add_reaction("\u2B05")
     await msg.add_reaction("\u27A1")
 
 
-async def flipThroughPlayerStatsCard(message, data, direction, client):
+async def flip_through_player_stats_card(message, data, direction, client):
     """
     Edits an original sent message by the robot to a new embed of player statistics
     :param message: The message sent by the discord robot
@@ -596,35 +603,35 @@ async def flipThroughPlayerStatsCard(message, data, direction, client):
     """
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
     embed = message.embeds[0]
-    playerIndex = str(int(embed.fields[0].value[2:]) + direction)
-    if playerIndex == str(0) or int(playerIndex) > len(data['players']):
+    player_index = str(int(embed.fields[0].value[2:]) + direction)
+    if player_index == str(0) or int(player_index) > len(data['players']):
         return
 
     for key in data['players']:
-        if str(data['players'][str(key)]['playerNumber']) == playerIndex:
-            playerID = key
+        if str(data['players'][str(key)]['playerNumber']) == player_index:
+            player_id = key
             break
 
-    user = await client.fetch_user(playerID)
-    colorInfo = data['playerColors'][playerIndex]
-    embed = addPlayerCardFields(colorInfo, user, data['players'][str(key)]['playerNumber'],
-                                data['players'][str(key)]['lives'],
-                                data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
-                                data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
+    user = await client.fetch_user(player_id)
+    color_info = data['playerColors'][player_index]
+    embed = add_player_card_fields(color_info, user, data['players'][str(key)]['playerNumber'],
+                                   data['players'][str(key)]['lives'],
+                                   data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
+                                   data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
     await message.edit(embed=embed)
 
 
-def addPlayerCardFields(colorInfo, user, playerNumber, lives, actions, range, hits, moves):
+def add_player_card_fields(color_info, user, player_number, lives, actions, range, hits, moves):
     """
     Adds information to an embed of player statistics
     """
-    embedColor = int('0x' + str('%02x%02x%02x' % (colorInfo[0], colorInfo[1], colorInfo[2])).upper(), 16)
+    embed_color = int('0x' + str('%02x%02x%02x' % (color_info[0], color_info[1], color_info[2])).upper(), 16)
     embed = discord.Embed(title=str(user)[:-5] + ' Statistics',
                           description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
-                          color=embedColor
+                          color=embed_color
                           )
-    embed.set_thumbnail(url=user.avatar_url)
-    embed.add_field(name='Player Number', value='\U0001F464 ' + str(playerNumber), inline=True)
+    embed.set_thumbnail(url=user.avatar.url)
+    embed.add_field(name='Player Number', value='\U0001F464 ' + str(player_number), inline=True)
     embed.add_field(name='Health', value='\u2665 ' + str(lives), inline=True)
     embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
     embed.add_field(name='Range', value='\U0001F3AF ' + str(range), inline=True)
@@ -633,14 +640,14 @@ def addPlayerCardFields(colorInfo, user, playerNumber, lives, actions, range, hi
     return embed
 
 
-def makeRulesEmbed(embedColor):
+def make_rules_embed(embed_color):
     """
     Returns a discord embed of the game rules
-    :param embedColor: The color used for the embed
+    :param embed_color: The color used for the embed
     """
-    waveEmoji = '\U0001F52B'
-    embed = discord.Embed(title="Rules", description=f"This is the rules on how to play tanks! {waveEmoji}",
-                          color=embedColor)
+    wave_emoji = '\U0001F52B'
+    embed = discord.Embed(title="Rules", description=f"This is the rules on how to play tanks! {wave_emoji}",
+                          color=embed_color)
     embed.add_field(name="1. You use actions to do things", value="Actions are the the core of the game, "
                                                                   "they can be used to move, shoot, or "
                                                                   "increase your tank's range.",
@@ -675,8 +682,8 @@ def makeRulesEmbed(embedColor):
     return embed
 
 
-async def displayBoard(message, board, ping=False):
-    if ping != False:
+async def display_board(message, board, ping=False):
+    if ping:
         await message.channel.send(ping)
 
     with io.BytesIO() as image_binary:

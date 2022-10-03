@@ -5,13 +5,13 @@ from libraries import boardConstructor as bc
 import pytest
 
 def test_boardDataBuilder():
-    board = bc.constructBoardData(5)
+    board = bc.construct_board_data(5)
     assert len(board) == 10
 
 def test_boardPopulator():
     players = [1, 2, 3, 4, 5]
-    board = bc.constructBoardData(len(players))
-    board = bc.populateBoard(board, 5)
+    board = bc.construct_board_data(len(players))
+    board = bc.populate_board(board, 5)
     foundPlayers = []
     for row in range(len(board)):
         for col in range(len(board[row])):

@@ -4,7 +4,7 @@ import random
 import libraries.configUtils as configUtils
 
 
-def constructBoardData(players):
+def construct_board_data(players):
     """
     Returns a 2x2 array which is the board filled with the players
     :param players: The number of players in the game
@@ -17,7 +17,7 @@ def constructBoardData(players):
     return board
 
 
-def populateBoard(board, players):
+def populate_board(board, players):
     """
     Inserts each player on the board in random positions while constructing a new board
     :param board: The partially completed board array
@@ -25,28 +25,28 @@ def populateBoard(board, players):
     """
     for player in range(players):
         while True:
-            posX = random.randint(1, ((players * 2) - 2))
-            posY = random.randint(1, ((players * 2) - 2))
+            pos_x = random.randint(1, ((players * 2) - 2))
+            pos_y = random.randint(1, ((players * 2) - 2))
             # Check for players in area
-            if not __checkForPlayersAroundArea(board, posX, posY):
-                board[posX][posY] = player + 1
+            if not __check_for_players_around_area(board, pos_x, pos_y):
+                board[pos_x][pos_y] = player + 1
                 break
     return board
 
 
-def __checkForPlayersAroundArea(board, posX, posY):
+def __check_for_players_around_area(board, pos_x, pos_y):
     """
     Returns a true or false if another player is within range of a given x & y from the config distance checker for spawns
     :param board: The player board
-    :param posX: The x position of the check coordinate
-    :param posY: The y position of the check coordinate
+    :param pos_x: The x position of the check coordinate
+    :param pos_y: The y position of the check coordinate
     """
-    savedValue = int(configUtils.readValue('startGame', 'playerSpawnDistance'))
-    checkDistance = savedValue + (savedValue + 1)
-    for i in range(checkDistance):
-        for j in range(checkDistance):
-            xIndex = -savedValue + i + posX
-            yIndex = -savedValue + j + posY
-            if board[xIndex][yIndex] != 0:
+    saved_value = int(configUtils.read_value('startGame', 'playerSpawnDistance'))
+    check_distance = saved_value + (saved_value + 1)
+    for i in range(check_distance):
+        for j in range(check_distance):
+            x_index = -saved_value + i + pos_x
+            y_index = -saved_value + j + pos_y
+            if board[x_index][y_index] != 0:
                 return True
     return False

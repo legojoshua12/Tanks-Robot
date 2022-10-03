@@ -15,7 +15,7 @@ def initialize():
         exit()
 
 
-def writeValue(section, key, value):
+def write_value(section, key, value):
     """
     Adds config values to the config file
     :param section: Which header to write or write to
@@ -29,7 +29,7 @@ def writeValue(section, key, value):
         config.write(f)
 
 
-def readValue(section, key, uniqueLocation=None):
+def read_value(section, key, uniqueLocation=None):
     """
     Grabs a configuration option out of the config file
     :param section: Which header to grab
