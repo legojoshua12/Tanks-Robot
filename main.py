@@ -1,6 +1,6 @@
 """This is the main function that should be run to start the robot"""
-import logging
 import sys
+import asyncio
 import os
 from queue import Queue
 import schedule
@@ -21,21 +21,20 @@ if os.path.exists('.env'):
     print('Env file located, initializing...')
     load_dotenv()
     TOKEN = os.getenv('DISCORD_TOKEN')
-    if TOKEN == '':
-        logging.critical('DISCORD_TOKEN is not set, please set one first before continuing')
+    if TOKEN is None:
+        print('DISCORD_TOKEN is not set, please set one first before continuing')
         exit()
 else:
-    logging.critical('Env file not located, generating now...')
+    print('Env file not located, generating now...')
     with open('.env', 'w') as f:
         f.write('DISCORD_TOKEN=')
-    logging.critical('Exiting, please set a DISCORD_TOKEN in the env file')
+    print('Exiting, please set a DISCORD_TOKEN in the env file')
     exit()
 
-print('Discord Version Info: ' + str(discord.version_info))
-client = discord.Client(intents=discord.Intents.all())
+client = discord.Client()
 configUtils.initialize()
 jsonManager.initialize()
-commandMessageStarter = configUtils.read_value('botSettings', 'botCommandPrefix')
+commandMessageStarter = configUtils.readValue('botSettings', 'botCommandPrefix')
 messageQueue = Queue()
 dailyQueue = Queue()
 
@@ -47,14 +46,15 @@ async def on_ready():
     """
     print(f'{client.user} has connected to Discord!')
     # First set up a coroutine for handling jobs
-    asyncio.get_event_loop().create_task(handle_queue())
+    asyncio.get_event_loop().create_task(handleQueue())
     # Add a schedule for daily upkeep
-    upkeep_time = str(configUtils.read_value('gameSettings', 'dailyUpkeepTime'))
+    upkeepTime = str(configUtils.readValue('gameSettings', 'dailyUpkeepTime'))
     # Run a coroutine for checking the schedule
-    schedule.every().day.at(upkeep_time).do(add_daily_queue)
-    asyncio.get_event_loop().create_task(check_schedule_time())
+    schedule.every().day.at(upkeepTime).do(addDailyQueue)
+    asyncio.get_event_loop().create_task(checkScheduleTime())
     # Set discord presence
-    await client.change_presence(activity=discord.Game(name='Tanks'), status=discord.Status.online)
+    await client.change_presence(activity=discord.Game(name='Tanks'),
+                                 status=discord.Status.online, afk=False)
 
 
 @client.event
@@ -77,14 +77,14 @@ async def on_reaction_add(reaction, user):
         return
     if len(reaction.message.embeds) > 0:
         await reaction.message.remove_reaction(reaction.emoji, user)
-        data = jsonManager.read_games_json()
+        data = jsonManager.readJson()
         if ('U+{:X}'.format(ord(reaction.emoji))) == 'U+27A1':
-            await commands.flip_through_player_stats_card(reaction.message, data, 1, client)
+            await commands.flipThroughPlayerStatsCard(reaction.message, data, 1, client)
         elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
-            await commands.flip_through_player_stats_card(reaction.message, data, -1, client)
+            await commands.flipThroughPlayerStatsCard(reaction.message, data, -1, client)
 
 
-async def handle_queue():
+async def handleQueue():
     """
     Takes items off of the queue and sends the message to the processor. Once it has been fully handled, it will grab
     the next message in the queue
@@ -97,14 +97,14 @@ async def handle_queue():
         await asyncio.sleep(1)
 
 
-def add_daily_queue():
+def addDailyQueue():
     """
     Adds a value to the daily queue for when it is time to start daily upkeep
     """
     dailyQueue.put('Daily upkeep ordered')
 
 
-async def check_schedule_time():
+async def checkScheduleTime():
     """
     Checks for the current system time and if it is daily upkeep for the games to gain an action
     """
@@ -118,6 +118,4 @@ async def check_schedule_time():
 
 # Start main program and connect to discord
 print('Connecting to discord...')
-
-# noinspection PyUnboundLocalVariable
 client.run(TOKEN)

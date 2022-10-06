@@ -15,7 +15,7 @@ def initialize():
         exit()
 
 
-def write_value(section, key, value):
+def writeValue(section, key, value):
     """
     Adds config values to the config file
     :param section: Which header to write or write to
@@ -29,22 +29,12 @@ def write_value(section, key, value):
         config.write(f)
 
 
-def read_value(section, key, uniqueLocation=None):
+def readValue(section, key):
     """
     Grabs a configuration option out of the config file
     :param section: Which header to grab
     :param key: Which value is desired
-    :param uniqueLocation: Default None but can pass a string type for a location reader of a config file
     """
-    if uniqueLocation is None:
-        config.read('config.ini')
-    else:
-        config.read(uniqueLocation)
+    config.read('config.ini')
 
-    try:
-        value = config.get(section, key)
-        return value
-    except:
-        config.read('../config.ini')
-        value = config.get(section, key)
-        return value
+    return config.get(section, key)
