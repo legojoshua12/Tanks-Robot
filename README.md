@@ -7,7 +7,7 @@ This is a robot for the game tanks inspired by [HalfBrick studios](https://www.h
 
 ## Local Compiling
 In order to run a local instance of this robot, you need [Python 3.8](https://www.python.org/downloads/release/python-380/) and the following libraries:
- - [discord py](https://github.com/Rapptz/discord.py)
+ - [discord py version 2](https://github.com/Rapptz/discord.py)
  - [dpytest](https://github.com/CraftSpider/dpytest)
  - [pytest](https://github.com/pytest-dev/pytest)
  - [Pillow](https://github.com/python-pillow/Pillow)
