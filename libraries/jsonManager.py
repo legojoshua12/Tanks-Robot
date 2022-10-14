@@ -34,6 +34,22 @@ def create_game(message):
     return data
 
 
+def save_player_json(message, data):
+    players = read_players_json()
+    playersData = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+    serverData = (str(message.guild.id), str(message.channel.id))
+    for player in playersData:
+        if str(player) not in players:
+            players[str(player)] = [serverData]
+        else:
+            old_data = players[str(player)]
+            old_data.append(serverData)
+            players[str(player)] = old_data
+    with open('PlayerData.json', 'w', encoding='utf-8') as f:
+        json.dump(players, f, ensure_ascii=False, indent=4)
+    return
+
+
 def add_player_to_game(message, player_number):
     data = read_games_json()
     new_player_data = {
@@ -202,6 +218,16 @@ def read_games_json():
     Reads all games across all servers and returns an array of all game data
     """
     file = open('Games.json', )
+    data = json.load(file)
+    file.close()
+    return data
+
+
+def read_players_json():
+    """
+    A quick storage of all games a certain player is in for handling dms
+    """
+    file = open('PlayerData.json', )
     data = json.load(file)
     file.close()
     return data

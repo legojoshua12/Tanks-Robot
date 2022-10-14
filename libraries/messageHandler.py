@@ -5,7 +5,7 @@ from libraries import boardConstructor as bC
 from libraries import jsonManager, renderPipeline, commands
 
 
-async def handleMessage(message, client, commandMessageStarter):
+async def handle_message(message, client, commandMessageStarter):
     """
     Used to parse and perform functions based on an incoming message
     :param message: Main message from the queue
@@ -87,6 +87,7 @@ async def handleMessage(message, client, commandMessageStarter):
                             board = jsonManager.get_board(message)
                             renderedBoard = renderPipeline.construct_image(board, jsonManager.read_games_json()['games'][str(message.guild.id)][str(message.channel.id)]['playerColors'])
                             data = jsonManager.read_games_json()
+                            jsonManager.save_player_json(message, data)
                             data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
                             mentionString = 'Welcome to tanks '
                             index = 0

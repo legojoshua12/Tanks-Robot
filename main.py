@@ -91,7 +91,7 @@ async def handle_queue():
     """
     while True:
         if messageQueue.qsize() > 0:
-            await messageHandler.handleMessage(messageQueue.get(), client, commandMessageStarter)
+            await messageHandler.handle_message(messageQueue.get(), client, commandMessageStarter)
         # This is a delay to slow down the processing speed of the queue if it is too processor intensive
         # Param is in seconds
         await asyncio.sleep(1)
