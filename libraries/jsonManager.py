@@ -50,6 +50,23 @@ def save_player_json(message, data):
     return
 
 
+def is_player_in_multiple_games(message):
+    player_data = read_players_json()
+    for player in player_data:
+        if str(player) == str(message.author.id):
+            if len(player_data[player]) > 1:
+                return True
+    return False
+
+
+def is_player_in_game(message):
+    player_data = read_players_json()
+    for player in player_data:
+        if str(player) == str(message.author.id):
+            return True
+    return False
+
+
 def add_player_to_game(message, player_number):
     data = read_games_json()
     new_player_data = {

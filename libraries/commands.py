@@ -16,12 +16,14 @@ async def direct_message_commands(message, command):
     else:
         command = command.lower()
     if command == 'help':
-        embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
-                                                                     "reference! Simply type one of these to get "
-                                                                     "started.",
-                              color=embed_color)
-        embed.add_field(name="help", value="Gives a list of commands", inline=False)
-        embed.add_field(name="rules", value="Gives the game rules and how to play", inline=False)
+        is_in_games = jsonManager.is_player_in_game(message)
+        is_in_multiple_games = jsonManager.is_player_in_multiple_games(message)
+        if is_in_games and not is_in_multiple_games:
+            embed = dm_help_embed(embed_color, True)
+        elif is_in_multiple_games and is_in_games:
+            embed = dm_help_embed(embed_color, False)
+        else:
+            embed = dm_help_embed(embed_color, None)
         await message.channel.send(embed=embed)
     elif command == 'rules':
         embed = make_rules_embed(embed_color)
@@ -31,6 +33,34 @@ async def direct_message_commands(message, command):
     else:
         await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
                                                             'list of commands and options.')
+
+
+def dm_help_embed(embed_color, in_single_game):
+    embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
+                                                                 "reference! Simply type one of these to get "
+                                                                 "started.",
+                          color=embed_color)
+    embed.add_field(name="help", value="Gives a list of commands", inline=False)
+    embed.add_field(name="rules", value="Gives the game rules and how to play", inline=False)
+    if in_single_game:
+        embed.add_field(name='board', value="Shows the board of the only game you are in", inline=False)
+        embed.add_field(name='players', value="Shows the players of the game you are in and their statistics",
+                        inline=False)
+        embed.add_field(name='increase range',
+                        value="Spends 1 action point to increase your range in your current game",
+                        inline=False)
+        embed.add_field(name='move [direction]',
+                        value='Spends 1 action point to 1 space north, south, west, or east (Example: move west) in '
+                              'your current game',
+                        inline=False)
+        embed.add_field(name='send [player or player number] [number of actions]',
+                        value='Sends a player in your current game the number of specified actions '
+                              '(Example: send @testsubject 2) '
+                              '(Example: send 3 1)', inline=False)
+    elif not in_single_game and in_single_game is not None:
+        # TODO Figure out a way to specify games
+        embed.add_field(name='TODO', value="Need to figure out how to specify games ADMIN CODE ONLY", inline=False)
+    return embed
 
 
 async def public_commands_no_game(message, command):
@@ -258,8 +288,8 @@ async def move(message, data, command):
                     jsonManager.save_board(message, board)
                     await display_board(message, renderPipeline.construct_image(board,
                                                                                 data['games'][str(message.guild.id)][
-                                                                                   str(message.channel.id)][
-                                                                                   'playerColors']),
+                                                                                    str(message.channel.id)][
+                                                                                    'playerColors']),
                                         ('You have moved north 1 tile ' + message.author.mention + '!'))
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
@@ -281,8 +311,8 @@ async def move(message, data, command):
                     jsonManager.save_board(message, board)
                     await display_board(message, renderPipeline.construct_image(board,
                                                                                 data['games'][str(message.guild.id)][
-                                                                                   str(message.channel.id)][
-                                                                                   'playerColors']),
+                                                                                    str(message.channel.id)][
+                                                                                    'playerColors']),
                                         ('You have moved south 1 tile ' + message.author.mention + '!'))
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
@@ -303,8 +333,8 @@ async def move(message, data, command):
                     jsonManager.save_board(message, board)
                     await display_board(message, renderPipeline.construct_image(board,
                                                                                 data['games'][str(message.guild.id)][
-                                                                                   str(message.channel.id)][
-                                                                                   'playerColors']),
+                                                                                    str(message.channel.id)][
+                                                                                    'playerColors']),
                                         ('You have moved east 1 tile ' + message.author.mention + '!'))
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
@@ -325,8 +355,8 @@ async def move(message, data, command):
                     jsonManager.save_board(message, board)
                     await display_board(message, renderPipeline.construct_image(board,
                                                                                 data['games'][str(message.guild.id)][
-                                                                                   str(message.channel.id)][
-                                                                                   'playerColors']),
+                                                                                    str(message.channel.id)][
+                                                                                    'playerColors']),
                                         ('You have moved west 1 tile ' + message.author.mention + '!'))
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
