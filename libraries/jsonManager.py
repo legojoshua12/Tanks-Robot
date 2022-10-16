@@ -208,13 +208,19 @@ def update_status(message):
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
-def update_player_range(message, data):
-    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] = (
-            int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                    'actions']) - 1)
-    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['range'] = (
-            int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                    'range']) + 1)
+def update_player_range(message, data, guild_id=None, channel_id=None):
+    if guild_id is not None and channel_id is not None:
+        data['games'][guild_id][channel_id]['players'][str(message.author.id)]['actions'] = (
+                int(data['games'][guild_id][channel_id]['players'][str(message.author.id)]['actions']) - 1)
+        data['games'][guild_id][channel_id]['players'][str(message.author.id)]['range'] = (
+                int(data['games'][guild_id][channel_id]['players'][str(message.author.id)]['range']) + 1)
+    else:
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] = (
+                int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                        'actions']) - 1)
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['range'] = (
+                int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                        'range']) + 1)
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
     return data

@@ -45,8 +45,7 @@ async def direct_message_commands(message, command, client):
             elif command == 'players':
                 await show_player_statistics(message, jsonManager.read_games_json(), client, guild_id, channel_id)
             elif command == 'increase range':
-                # await commands.increase_range(message, jsonManager.read_games_json())
-                pass
+                await increase_range(message, jsonManager.read_games_json(), guild_id, channel_id)
             elif command == 'move':
                 # await commands.move(message, jsonManager.read_games_json(), command)
                 pass
@@ -284,15 +283,25 @@ async def active_game_help_embed(message, embed_color, command_prefix):
     await message.channel.send(embed=embed)
 
 
-async def increase_range(message, data):
-    if int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-               'actions']) > 0:
-        data = jsonManager.update_player_range(message, data)
-        await message.channel.send('Your range is now ' + str(
-            data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                'range']) + ' tiles ' + message.author.mention + '!')
+async def increase_range(message, data, guild_id=None, channel_id=None):
+    if guild_id is not None and channel_id is not None:
+        if int(data['games'][guild_id][channel_id]['players'][str(message.author.id)][
+                   'actions']) > 0:
+            data = jsonManager.update_player_range(message, data, guild_id, channel_id)
+            await message.channel.send('Your range is now ' + str(
+                data['games'][guild_id][channel_id]['players'][str(message.author.id)][
+                    'range']) + ' tiles ' + message.author.mention + '!')
+        else:
+            await message.channel.send('You do not have any actions to increase your range ' + message.author.mention + '!')
     else:
-        await message.channel.send('You do not have any actions to increase your range ' + message.author.mention + '!')
+        if int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                   'actions']) > 0:
+            data = jsonManager.update_player_range(message, data)
+            await message.channel.send('Your range is now ' + str(
+                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                    'range']) + ' tiles ' + message.author.mention + '!')
+        else:
+            await message.channel.send('You do not have any actions to increase your range ' + message.author.mention + '!')
 
 
 async def move(message, data, command):
