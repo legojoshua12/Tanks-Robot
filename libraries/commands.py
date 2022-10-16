@@ -31,8 +31,44 @@ async def direct_message_commands(message, command):
     elif command == 'dm':
         await message.author.send("I'm already here talking to you! Use `help` to get a list of commands.")
     else:
-        await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
-                                                            'list of commands and options.')
+        # Here we handle the special commands for game actions like moving, shooting, etc.
+        is_in_games = jsonManager.is_player_in_game(message)
+        is_in_multiple_games = jsonManager.is_player_in_multiple_games(message)
+        if is_in_games and not is_in_multiple_games:
+            guild_id, channel_id = jsonManager.get_player_server_channel_single(message)
+            if command == 'board':
+                rendered_board = renderPipeline.construct_image(jsonManager.get_board(message, guild_id, channel_id),
+                                                                jsonManager.read_games_json()['games'][
+                                                                    str(guild_id)][str(channel_id)][
+                                                                    'playerColors'])
+                await display_board(message, rendered_board)
+            elif command == 'players':
+                # await commands.show_player_statistics(message, jsonManager.read_games_json(), client)
+                pass
+            elif command == 'increase range':
+                # await commands.increase_range(message, jsonManager.read_games_json())
+                pass
+            elif command == 'move':
+                # await commands.move(message, jsonManager.read_games_json(), command)
+                pass
+            elif command == 'shoot':
+                # await commands.shoot(message, jsonManager.read_games_json(), command, client)
+                pass
+            elif command == 'vote':
+                # await commands.vote_action(message, jsonManager.read_games_json(), command)
+                pass
+            elif command == 'send':
+                # await commands.send_actions(message, jsonManager.read_games_json())
+                pass
+            else:
+                await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
+                                                                    'list of commands and options.')
+        elif is_in_multiple_games and is_in_games:
+            # TODO add clauses for handling if a player is in multiple games
+            pass
+        else:
+            await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
+                                                                'list of commands and options.')
 
 
 def dm_help_embed(embed_color, in_single_game):
@@ -52,6 +88,10 @@ def dm_help_embed(embed_color, in_single_game):
         embed.add_field(name='move [direction]',
                         value='Spends 1 action point to 1 space north, south, west, or east (Example: move west) in '
                               'your current game',
+                        inline=False)
+        embed.add_field(name='vote [player]',
+                        value='Adds a vote from a dead player to give a single bonus action to a remaining living '
+                              'player in your current game',
                         inline=False)
         embed.add_field(name='send [player or player number] [number of actions]',
                         value='Sends a player in your current game the number of specified actions '
@@ -232,6 +272,11 @@ async def active_game_help_embed(message, embed_color, command_prefix):
     embed.add_field(name=f'{command_prefix}move [direction]',
                     value=f'Spends 1 action point to 1 space north, south, west, or east '
                           f'(Example: {command_prefix}move west)',
+                    inline=False)
+    embed.add_field(name=f'{command_prefix}vote [player or player number]',
+                    value=f'Adds a vote from a dead player to give a single bonus action to a remaining living player '
+                          f'(Example: {command_prefix}vote @testsubject) '
+                          f'(Example: {command_prefix}vote 3) ',
                     inline=False)
     embed.add_field(name=f'{command_prefix}send [player or player number] [number of actions]',
                     value=f'Sends a player the number of specified actions '

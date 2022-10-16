@@ -67,6 +67,14 @@ def is_player_in_game(message):
     return False
 
 
+def get_player_server_channel_single(message):
+    player_data = read_players_json()
+    for player in player_data:
+        if str(player) == str(message.author.id):
+            return str(player_data[player][0][0]), str(player_data[player][0][1])
+    return False
+
+
 def add_player_to_game(message, player_number):
     data = read_games_json()
     new_player_data = {
@@ -172,13 +180,18 @@ def save_data(data):
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
-def get_board(message):
+def get_board(message, guild_id=None, channel_id=None):
     """
     Pass in a message to get the board of that ongoing game
     :param message: The message asking for the respective game board
+    :param guild_id: An optional field for direct access of guild instead of using the message attribute
+    :param channel_id: An optional field for direct access of channel instead of using the message attribute
     """
     data = read_games_json()
-    return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+    if guild_id is not None and channel_id is not None:
+        return data['games'][guild_id][channel_id]['board']['data']
+    else:
+        return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
 
 
 def update_status(message):
