@@ -9,7 +9,7 @@ import libraries.jsonManager as jsonManager
 import libraries.renderPipeline as renderPipeline
 
 
-async def direct_message_commands(message, command):
+async def direct_message_commands(message, command, client):
     embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command.startswith(configUtils.read_value('botSettings', 'botCommandPrefix')):
         command = command[2:].lower()
@@ -43,8 +43,7 @@ async def direct_message_commands(message, command):
                                                                     'playerColors'])
                 await display_board(message, rendered_board)
             elif command == 'players':
-                # await commands.show_player_statistics(message, jsonManager.read_games_json(), client)
-                pass
+                await show_player_statistics(message, jsonManager.read_games_json(), client, guild_id, channel_id)
             elif command == 'increase range':
                 # await commands.increase_range(message, jsonManager.read_games_json())
                 pass
@@ -609,14 +608,19 @@ async def list_players_lobby(message, data, client):
     await message.channel.send(embed=embed)
 
 
-async def show_player_statistics(message, data, client):
+async def show_player_statistics(message, data, client, guild_id=None, channel_id=None):
     """
     Shows player 1 in the game and their information, along with the template for the player card moving forward
     :param message: The original message sent
     :param data: The complete JSON file
     :param client: The discord rpc client
+    :param guild_id: An optional field for direct access of guild instead of using the message attribute
+    :param channel_id: An optional field for direct access of channel instead of using the message attribute
     """
-    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    if guild_id is not None and channel_id is not None:
+        data = data['games'][guild_id][channel_id]
+    else:
+        data = data['games'][str(message.guild.id)][str(message.channel.id)]
     player_id = None
     for key in data['players']:
         if data['players'][str(key)]['playerNumber'] == 1:

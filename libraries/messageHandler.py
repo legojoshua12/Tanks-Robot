@@ -14,7 +14,7 @@ async def handle_message(message, client, commandMessageStarter):
     :return: None
     """
     if isinstance(message.channel, discord.channel.DMChannel):
-        await commands.direct_message_commands(message, message.content)
+        await commands.direct_message_commands(message, message.content, client)
     else:
         # TODO This is for audit purposes only, remove on final build
         if message.content == 'clear':
