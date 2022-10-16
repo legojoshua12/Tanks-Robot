@@ -459,7 +459,6 @@ def is_player_in_range(board, player_range, attacker, defense):
 
 async def vote_action(message, data, command):
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
-    player_number = 0
     if command[5:8] != '<@!':
         try:
             int(command[5:])
@@ -573,6 +572,7 @@ async def show_player_statistics(message, data, client):
     :param client: The discord rpc client
     """
     data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    player_id = None
     for key in data['players']:
         if data['players'][str(key)]['playerNumber'] == 1:
             player_id = key
@@ -618,7 +618,7 @@ async def flip_through_player_stats_card(message, data, direction, client):
     await message.edit(embed=embed)
 
 
-def add_player_card_fields(color_info, user, player_number, lives, actions, range, hits, moves):
+def add_player_card_fields(color_info, user, player_number, lives, actions, shooting_range, hits, moves):
     """
     Adds information to an embed of player statistics
     """
@@ -631,7 +631,7 @@ def add_player_card_fields(color_info, user, player_number, lives, actions, rang
     embed.add_field(name='Player Number', value='\U0001F464 ' + str(player_number), inline=True)
     embed.add_field(name='Health', value='\u2665 ' + str(lives), inline=True)
     embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
-    embed.add_field(name='Range', value='\U0001F3AF ' + str(range), inline=True)
+    embed.add_field(name='Range', value='\U0001F3AF ' + str(shooting_range), inline=True)
     embed.add_field(name='Hits', value='\U0001F4A5 ' + str(hits), inline=True)
     embed.add_field(name='Times Moved', value='\U0001F4A8 ' + str(moves), inline=True)
     return embed
