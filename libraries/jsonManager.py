@@ -152,18 +152,26 @@ def check_if_game_is_in_channel(message):
         return 'none'
 
 
-def save_board(message, board):
+def save_board(message, board, guild_id=None, channel_id=None):
     data = read_games_json()
-    data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
-    data = __format_board_json(str(message.guild.id), (str(message.channel.id)), data)
+    if guild_id is not None and channel_id is not None:
+        data['games'][guild_id][channel_id]['board'] = board
+        data = __format_board_json(guild_id, channel_id, data)
+    else:
+        data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
+        data = __format_board_json(str(message.guild.id), (str(message.channel.id)), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
-def save_player(message, userId, playerInfo):
+def save_player(message, userId, playerInfo, guild_id=None, channel_id=None):
     data = read_games_json()
-    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(userId)] = playerInfo
-    data = __format_board_json(str(message.guild.id), (str(message.channel.id)), data)
+    if guild_id is not None and channel_id is not None:
+        data['games'][guild_id][channel_id]['players'][str(userId)] = playerInfo
+        data = __format_board_json(guild_id, channel_id, data)
+    else:
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(userId)] = playerInfo
+        data = __format_board_json(str(message.guild.id), (str(message.channel.id)), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
