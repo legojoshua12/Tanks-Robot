@@ -54,8 +54,7 @@ async def direct_message_commands(message, command, client):
             elif command == 'shoot':
                 await shoot(message, jsonManager.read_games_json(), total_command, client, guild_id, channel_id, True)
             elif command == 'vote':
-                # await commands.vote_action(message, jsonManager.read_games_json(), total_command)
-                pass
+                await vote_action(message, jsonManager.read_games_json(), total_command, guild_id, channel_id)
             elif command == 'send':
                 # await commands.send_actions(message, jsonManager.read_games_json())
                 pass
@@ -550,8 +549,13 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                     jsonManager.save_data(data)
                     user = await client.fetch_user(player)
                     if lives > 0:
+                        # Send a DM message that the enemy was shot
                         await message.channel.send('Player ' + user.mention + ' has been shot! They now have ' +
                                                    str(lives) + '\u2665 lives left.')
+                        # Send a message in the general chat that someone was shot
+                        channel = client.get_channel(int(channel_id))
+                        await channel.send('Player ' + user.mention + ' has been shot by ' + message.author.mention +
+                                           '! They now have ' + str(lives) + '\u2665 lives left.')
                     else:
                         await jsonManager.kill_player(message, str(split_command[1]), user)
                     break
@@ -603,13 +607,21 @@ def is_player_in_range(board, player_range, attacker, defense):
     return True
 
 
-async def vote_action(message, data, command):
-    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+async def vote_action(message, data, command, guild_id=None, channel_id=None):
+    if guild_id is not None and channel_id is not None:
+        data = data['games'][guild_id][channel_id]
+    else:
+        data = data['games'][str(message.guild.id)][str(message.channel.id)]
     if command[5:8] != '<@!':
         try:
             int(command[5:])
         except ValueError:
-            await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
+            if guild_id is not None and channel_id is not None:
+                await message.channel.send(
+                    'You cannot vote for players using @ in a direct message ' + message.author.mention +
+                    '! Please use player-number instead')
+            else:
+                await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
             return
         player_number = int(command[5:])
     else:
@@ -618,7 +630,10 @@ async def vote_action(message, data, command):
 
     # Prevents the edge case of player number not being assigned
     if player_number == 0:
-        await message.channel.send('Internal error processing request *playerNumber*')
+        if command == 'vote 0':
+            await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
+        else:
+            await message.channel.send('Internal error processing request *playerNumber*')
         return
 
     # Prevents a player from voting for themselves
@@ -778,7 +793,10 @@ def add_player_card_fields(color_info, user, player_number, lives, actions, shoo
                           description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
                           color=embed_color
                           )
-    embed.set_thumbnail(url=user.avatar.url)
+    if user.avatar is not None:
+        embed.set_thumbnail(url=user.avatar.url)
+    else:
+        embed.set_thumbnail(url=user.display_avatar)
     embed.add_field(name='Player Number', value='\U0001F464 ' + str(player_number), inline=True)
     embed.add_field(name='Health', value='\u2665 ' + str(lives), inline=True)
     embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
