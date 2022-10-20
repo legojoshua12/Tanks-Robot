@@ -56,7 +56,7 @@ async def direct_message_commands(message, command, client):
             elif command == 'vote':
                 await vote_action(message, jsonManager.read_games_json(), total_command, guild_id, channel_id)
             elif command == 'send':
-                # await commands.send_actions(message, jsonManager.read_games_json())
+                await send_actions(message, jsonManager.read_games_json(), client, guild_id, channel_id)
                 pass
             else:
                 await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
@@ -95,9 +95,8 @@ def dm_help_embed(embed_color, in_single_game):
                         value='Adds a vote from a dead player to give a single bonus action to a remaining living '
                               'player in your current game',
                         inline=False)
-        embed.add_field(name='send [player or player number] [number of actions]',
+        embed.add_field(name='send [player number] [number of actions]',
                         value='Sends a player in your current game the number of specified actions '
-                              '(Example: send @testsubject 2) '
                               '(Example: send 3 1)', inline=False)
     elif not in_single_game and in_single_game is not None:
         # TODO Figure out a way to specify games
@@ -277,7 +276,7 @@ async def active_game_help_embed(message, embed_color, command_prefix):
                     inline=False)
     embed.add_field(name=f'{command_prefix}shoot [player or player number]',
                     value=f'Spends 1 action point to shoot another player within range of your own '
-                          f'(Example: {command_prefix}shoot @testsubject)'
+                          f'(Example: {command_prefix}shoot @testsubject) '
                           f'(Example: {command_prefix}shoot 4)',
                     inline=False)
     embed.add_field(name=f'{command_prefix}vote [player or player number]',
@@ -656,28 +655,36 @@ async def vote_action(message, data, command, guild_id=None, channel_id=None):
             break
 
 
-async def send_actions(message, data):
+async def send_actions(message, data, client=None, guild_id=None, channel_id=None):
     """
     Sends a number of actions from the message sender to their desired target
     :param message: The original message sent by the commander
     :param data: The complete json dataset
     """
-    data = data['games'][str(message.guild.id)][str(message.channel.id)]
-    locators = str(message.content)[2:].split()
+    if guild_id is not None and channel_id is not None:
+        data = data['games'][guild_id][channel_id]
+        locators = str(message.content).split()
+    else:
+        data = data['games'][str(message.guild.id)][str(message.channel.id)]
+        locators = str(message.content)[2:].split()
     if len(locators) != 3:
         command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
         await message.channel.send('Invalid command ' + message.author.mention +
                                    f'! Please use {command_prefix}send [player or player number] [number of actions]')
         return
     else:
-        if locators[1][:3] == '<@!':
-            player_id = locators[1][3:len(locators[1]) - 1]
-            for player in data['players']:
-                if player == player_id:
-                    locators[1] = int(data['players'][player]['playerNumber'])
-                    break
-            if not isinstance(locators[1], int):
-                await message.channel.send(locators[1] + ' is not in this game ' + message.author.mention + '!')
+        if guild_id is None and channel_id is None:
+            if locators[1][:3] == '<@!':
+                player_id = locators[1][3:len(locators[1]) - 1]
+                for player in data['players']:
+                    if player == player_id:
+                        locators[1] = int(data['players'][player]['playerNumber'])
+                        break
+                if not isinstance(locators[1], int):
+                    await message.channel.send(locators[1] + ' is not in this game ' + message.author.mention + '!')
+                    return
+            else:
+                await message.channel.send('You cannot use @ in a dm! Please specify the player number instead')
                 return
         else:
             try:
@@ -703,6 +710,11 @@ async def send_actions(message, data):
                     int(data['players'][str(message.author.id)]['actions']) - int(locators[2])
                 await message.channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to ' +
                                            '<@!' + player + '>')
+                if guild_id is not None and channel_id is not None:
+                    dm_user = await client.fetch_user(int(player))
+                    channel = await client.create_dm(dm_user)
+                    await channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to you ' +
+                                           '<@!' + player + '>' + '!')
                 break
 
 
@@ -802,7 +814,7 @@ def add_player_card_fields(color_info, user, player_number, lives, actions, shoo
     embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
     embed.add_field(name='Range', value='\U0001F3AF ' + str(shooting_range), inline=True)
     embed.add_field(name='Hits', value='\U0001F4A5 ' + str(hits), inline=True)
-    embed.add_field(name='Times Moved', value='\U0001F4A8 ' + str(moves), inline=True)
+    embed.add_field(name='Times Moved', value='\U000026A1 ' + str(moves), inline=True)
     return embed
 
 
