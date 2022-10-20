@@ -50,28 +50,41 @@ def save_player_json(message, data):
     return
 
 
-def is_player_in_multiple_games(message):
+def is_player_in_multiple_games(message, user_id=None):
     player_data = read_players_json()
     for player in player_data:
-        if str(player) == str(message.author.id):
-            if len(player_data[player]) > 1:
+        if user_id is not None:
+            if str(player) == str(user_id):
+                if len(player_data[player]) > 1:
+                    return True
+        elif message is not None:
+            if str(player) == str(message.author.id):
+                if len(player_data[player]) > 1:
+                    return True
+    return False
+
+
+def is_player_in_game(message, user_id=None):
+    player_data = read_players_json()
+    for player in player_data:
+        if user_id is not None:
+            if str(player) == str(user_id):
+                return True
+        elif message is not None:
+            if str(player) == str(message.author.id):
                 return True
     return False
 
 
-def is_player_in_game(message):
+def get_player_server_channel_single(message, user_id=None):
     player_data = read_players_json()
     for player in player_data:
-        if str(player) == str(message.author.id):
-            return True
-    return False
-
-
-def get_player_server_channel_single(message):
-    player_data = read_players_json()
-    for player in player_data:
-        if str(player) == str(message.author.id):
-            return str(player_data[player][0][0]), str(player_data[player][0][1])
+        if user_id is not None:
+            if str(player) == str(user_id):
+                return str(player_data[player][0][0]), str(player_data[player][0][1])
+        elif message is not None:
+            if str(player) == str(message.author.id):
+                return str(player_data[player][0][0]), str(player_data[player][0][1])
     return False
 
 

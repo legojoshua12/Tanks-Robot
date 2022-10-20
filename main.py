@@ -76,12 +76,39 @@ async def on_reaction_add(reaction, user):
     if (reaction.message.author != client.user) or (user == client.user):
         return
     if len(reaction.message.embeds) > 0:
-        await reaction.message.remove_reaction(reaction.emoji, user)
-        data = jsonManager.read_games_json()
-        if ('U+{:X}'.format(ord(reaction.emoji))) == 'U+27A1':
-            await commands.flip_through_player_stats_card(reaction.message, data, 1, client)
-        elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
-            await commands.flip_through_player_stats_card(reaction.message, data, -1, client)
+        if isinstance(reaction.message.channel, discord.channel.DMChannel):
+            try:
+                if ('U+{:X}'.format(ord(reaction.emoji))) == 'U+27A1':
+                    is_in_games = jsonManager.is_player_in_game(None, user.id)
+                    is_in_multiple_games = jsonManager.is_player_in_multiple_games(None, user.id)
+                    await reaction.message.delete()
+                    if is_in_games and not is_in_multiple_games:
+                        guild_id, channel_id = jsonManager.get_player_server_channel_single(None, user.id)
+                        player_index = str(int(reaction.message.embeds[0].fields[0].value[2:]) + 1)
+                        await commands.show_player_statistics(reaction.message, jsonManager.read_games_json(), client,
+                                                              guild_id, channel_id, player_index)
+
+                elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
+                    is_in_games = jsonManager.is_player_in_game(None, user.id)
+                    is_in_multiple_games = jsonManager.is_player_in_multiple_games(None, user.id)
+                    await reaction.message.delete()
+                    if is_in_games and not is_in_multiple_games:
+                        guild_id, channel_id = jsonManager.get_player_server_channel_single(None, user.id)
+                        player_index = str(int(reaction.message.embeds[0].fields[0].value[2:]) - 1)
+                        await commands.show_player_statistics(reaction.message, jsonManager.read_games_json(), client,
+                                                              guild_id, channel_id, player_index)
+            except TypeError:
+                return
+        else:
+            await reaction.message.remove_reaction(reaction.emoji, user)
+            try:
+                data = jsonManager.read_games_json()
+                if ('U+{:X}'.format(ord(reaction.emoji))) == 'U+27A1':
+                    await commands.flip_through_player_stats_card(reaction.message, data, 1, client)
+                elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
+                    await commands.flip_through_player_stats_card(reaction.message, data, -1, client)
+            except TypeError:
+                return
 
 
 async def handle_queue():
