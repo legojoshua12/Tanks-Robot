@@ -17,7 +17,7 @@ if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.starts
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Setup .env for instancing
-if os.path.exists('.env'):
+if os.path.exists('../../.env'):
     print('Env file located, initializing...')
     load_dotenv()
     TOKEN = os.getenv('DISCORD_TOKEN')
@@ -26,7 +26,7 @@ if os.path.exists('.env'):
         exit()
 else:
     logging.critical('Env file not located, generating now...')
-    with open('.env', 'w') as f:
+    with open('../../.env', 'w') as f:
         f.write('DISCORD_TOKEN=')
     logging.critical('Exiting, please set a DISCORD_TOKEN in the env file')
     exit()

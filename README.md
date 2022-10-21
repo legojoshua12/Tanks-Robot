@@ -7,7 +7,7 @@ This is a robot for the game tanks inspired by [HalfBrick studios](https://www.h
 
 ## Local Compiling
 In order to run a local instance of this robot, you need [Python 3.8](https://www.python.org/downloads/release/python-380/).
-All required libraries can be obtained with correct versioning for pip via the [requirements.txt](requirements.txt) file.
+All required libraries can be obtained with correct versioning for pip via the [requirements.txt](requirements.txt) file. If you would like to run the project and the tests, then use the [requirements_dev.txt](requirements_dev.txt) file.
 
 The libraries referenced come with lower level libraries needed for operation and pip will automatically install those as needed.
 

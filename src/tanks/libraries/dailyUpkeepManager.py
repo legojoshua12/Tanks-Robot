@@ -1,5 +1,5 @@
 """Completes the daily upkeep with a call from the main class coroutine"""
-from datetime import datetime, timezone
+from datetime import datetime
 
 from libraries import jsonManager
 
