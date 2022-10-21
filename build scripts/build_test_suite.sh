@@ -1,4 +1,4 @@
 pip install -e .
 git add .
-git commit
+git commit -m "Automated build"
 git push
