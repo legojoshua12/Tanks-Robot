@@ -9,61 +9,99 @@ import libraries.jsonManager as jsonManager
 import libraries.renderPipeline as renderPipeline
 
 
-async def direct_message_commands(message, command):
+async def direct_message_commands(message, command, client):
     embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command.startswith(configUtils.read_value('botSettings', 'botCommandPrefix')):
         command = command[2:].lower()
     else:
         command = command.lower()
     if command == 'help':
-        embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
-                                                                     "reference! Simply type one of these to get "
-                                                                     "started.",
-                              color=embed_color)
-        embed.add_field(name="help", value="Gives a list of commands", inline=False)
-        embed.add_field(name="rules", value="Gives the game rules and how to play", inline=False)
+        is_in_games = jsonManager.is_player_in_game(message)
+        is_in_multiple_games = jsonManager.is_player_in_multiple_games(message)
+        if is_in_games and not is_in_multiple_games:
+            embed = dm_help_embed(embed_color, True)
+        elif is_in_multiple_games and is_in_games:
+            embed = dm_help_embed(embed_color, False)
+        else:
+            embed = dm_help_embed(embed_color, None)
         await message.channel.send(embed=embed)
     elif command == 'rules':
-        emoji = '\U0001F52B'
-        embed = discord.Embed(title="Rules", description=f"This is the rules on how to play tanks! {emoji}",
-                              color=embed_color)
-        embed.add_field(name="1. You use actions to do things", value="Actions are the the core of the game, "
-                                                                      "they can be used to move, shoot, or "
-                                                                      "increase your tank's range.",
-                        inline=False)
-        embed.add_field(name="2. You receive 1 action a day", value="Every player in the game receives 1 "
-                                                                    "action a day at 12pm (noon) PST",
-                        inline=False)
-        embed.add_field(name="3. Dead players can give an extra action",
-                        value="All dead players have the option to vote once a day. If a living player "
-                              "receives 3+ votes, they will get 2 actions instead of 1 at 12pm.",
-                        inline=False)
-        embed.add_field(name="4. You have health",
-                        value="Each player has a total of 3 health points. If you lose a health point, "
-                              "it cannot be regenerated and the damage is permanent.",
-                        inline=False)
-        embed.add_field(name="5. Actions can be given",
-                        value="You can bribe other players to give you actions. You are not bound by the "
-                              "actions you receive each day and can get more from other players by asking them.",
-                        inline=False)
-        embed.add_field(name="6. You use actions whenever you want",
-                        value="Using your actions is not time bound. You may chose to use them at any point in "
-                              "the day should you still be alive and have the available actions.",
-                        inline=False)
-        embed.add_field(name="7. There are 5-20 players",
-                        value="The game requires at least 5 unique players to get started and will work with up to "
-                              "a maximum of 20 people.",
-                        inline=False)
-        embed.add_field(name="8. Last person standing wins!",
-                        value="If you have the ability to make it to being the last person alive, you will "
-                              "win! Congratulations if you manage to make it here!",
-                        inline=False)
+        embed = make_rules_embed(embed_color)
         await message.channel.send(embed=embed)
     elif command == 'dm':
         await message.author.send("I'm already here talking to you! Use `help` to get a list of commands.")
     else:
-        await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
-                                                            'list of commands and options.')
+        # Here we handle the special commands for game actions like moving, shooting, etc.
+        is_in_games = jsonManager.is_player_in_game(message)
+        is_in_multiple_games = jsonManager.is_player_in_multiple_games(message)
+        total_command = command
+        if len(command.split()) > 1 and command != 'increase range':
+            command = (command.split())[0]
+        if is_in_games and not is_in_multiple_games:
+            guild_id, channel_id = jsonManager.get_player_server_channel_single(message)
+            if command == 'board':
+                rendered_board = renderPipeline.construct_image(jsonManager.get_board(message, guild_id, channel_id),
+                                                                jsonManager.read_games_json()['games'][
+                                                                    str(guild_id)][str(channel_id)][
+                                                                    'playerColors'])
+                await display_board(message, rendered_board)
+            elif command == 'players':
+                await show_player_statistics(message, jsonManager.read_games_json(), client, guild_id, channel_id)
+            elif command == 'increase range':
+                await increase_range(message, jsonManager.read_games_json(), guild_id, channel_id)
+            elif command == 'move':
+                await move(message, jsonManager.read_games_json(), total_command, guild_id, channel_id)
+            elif command == 'shoot':
+                await shoot(message, jsonManager.read_games_json(), total_command, client, guild_id, channel_id, True)
+            elif command == 'vote':
+                await vote_action(message, jsonManager.read_games_json(), total_command, guild_id, channel_id)
+            elif command == 'send':
+                await send_actions(message, jsonManager.read_games_json(), client, guild_id, channel_id)
+                pass
+            else:
+                await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
+                                                                    'list of commands and options.')
+        elif is_in_multiple_games and is_in_games:
+            # TODO add clauses for handling if a player is in multiple games
+            pass
+        else:
+            await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
+                                                                'list of commands and options.')
+
+
+def dm_help_embed(embed_color, in_single_game):
+    embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
+                                                                 "reference! Simply type one of these to get "
+                                                                 "started.",
+                          color=embed_color)
+    embed.add_field(name="help", value="Gives a list of commands", inline=False)
+    embed.add_field(name="rules", value="Gives the game rules and how to play", inline=False)
+    if in_single_game:
+        embed.add_field(name='board', value="Shows the board of the only game you are in", inline=False)
+        embed.add_field(name='players', value="Shows the players of the game you are in and their statistics",
+                        inline=False)
+        embed.add_field(name='increase range',
+                        value="Spends 1 action point to increase your range in your current game",
+                        inline=False)
+        embed.add_field(name='move [direction]',
+                        value='Spends 1 action point to 1 space north, south, west, or east (Example: move west) in '
+                              'your current game',
+                        inline=False)
+        embed.add_field(name='shoot [player number]',
+                        value='Spends 1 action point to shoot another player within range of your own in your current '
+                              'game',
+                        inline=False)
+        embed.add_field(name='vote [player]',
+                        value='Adds a vote from a dead player to give a single bonus action to a remaining living '
+                              'player in your current game',
+                        inline=False)
+        embed.add_field(name='send [player number] [number of actions]',
+                        value='Sends a player in your current game the number of specified actions '
+                              '(Example: send 3 1)', inline=False)
+    elif not in_single_game and in_single_game is not None:
+        # TODO Figure out a way to specify games
+        embed.add_field(name='TODO', value="Need to figure out how to specify games ADMIN CODE ONLY", inline=False)
+    return embed
 
 
 async def public_commands_no_game(message, command):
@@ -236,6 +274,16 @@ async def active_game_help_embed(message, embed_color, command_prefix):
                     value=f'Spends 1 action point to 1 space north, south, west, or east '
                           f'(Example: {command_prefix}move west)',
                     inline=False)
+    embed.add_field(name=f'{command_prefix}shoot [player or player number]',
+                    value=f'Spends 1 action point to shoot another player within range of your own '
+                          f'(Example: {command_prefix}shoot @testsubject) '
+                          f'(Example: {command_prefix}shoot 4)',
+                    inline=False)
+    embed.add_field(name=f'{command_prefix}vote [player or player number]',
+                    value=f'Adds a vote from a dead player to give a single bonus action to a remaining living player '
+                          f'(Example: {command_prefix}vote @testsubject) '
+                          f'(Example: {command_prefix}vote 3) ',
+                    inline=False)
     embed.add_field(name=f'{command_prefix}send [player or player number] [number of actions]',
                     value=f'Sends a player the number of specified actions '
                           f'(Example: {command_prefix}send @testsubject 2) '
@@ -243,18 +291,30 @@ async def active_game_help_embed(message, embed_color, command_prefix):
     await message.channel.send(embed=embed)
 
 
-async def increase_range(message, data):
-    if int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-               'actions']) > 0:
-        data = jsonManager.update_player_range(message, data)
-        await message.channel.send('Your range is now ' + str(
-            data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                'range']) + ' tiles ' + message.author.mention + '!')
+async def increase_range(message, data, guild_id=None, channel_id=None):
+    if guild_id is not None and channel_id is not None:
+        if int(data['games'][guild_id][channel_id]['players'][str(message.author.id)][
+                   'actions']) > 0:
+            data = jsonManager.update_player_range(message, data, guild_id, channel_id)
+            await message.channel.send('Your range is now ' + str(
+                data['games'][guild_id][channel_id]['players'][str(message.author.id)][
+                    'range']) + ' tiles ' + message.author.mention + '!')
+        else:
+            await message.channel.send('You do not have any actions to increase your range ' + message.author.mention +
+                                       '!')
     else:
-        await message.channel.send('You do not have any actions to increase your range ' + message.author.mention + '!')
+        if int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                   'actions']) > 0:
+            data = jsonManager.update_player_range(message, data)
+            await message.channel.send('Your range is now ' + str(
+                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                    'range']) + ' tiles ' + message.author.mention + '!')
+        else:
+            await message.channel.send('You do not have any actions to increase your range ' + message.author.mention +
+                                       '!')
 
 
-async def move(message, data, command):
+async def move(message, data, command, guild_id=None, channel_id=None):
     split_command = command.split(' ')
     if len(split_command) == 1:
         await message.channel.send('Please specify a tile or a direction to move in ' + message.author.mention + '!')
@@ -265,11 +325,16 @@ async def move(message, data, command):
                                                                                        'direction to move.')
         return
 
-    board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
-    player_number = str(
-        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-            'playerNumber'])
-    new_player_stats = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
+    if guild_id is not None and channel_id is not None:
+        board = data['games'][guild_id][channel_id]['board']['data']
+        player_number = str(data['games'][guild_id][channel_id]['players'][str(message.author.id)]['playerNumber'])
+        new_player_stats = data['games'][guild_id][channel_id]['players'][str(message.author.id)]
+    else:
+        board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+        player_number = str(data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+                            [str(message.author.id)]['playerNumber'])
+        new_player_stats = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(
+            message.author.id)]
     if new_player_stats['actions'] <= 0:
         await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
         return
@@ -288,15 +353,21 @@ async def move(message, data, command):
                         return
                     board[i][j] = 0
                     board[i + 1][j] = int(player_number)
-                    jsonManager.save_board(message, board)
-                    await display_board(message, renderPipeline.construct_image(board,
-                                                                                data['games'][str(message.guild.id)][
-                                                                                   str(message.channel.id)][
-                                                                                   'playerColors']),
-                                        ('You have moved north 1 tile ' + message.author.mention + '!'))
+                    jsonManager.save_board(message, board, guild_id, channel_id)
+                    if guild_id is not None and channel_id is not None:
+                        await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
+                        [channel_id]['playerColors']),
+                                            ('You have moved north 1 tile ' + message.author.mention + '!'))
+                    else:
+                        await display_board(message, renderPipeline.construct_image(board,
+                                                                                    data['games'][
+                                                                                        str(message.guild.id)][
+                                                                                        str(message.channel.id)][
+                                                                                        'playerColors']),
+                                            ('You have moved north 1 tile ' + message.author.mention + '!'))
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
-                    jsonManager.save_player(message, message.author.id, new_player_stats)
+                    jsonManager.save_player(message, message.author.id, new_player_stats, guild_id, channel_id)
                     return
                 elif split_command[1] == 'south':
                     if i <= 0:
@@ -311,15 +382,20 @@ async def move(message, data, command):
                         return
                     board[i][j] = 0
                     board[i - 1][j] = int(player_number)
-                    jsonManager.save_board(message, board)
-                    await display_board(message, renderPipeline.construct_image(board,
-                                                                                data['games'][str(message.guild.id)][
-                                                                                   str(message.channel.id)][
-                                                                                   'playerColors']),
-                                        ('You have moved south 1 tile ' + message.author.mention + '!'))
+                    jsonManager.save_board(message, board, guild_id, channel_id)
+                    if guild_id is not None and channel_id is not None:
+                        await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
+                        [channel_id]['playerColors']), ('You have moved south 1 tile ' + message.author.mention + '!'))
+                    else:
+                        await display_board(message, renderPipeline.construct_image(board,
+                                                                                    data['games'][
+                                                                                        str(message.guild.id)][
+                                                                                        str(message.channel.id)][
+                                                                                        'playerColors']),
+                                            ('You have moved south 1 tile ' + message.author.mention + '!'))
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
-                    jsonManager.save_player(message, message.author.id, new_player_stats)
+                    jsonManager.save_player(message, message.author.id, new_player_stats, guild_id, channel_id)
                     return
                 elif split_command[1] == 'east':
                     if j >= (len(board[i]) - 1):
@@ -333,15 +409,22 @@ async def move(message, data, command):
                         return
                     board[i][j] = 0
                     board[i][j + 1] = int(player_number)
-                    jsonManager.save_board(message, board)
-                    await display_board(message, renderPipeline.construct_image(board,
-                                                                                data['games'][str(message.guild.id)][
-                                                                                   str(message.channel.id)][
-                                                                                   'playerColors']),
-                                        ('You have moved east 1 tile ' + message.author.mention + '!'))
+                    jsonManager.save_board(message, board, guild_id, channel_id)
+                    if guild_id is not None and channel_id is not None:
+                        await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
+                        [channel_id]['playerColors']),
+                                            ('You have moved east 1 tile ' + message.author.mention + '!'))
+                    else:
+                        await display_board(message, renderPipeline.construct_image(board,
+                                                                                    data['games'][
+                                                                                        str(message.guild.id)][
+                                                                                        str(message.channel.id)][
+                                                                                        'playerColors']),
+                                            ('You have moved east 1 tile ' + message.author.mention + '!'))
+
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
-                    jsonManager.save_player(message, message.author.id, new_player_stats)
+                    jsonManager.save_player(message, message.author.id, new_player_stats, guild_id, channel_id)
                     return
                 elif split_command[1] == 'west':
                     if j <= 0:
@@ -355,15 +438,22 @@ async def move(message, data, command):
                         return
                     board[i][j] = 0
                     board[i][j - 1] = int(player_number)
-                    jsonManager.save_board(message, board)
-                    await display_board(message, renderPipeline.construct_image(board,
-                                                                                data['games'][str(message.guild.id)][
-                                                                                   str(message.channel.id)][
-                                                                                   'playerColors']),
-                                        ('You have moved west 1 tile ' + message.author.mention + '!'))
+                    jsonManager.save_board(message, board, guild_id, channel_id)
+                    if guild_id is not None and channel_id is not None:
+                        await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
+                        [channel_id]['playerColors']),
+                                            ('You have moved west 1 tile ' + message.author.mention + '!'))
+                    else:
+                        await display_board(message, renderPipeline.construct_image(board,
+                                                                                    data['games'][
+                                                                                        str(message.guild.id)][
+                                                                                        str(message.channel.id)][
+                                                                                        'playerColors']),
+                                            ('You have moved west 1 tile ' + message.author.mention + '!'))
+
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
-                    jsonManager.save_player(message, message.author.id, new_player_stats)
+                    jsonManager.save_player(message, message.author.id, new_player_stats, guild_id, channel_id)
                     return
                 elif split_command[1] == 'weast':
                     await message.channel.send(
@@ -373,7 +463,7 @@ async def move(message, data, command):
                                                                          'coordinate ' + message.author.mention + '!')
 
 
-async def shoot(message, data, command, client):
+async def shoot(message, data, command, client, guild_id=None, channel_id=None, is_dm=False):
     split_command = command.split(' ')
     if len(split_command) == 1:
         await message.channel.send(
@@ -386,13 +476,21 @@ async def shoot(message, data, command, client):
                                                                                           'shoot.')
         return
 
-    board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
-    player_number = str(
-        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-            'playerNumber'])
-    if data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] <= 0:
-        await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
-        return
+    if guild_id is not None and channel_id is not None:
+        board = data['games'][guild_id][channel_id]['board']['data']
+        player_number = str(
+            data['games'][guild_id][channel_id]['players'][str(message.author.id)]['playerNumber'])
+        if data['games'][guild_id][channel_id]['players'][str(message.author.id)]['actions'] <= 0:
+            await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
+            return
+    else:
+        board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+        player_number = str(
+            data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                'playerNumber'])
+        if data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] <= 0:
+            await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
+            return
     if split_command[1] == str(player_number):
         # Reason we don't say shoot yourself here is that is not something everyone can handle hearing,
         # so we say you cannot shoot your own player instead
@@ -400,48 +498,96 @@ async def shoot(message, data, command, client):
         return
     try:
         specified_number = int(split_command[1])
-        if specified_number > len(
-                data['games'][str(message.guild.id)][str(message.channel.id)]['players']) or specified_number <= 0:
-            await message.channel.send(
-                'The player number of ' + str(specified_number) + ' does not exist ' + message.author.mention + '.')
-            return
+        if guild_id is not None and channel_id is not None:
+            if specified_number > len(
+                    data['games'][guild_id][channel_id]['players']) or specified_number <= 0:
+                await message.channel.send(
+                    'The player number of ' + str(specified_number) + ' does not exist ' + message.author.mention + '.')
+                return
+        else:
+            if specified_number > len(
+                    data['games'][str(message.guild.id)][str(message.channel.id)]['players']) or specified_number <= 0:
+                await message.channel.send(
+                    'The player number of ' + str(specified_number) + ' does not exist ' + message.author.mention + '.')
+                return
     except ValueError:
-        if str(split_command[1][:3]) == '<@!':
+        if str(split_command[1][:3]) == '<@!' and is_dm is False:
             try:
-                split_command[1] = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][
-                    str((split_command[1][3:])[:-1])]['playerNumber']
+                if guild_id is not None and channel_id is not None:
+                    split_command[1] = data['games'][guild_id][channel_id]['players'][str((split_command[1][3:])[:-1])][
+                        'playerNumber']
+                else:
+                    split_command[1] = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][
+                        str((split_command[1][3:])[:-1])]['playerNumber']
             except KeyError:
+                await message.channel.send('That player is not currently in the game ' + message.author.mention + '!')
+                return
+        elif is_dm is True:
+            if str(split_command[1][:2]) == '<@' or str(split_command[1][:1]) == '@':
+                command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
+                await message.channel.send('You cannot @ people in direct messages ' + message.author.mention +
+                                           f'! Please use their in-game player-number found on {command_prefix}players')
+                return
+            else:
                 await message.channel.send('That player is not currently in the game ' + message.author.mention + '!')
                 return
         else:
             return
-    if is_player_in_range(board, str(
-            data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                'range']), str(player_number), str(split_command[1])):
-        for player in data['games'][str(message.guild.id)][str(message.channel.id)]['players']:
-            if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player][
-                       'playerNumber']) == str(split_command[1]):
-                # TODO finish up shooting players
-                # Remove a life from an enemy
-                lives = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] - 1
-                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] = lives
-                # Remove an action from the attacker
-                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                    'actions'] -= 1
-                # Add a hit to the attacker's record
-                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                    'hits'] += 1
-                jsonManager.save_data(data)
-                user = await client.fetch_user(player)
-                if lives > 0:
-                    await message.channel.send(
-                        'Player ' + user.mention + ' has been shot! They now have ' + str(lives) + '\u2665 lives left.')
-                else:
-                    await jsonManager.kill_player(message, str(split_command[1]), user)
-                break
+    if guild_id is not None and channel_id is not None:
+        if is_player_in_range(board, str(data['games'][guild_id][channel_id]['players'][str(message.author.id)][
+                                             'range']), str(player_number), str(split_command[1])):
+            for player in data['games'][guild_id][channel_id]['players']:
+                if str(data['games'][guild_id][channel_id]['players'][player]['playerNumber']) == str(split_command[1]):
+                    # Remove a life from an enemy
+                    lives = data['games'][guild_id][channel_id]['players'][player]['lives'] - 1
+                    data['games'][guild_id][channel_id]['players'][player]['lives'] = lives
+                    # Remove an action from the attacker
+                    data['games'][guild_id][channel_id]['players'][str(message.author.id)]['actions'] -= 1
+                    # Add a hit to the attacker's record
+                    data['games'][guild_id][channel_id]['players'][str(message.author.id)]['hits'] += 1
+                    jsonManager.save_data(data)
+                    user = await client.fetch_user(player)
+                    if lives > 0:
+                        # Send a DM message that the enemy was shot
+                        await message.channel.send('Player ' + user.mention + ' has been shot! They now have ' +
+                                                   str(lives) + '\u2665 lives left.')
+                        # Send a message in the general chat that someone was shot
+                        channel = client.get_channel(int(channel_id))
+                        await channel.send('Player ' + user.mention + ' has been shot by ' + message.author.mention +
+                                           '! They now have ' + str(lives) + '\u2665 lives left.')
+                    else:
+                        await jsonManager.kill_player(message, str(split_command[1]), user)
+                    break
+        else:
+            await message.channel.send(
+                'Player ' + str(split_command[1]) + ' is out of range ' + message.author.mention + '!')
     else:
-        await message.channel.send(
-            'Player ' + str(split_command[1]) + ' is out of range ' + message.author.mention + '!')
+        if is_player_in_range(board, str(
+                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                    'range']), str(player_number), str(split_command[1])):
+            for player in data['games'][str(message.guild.id)][str(message.channel.id)]['players']:
+                if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player][
+                           'playerNumber']) == str(split_command[1]):
+                    # Remove a life from an enemy
+                    lives = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] - 1
+                    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] = lives
+                    # Remove an action from the attacker
+                    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                        'actions'] -= 1
+                    # Add a hit to the attacker's record
+                    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                        'hits'] += 1
+                    jsonManager.save_data(data)
+                    user = await client.fetch_user(player)
+                    if lives > 0:
+                        await message.channel.send(
+                            'Player ' + user.mention + ' has been shot! They now have ' + str(lives) + '\u2665 lives left.')
+                    else:
+                        await jsonManager.kill_player(message, str(split_command[1]), user)
+                    break
+        else:
+            await message.channel.send(
+                'Player ' + str(split_command[1]) + ' is out of range ' + message.author.mention + '!')
 
 
 def is_player_in_range(board, player_range, attacker, defense):
@@ -460,14 +606,21 @@ def is_player_in_range(board, player_range, attacker, defense):
     return True
 
 
-async def vote_action(message, data, command):
-    data = data['games'][str(message.guild.id)][str(message.channel.id)]
-    player_number = 0
+async def vote_action(message, data, command, guild_id=None, channel_id=None):
+    if guild_id is not None and channel_id is not None:
+        data = data['games'][guild_id][channel_id]
+    else:
+        data = data['games'][str(message.guild.id)][str(message.channel.id)]
     if command[5:8] != '<@!':
         try:
             int(command[5:])
         except ValueError:
-            await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
+            if guild_id is not None and channel_id is not None:
+                await message.channel.send(
+                    'You cannot vote for players using @ in a direct message ' + message.author.mention +
+                    '! Please use player-number instead')
+            else:
+                await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
             return
         player_number = int(command[5:])
     else:
@@ -476,7 +629,10 @@ async def vote_action(message, data, command):
 
     # Prevents the edge case of player number not being assigned
     if player_number == 0:
-        await message.channel.send('Internal error processing request *playerNumber*')
+        if command == 'vote 0':
+            await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
+        else:
+            await message.channel.send('Internal error processing request *playerNumber*')
         return
 
     # Prevents a player from voting for themselves
@@ -499,28 +655,36 @@ async def vote_action(message, data, command):
             break
 
 
-async def send_actions(message, data):
+async def send_actions(message, data, client=None, guild_id=None, channel_id=None):
     """
     Sends a number of actions from the message sender to their desired target
     :param message: The original message sent by the commander
     :param data: The complete json dataset
     """
-    data = data['games'][str(message.guild.id)][str(message.channel.id)]
-    locators = str(message.content)[2:].split()
+    if guild_id is not None and channel_id is not None:
+        data = data['games'][guild_id][channel_id]
+        locators = str(message.content).split()
+    else:
+        data = data['games'][str(message.guild.id)][str(message.channel.id)]
+        locators = str(message.content)[2:].split()
     if len(locators) != 3:
         command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
         await message.channel.send('Invalid command ' + message.author.mention +
                                    f'! Please use {command_prefix}send [player or player number] [number of actions]')
         return
     else:
-        if locators[1][:3] == '<@!':
-            player_id = locators[1][3:len(locators[1]) - 1]
-            for player in data['players']:
-                if player == player_id:
-                    locators[1] = int(data['players'][player]['playerNumber'])
-                    break
-            if not isinstance(locators[1], int):
-                await message.channel.send(locators[1] + ' is not in this game ' + message.author.mention + '!')
+        if guild_id is None and channel_id is None:
+            if locators[1][:3] == '<@!':
+                player_id = locators[1][3:len(locators[1]) - 1]
+                for player in data['players']:
+                    if player == player_id:
+                        locators[1] = int(data['players'][player]['playerNumber'])
+                        break
+                if not isinstance(locators[1], int):
+                    await message.channel.send(locators[1] + ' is not in this game ' + message.author.mention + '!')
+                    return
+            else:
+                await message.channel.send('You cannot use @ in a dm! Please specify the player number instead')
                 return
         else:
             try:
@@ -546,6 +710,11 @@ async def send_actions(message, data):
                     int(data['players'][str(message.author.id)]['actions']) - int(locators[2])
                 await message.channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to ' +
                                            '<@!' + player + '>')
+                if guild_id is not None and channel_id is not None:
+                    dm_user = await client.fetch_user(int(player))
+                    channel = await client.create_dm(dm_user)
+                    await channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to you ' +
+                                           '<@!' + player + '>' + '!')
                 break
 
 
@@ -568,16 +737,23 @@ async def list_players_lobby(message, data, client):
     await message.channel.send(embed=embed)
 
 
-async def show_player_statistics(message, data, client):
+async def show_player_statistics(message, data, client, guild_id=None, channel_id=None, player_number=1):
     """
     Shows player 1 in the game and their information, along with the template for the player card moving forward
     :param message: The original message sent
     :param data: The complete JSON file
     :param client: The discord rpc client
+    :param guild_id: An optional field for direct access of guild instead of using the message attribute
+    :param channel_id: An optional field for direct access of channel instead of using the message attribute
+    :param player_number: The index to start the player number at when grabbing
     """
-    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    if guild_id is not None and channel_id is not None:
+        data = data['games'][guild_id][channel_id]
+    else:
+        data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    player_id = None
     for key in data['players']:
-        if data['players'][str(key)]['playerNumber'] == 1:
+        if str(data['players'][str(key)]['playerNumber']) == str(player_number):
             player_id = key
             break
 
@@ -621,7 +797,7 @@ async def flip_through_player_stats_card(message, data, direction, client):
     await message.edit(embed=embed)
 
 
-def add_player_card_fields(color_info, user, player_number, lives, actions, range, hits, moves):
+def add_player_card_fields(color_info, user, player_number, lives, actions, shooting_range, hits, moves):
     """
     Adds information to an embed of player statistics
     """
@@ -630,13 +806,16 @@ def add_player_card_fields(color_info, user, player_number, lives, actions, rang
                           description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
                           color=embed_color
                           )
-    embed.set_thumbnail(url=user.avatar.url)
+    if user.avatar is not None:
+        embed.set_thumbnail(url=user.avatar.url)
+    else:
+        embed.set_thumbnail(url=user.display_avatar)
     embed.add_field(name='Player Number', value='\U0001F464 ' + str(player_number), inline=True)
     embed.add_field(name='Health', value='\u2665 ' + str(lives), inline=True)
     embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
-    embed.add_field(name='Range', value='\U0001F3AF ' + str(range), inline=True)
+    embed.add_field(name='Range', value='\U0001F3AF ' + str(shooting_range), inline=True)
     embed.add_field(name='Hits', value='\U0001F4A5 ' + str(hits), inline=True)
-    embed.add_field(name='Times Moved', value='\U0001F4A8 ' + str(moves), inline=True)
+    embed.add_field(name='Times Moved', value='\U000026A1 ' + str(moves), inline=True)
     return embed
 
 

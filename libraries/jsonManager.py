@@ -34,6 +34,60 @@ def create_game(message):
     return data
 
 
+def save_player_json(message, data):
+    players = read_players_json()
+    playersData = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+    serverData = (str(message.guild.id), str(message.channel.id))
+    for player in playersData:
+        if str(player) not in players:
+            players[str(player)] = [serverData]
+        else:
+            old_data = players[str(player)]
+            old_data.append(serverData)
+            players[str(player)] = old_data
+    with open('PlayerData.json', 'w', encoding='utf-8') as f:
+        json.dump(players, f, ensure_ascii=False, indent=4)
+    return
+
+
+def is_player_in_multiple_games(message, user_id=None):
+    player_data = read_players_json()
+    for player in player_data:
+        if user_id is not None:
+            if str(player) == str(user_id):
+                if len(player_data[player]) > 1:
+                    return True
+        elif message is not None:
+            if str(player) == str(message.author.id):
+                if len(player_data[player]) > 1:
+                    return True
+    return False
+
+
+def is_player_in_game(message, user_id=None):
+    player_data = read_players_json()
+    for player in player_data:
+        if user_id is not None:
+            if str(player) == str(user_id):
+                return True
+        elif message is not None:
+            if str(player) == str(message.author.id):
+                return True
+    return False
+
+
+def get_player_server_channel_single(message, user_id=None):
+    player_data = read_players_json()
+    for player in player_data:
+        if user_id is not None:
+            if str(player) == str(user_id):
+                return str(player_data[player][0][0]), str(player_data[player][0][1])
+        elif message is not None:
+            if str(player) == str(message.author.id):
+                return str(player_data[player][0][0]), str(player_data[player][0][1])
+    return False
+
+
 def add_player_to_game(message, player_number):
     data = read_games_json()
     new_player_data = {
@@ -111,18 +165,26 @@ def check_if_game_is_in_channel(message):
         return 'none'
 
 
-def save_board(message, board):
+def save_board(message, board, guild_id=None, channel_id=None):
     data = read_games_json()
-    data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
-    data = __format_board_json(str(message.guild.id), (str(message.channel.id)), data)
+    if guild_id is not None and channel_id is not None:
+        data['games'][guild_id][channel_id]['board'] = board
+        data = __format_board_json(guild_id, channel_id, data)
+    else:
+        data['games'][str(message.guild.id)][str(message.channel.id)]['board'] = board
+        data = __format_board_json(str(message.guild.id), (str(message.channel.id)), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
-def save_player(message, userId, playerInfo):
+def save_player(message, userId, playerInfo, guild_id=None, channel_id=None):
     data = read_games_json()
-    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(userId)] = playerInfo
-    data = __format_board_json(str(message.guild.id), (str(message.channel.id)), data)
+    if guild_id is not None and channel_id is not None:
+        data['games'][guild_id][channel_id]['players'][str(userId)] = playerInfo
+        data = __format_board_json(guild_id, channel_id, data)
+    else:
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(userId)] = playerInfo
+        data = __format_board_json(str(message.guild.id), (str(message.channel.id)), data)
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
@@ -139,13 +201,18 @@ def save_data(data):
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
-def get_board(message):
+def get_board(message, guild_id=None, channel_id=None):
     """
     Pass in a message to get the board of that ongoing game
     :param message: The message asking for the respective game board
+    :param guild_id: An optional field for direct access of guild instead of using the message attribute
+    :param channel_id: An optional field for direct access of channel instead of using the message attribute
     """
     data = read_games_json()
-    return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+    if guild_id is not None and channel_id is not None:
+        return data['games'][guild_id][channel_id]['board']['data']
+    else:
+        return data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
 
 
 def update_status(message):
@@ -162,13 +229,19 @@ def update_status(message):
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
 
-def update_player_range(message, data):
-    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] = (
-            int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                    'actions']) - 1)
-    data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['range'] = (
-            int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                    'range']) + 1)
+def update_player_range(message, data, guild_id=None, channel_id=None):
+    if guild_id is not None and channel_id is not None:
+        data['games'][guild_id][channel_id]['players'][str(message.author.id)]['actions'] = (
+                int(data['games'][guild_id][channel_id]['players'][str(message.author.id)]['actions']) - 1)
+        data['games'][guild_id][channel_id]['players'][str(message.author.id)]['range'] = (
+                int(data['games'][guild_id][channel_id]['players'][str(message.author.id)]['range']) + 1)
+    else:
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] = (
+                int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                        'actions']) - 1)
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['range'] = (
+                int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                        'range']) + 1)
     with open('Games.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
     return data
@@ -202,6 +275,16 @@ def read_games_json():
     Reads all games across all servers and returns an array of all game data
     """
     file = open('Games.json', )
+    data = json.load(file)
+    file.close()
+    return data
+
+
+def read_players_json():
+    """
+    A quick storage of all games a certain player is in for handling dms
+    """
+    file = open('PlayerData.json', )
     data = json.load(file)
     file.close()
     return data
