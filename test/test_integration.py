@@ -17,7 +17,7 @@ from src.tanks.libraries import configUtils
 @pytest.mark.asyncio
 async def test_ping(bot):
     """Test if the ping command works"""
-    message_starter = configUtils.read_value('botSettings', 'botCommandPrefix', '../config.ini')
+    # message_starter = configUtils.read_value('botSettings', 'botCommandPrefix', '../config.ini')
     # await dpytest.message(message_starter + "ping")
     # assert dpytest.verify().message().contains().content("pong")
     dpytest.verify()
