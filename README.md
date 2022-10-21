@@ -1,8 +1,7 @@
 # Tanks-Robot
 ![Python Version](https://img.shields.io/badge/Python_Version-3.8-informational?style=flat&logo=python&logoColor=white&color=11BB11)
 ![PR Status](https://img.shields.io/badge/PRs-Welcome-informational?style=flat&logo=git&logoColor=white&color=11BB11)
-![Tests Status](https://img.shields.io/badge/test-passing-informational?style=flat&logo=pytest&logoColor=white&color=11BB11)
-![Tests Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/main.yml/badge.svg?branch=feature-1)
+![Tests Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/tests.yml/badge.svg)
 
 This is a robot for the game tanks inspired by [HalfBrick studios](https://www.halfbrick.com/).
 
