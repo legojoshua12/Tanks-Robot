@@ -5,7 +5,7 @@ correctly
 import pytest
 import discord.ext.test as dpytest
 
-from libraries import configUtils
+from src.tanks.libraries import configUtils
 
 
 @pytest.mark.asyncio

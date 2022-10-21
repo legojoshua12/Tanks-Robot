@@ -1,8 +1,8 @@
 """This is the main loader for the robot, handling any and all incoming commands off of the command queue"""
 import discord
 
-from libraries import boardConstructor as bC
-from libraries import jsonManager, renderPipeline, commands
+from src.tanks.libraries import boardConstructor as bC
+from src.tanks.libraries import jsonManager, renderPipeline, commands
 
 
 async def handle_message(message, client, commandMessageStarter):

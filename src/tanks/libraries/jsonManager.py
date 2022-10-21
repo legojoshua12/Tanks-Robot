@@ -5,7 +5,7 @@ import os
 import cmapy
 import random
 
-from libraries.CustomIndentEncoder import NoIndent, MyEncoder
+from src.tanks.libraries.CustomIndentEncoder import NoIndent, MyEncoder
 
 
 def create_game(message):

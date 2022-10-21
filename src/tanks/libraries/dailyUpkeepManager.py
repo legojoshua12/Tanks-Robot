@@ -1,7 +1,7 @@
 """Completes the daily upkeep with a call from the main class coroutine"""
 from datetime import datetime
 
-from libraries import jsonManager
+from src.tanks.libraries import jsonManager
 
 
 async def dailyActionsAndVoteUpkeep(client):

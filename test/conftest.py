@@ -7,7 +7,7 @@ import discord
 import discord.ext.test as dpytest
 from discord.ext import commands
 
-from libraries import configUtils as cfg
+from src.tanks.libraries import configUtils as cfg
 
 
 @pytest.fixture

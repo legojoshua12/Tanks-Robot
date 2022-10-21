@@ -4,9 +4,9 @@ import random
 
 import discord
 
-import libraries.configUtils as configUtils
-import libraries.jsonManager as jsonManager
-import libraries.renderPipeline as renderPipeline
+import src.tanks.libraries.configUtils as configUtils
+import src.tanks.libraries.jsonManager as jsonManager
+import src.tanks.libraries.renderPipeline as renderPipeline
 
 
 async def direct_message_commands(message, command, client):

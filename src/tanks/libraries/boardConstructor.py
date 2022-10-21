@@ -1,7 +1,7 @@
 """Builds and returns a board function, as well as the search area function on the board"""
 import random
 
-import libraries.configUtils as configUtils
+import src.tanks.libraries.configUtils as configUtils
 
 
 def construct_board_data(players):

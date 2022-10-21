@@ -1,7 +1,7 @@
 """This builds the image and downscales it for showing the board or any image related processing"""
 from PIL import Image, ImageDraw
 
-import libraries.configUtils as configUtils
+from src.tanks.libraries import configUtils as configUtils
 
 
 def construct_image(board, player_colors):
