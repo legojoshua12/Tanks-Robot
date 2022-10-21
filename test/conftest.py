@@ -13,9 +13,9 @@ from src.tanks.libraries import configUtils as cfg
 @pytest.fixture
 def bot(event_loop):
     """Create the bot test environment to use with every test"""
-    messageStarter = cfg.read_value('botSettings', 'botCommandPrefix', '../config.ini')
+    message_starter = cfg.read_value('botSettings', 'botCommandPrefix', '../config.ini')
     bot = commands.Bot(
-        command_prefix=messageStarter, event_loop=event_loop, intents=discord.Intents.all()
+        command_prefix=message_starter, event_loop=event_loop, intents=discord.Intents.all()
     )
     bot.add_command(ping)
     dpytest.configure(bot)
