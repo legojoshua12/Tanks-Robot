@@ -4,12 +4,6 @@ Tests functions that require no use of the discord API and can be run locally
 import pytest
 
 from src.tanks.libraries import boardConstructor as bc
-from src.tanks.libraries import messageHandler as mh
-from src.tanks.libraries import configUtils
-
-from test import unit_test_utils
-import discord
-import discord.ext.test as dpytest
 
 
 class TestDirectFunctions:
@@ -30,13 +24,3 @@ class TestDirectFunctions:
                             break
                     found_players.append(board[row][col])
         assert len(found_players) == 5
-
-
-class TestCommandJSON:
-    @pytest.mark.asyncio
-    async def test_move_north(self):
-        client = discord.Client(intents=discord.Intents.all())
-        sample_message = unit_test_utils.make_sample_message()
-        command_message_starter = configUtils.read_value('botSettings', 'botCommandPrefix')
-        await mh.handle_message(sample_message, client, command_message_starter)
-        assert True

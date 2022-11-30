@@ -5,21 +5,34 @@ import pytest
 import discord
 
 import discord.ext.test as dpytest
+import pytest_asyncio
 from discord.ext import commands
 
-from src.tanks.libraries import configUtils as cfg
+
+@pytest.fixture(autouse=True)
+def run_around_tests():
+    # Runs before each test
+    with open('Games.json', 'w') as f:
+        f.write('{}')
+    f.close()
+    yield
+    # Runs after each test
+    if os.path.exists("Games.json"):
+        os.remove("Games.json")
 
 
-@pytest.fixture
-def bot(event_loop):
-    """Create the bot test environment to use with every test"""
-    # message_starter = cfg.read_value('botSettings', 'botCommandPrefix', '../config.ini')
-    bot = commands.Bot(
-        command_prefix='*/', event_loop=event_loop, intents=discord.Intents.all()
-    )
-    bot.add_command(ping)
-    dpytest.configure(bot)
-    return bot
+@pytest_asyncio.fixture
+async def bot(request, event_loop):
+    intents = discord.Intents.default()
+    intents.members = True
+    intents.message_content = True
+    b = commands.Bot(command_prefix="!", event_loop=event_loop,
+                     intents=intents)
+    await b._async_setup_hook()
+
+    b.add_command(ping)
+    dpytest.configure(b)
+    return b
 
 
 @commands.command()
