@@ -4,9 +4,19 @@ import os
 import pytest
 import discord
 
+import src.tanks.libraries.configUtils as cfgUtils
+import src.tanks.libraries.messageHandler as msgHandler
+
 import discord.ext.test as dpytest
 import pytest_asyncio
 from discord.ext import commands
+from discord.ext.commands import Cog, command
+
+
+class Main_Cog(Cog):
+    @commands.Cog.listener()
+    async def handle_message(self, ctx, text: str):
+        await ctx.send(text)
 
 
 @pytest.fixture(autouse=True)
@@ -26,19 +36,22 @@ async def bot(request, event_loop):
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
-    b = commands.Bot(command_prefix="!", event_loop=event_loop,
+    b = commands.Bot(command_prefix=get_command_prefix(), event_loop=event_loop,
                      intents=intents)
     await b._async_setup_hook()
+    await b.add_cog(Main_Cog())
 
-    b.add_command(ping)
     dpytest.configure(b)
     return b
 
 
-@commands.command()
-async def ping(ctx):
-    """Send message to a channel where !ping was called"""
-    await ctx.send("pong")
+@pytest.fixture
+def command_prefix():
+    return cfgUtils.read_value('botSettings', 'botCommandPrefix')
+
+
+def get_command_prefix():
+    return cfgUtils.read_value('botSettings', 'botCommandPrefix')
 
 
 def pytest_sessionfinish():
