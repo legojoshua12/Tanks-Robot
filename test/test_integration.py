@@ -10,8 +10,11 @@ from src.tanks.libraries import messageHandler
 class TestGeneric:
     @pytest.mark.asyncio
     async def test_not_command(self, bot, command_prefix):
-        await dpytest.message("Hello, World!")
-        assert dpytest.verify().message().nothing()
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send("Hello, World!")
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().contains().nothing()
 
     @pytest.mark.asyncio
     async def test_command_invalid_syntax(self, bot, command_prefix):

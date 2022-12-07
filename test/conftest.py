@@ -10,13 +10,6 @@ import src.tanks.libraries.messageHandler as msgHandler
 import discord.ext.test as dpytest
 import pytest_asyncio
 from discord.ext import commands
-from discord.ext.commands import Cog, command
-
-
-class Main_Cog(Cog):
-    @commands.Cog.listener()
-    async def handle_message(self, ctx, text: str):
-        await ctx.send(text)
 
 
 @pytest.fixture(autouse=True)
@@ -39,7 +32,6 @@ async def bot(request, event_loop):
     b = commands.Bot(command_prefix=get_command_prefix(), event_loop=event_loop,
                      intents=intents)
     await b._async_setup_hook()
-    await b.add_cog(Main_Cog())
 
     dpytest.configure(b)
     return b
