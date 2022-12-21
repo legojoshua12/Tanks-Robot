@@ -2,7 +2,7 @@
 import discord
 
 from src.tanks.libraries import boardConstructor as bC
-from src.tanks.libraries import jsonManager, renderPipeline, commands
+from src.tanks.libraries import jsonManager, renderPipeline, commands, configUtils
 
 
 async def handle_message(message, client, commandMessageStarter):
@@ -42,8 +42,8 @@ async def handle_message(message, client, commandMessageStarter):
 
             # Commands
             # Check if there is a game going
-            isGamePresent = jsonManager.check_if_game_is_in_channel(message)
-            if isGamePresent == 'lobby':
+            is_game_present: str = jsonManager.check_if_game_is_in_channel(message)
+            if is_game_present == 'lobby':
                 action = await commands.public_commands_lobby(message, command)
                 if action == 'join':
                     data = jsonManager.read_games_json()
@@ -71,8 +71,8 @@ async def handle_message(message, client, commandMessageStarter):
                 elif action == 'start':
                     # Here we want to actually boot the game
                     numberOfPlayers = jsonManager.get_number_of_players_in_game(message)
-                    # TODO this is an admin number
-                    numberOfPlayers = 5
+                    if str(configUtils.read_value('startGame', 'adminTesting')) == 'True':
+                        numberOfPlayers = 5
                     if 5 <= numberOfPlayers <= 20:
                         booted = False
                         try:
@@ -105,7 +105,7 @@ async def handle_message(message, client, commandMessageStarter):
                         else:
                             await message.channel.send('There are too many players in the game to start!')
 
-            elif isGamePresent == 'active':
+            elif is_game_present == 'active':
                 action = await commands.public_commands_game(message, command)
                 if action == 'board':
                     renderedBoard = renderPipeline.construct_image(jsonManager.get_board(message), jsonManager.read_games_json()['games'][str(message.guild.id)][str(message.channel.id)]['playerColors'])
@@ -125,16 +125,16 @@ async def handle_message(message, client, commandMessageStarter):
                 elif action == 'send':
                     await commands.send_actions(message, jsonManager.read_games_json())
 
-            elif isGamePresent == 'none':
-                possibleCommand = await commands.public_commands_no_game(message, command)
-                if possibleCommand == 'startCommandReceived':
-                    wroteToJson = False
+            elif is_game_present == 'none':
+                possible_command = await commands.public_commands_no_game(message, command)
+                if possible_command == 'startCommandReceived':
+                    wrote_to_json: bool = False
                     try:
                         jsonManager.create_game(message)
                         jsonManager.add_player_to_game(message, 1)
                         await message.channel.send('Adding ' + message.author.mention + ' to the new game of Tanks!')
-                        wroteToJson = True
+                        wrote_to_json = True
                     except:
                         await message.channel.send('An error has occurred in creating the game! Reverting now!')
-                    if wroteToJson:
+                    if wrote_to_json:
                         await commands.send_lobby_help_menu(message)

@@ -5,7 +5,6 @@ import pytest
 import discord
 
 import src.tanks.libraries.configUtils as cfgUtils
-import src.tanks.libraries.messageHandler as msgHandler
 
 import discord.ext.test as dpytest
 import pytest_asyncio
@@ -13,8 +12,11 @@ from discord.ext import commands
 
 
 @pytest.fixture(autouse=True)
-def run_around_tests():
+def run_around_tests() -> None:
+    """Fixture for each test setup and teardown of json file."""
     # Runs before each test
+    if os.path.exists("Games.json"):
+        os.remove("Games.json")
     with open('Games.json', 'w') as f:
         f.write('{}')
     f.close()
@@ -38,15 +40,15 @@ async def bot(request, event_loop):
 
 
 @pytest.fixture
-def command_prefix():
+def command_prefix() -> str:
     return cfgUtils.read_value('botSettings', 'botCommandPrefix')
 
 
-def get_command_prefix():
+def get_command_prefix() -> str:
     return cfgUtils.read_value('botSettings', 'botCommandPrefix')
 
 
-def pytest_sessionfinish():
+def pytest_sessionfinish() -> None:
     """Clean up files"""
     files = glob.glob('./dpytest_*.dat')
     for path in files:

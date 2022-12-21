@@ -5,10 +5,12 @@ import os
 import cmapy
 import random
 
+import discord
+
 from src.tanks.libraries.CustomIndentEncoder import NoIndent, MyEncoder
 
 
-def create_game(message):
+def create_game(message: discord.Message):
     data = read_games_json()
     # These are redundancy checks to ensure no data corruption
     if 'games' not in data:
@@ -34,16 +36,16 @@ def create_game(message):
     return data
 
 
-def save_player_json(message, data):
-    players = read_players_json()
-    playersData = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
-    serverData = (str(message.guild.id), str(message.channel.id))
-    for player in playersData:
+def save_player_json(message: discord.Message, data: dict):
+    players: dict = read_players_json()
+    players_data: dict = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+    server_data: dict = (str(message.guild.id), str(message.channel.id))
+    for player in players_data:
         if str(player) not in players:
-            players[str(player)] = [serverData]
+            players[str(player)] = [server_data]
         else:
             old_data = players[str(player)]
-            old_data.append(serverData)
+            old_data.append(server_data)
             players[str(player)] = old_data
     with open('PlayerData.json', 'w', encoding='utf-8') as f:
         json.dump(players, f, ensure_ascii=False, indent=4)
@@ -88,7 +90,7 @@ def get_player_server_channel_single(message, user_id=None):
     return False
 
 
-def add_player_to_game(message, player_number):
+def add_player_to_game(message, player_number: int):
     data = read_games_json()
     new_player_data = {
         message.author.id: {
@@ -285,7 +287,7 @@ def read_players_json():
     A quick storage of all games a certain player is in for handling dms
     """
     file = open('PlayerData.json', )
-    data = json.load(file)
+    data: dict = json.load(file)
     file.close()
     return data
 
