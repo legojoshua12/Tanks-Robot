@@ -33,6 +33,12 @@ class JsonUtility:
         jsonManager.add_player_to_game(mess, 1)
 
     @staticmethod
+    async def remove_testapp_game(bot, command_prefix):
+        guild = bot.guilds[0]
+        channel = guild.channels[0]
+        await channel.send(f"{command_prefix}leave")
+
+    @staticmethod
     def generateLobby():
         print('Hello World!')
 

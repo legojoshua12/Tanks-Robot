@@ -11,7 +11,10 @@ def construct_image(board, player_colors):
     :param player_colors: An array of all the player colors from the JSON
     """
     filename = 'EmptySquare.png'
-    tile = Image.open('textures/' + filename)
+    try:
+        tile = Image.open('textures/' + filename)
+    except FileNotFoundError:
+        tile = Image.open('src/tanks/textures/' + filename)
     complete_image = None
     for row in board:
         image = None
@@ -22,7 +25,10 @@ def construct_image(board, player_colors):
                 else:
                     try:
                         tank_file_name = 'TankOnBackground.png'
-                        tank = Image.open('textures/' + tank_file_name)
+                        try:
+                            tank = Image.open('textures/' + tank_file_name)
+                        except FileNotFoundError:
+                            tank = Image.open('src/tanks/textures/' + tank_file_name)
                         tank = __add_tank_number(tank, column)
                         tank = __recolor_tank(tank, player_colors[str(column)])
                         image = __stitch_tiles(image, tank)

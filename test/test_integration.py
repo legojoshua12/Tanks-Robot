@@ -174,11 +174,22 @@ class TestLobby:
         assert len(embeds) == 1
         assert dpytest.verify().message().contains().embed(embeds[0])
 
+    @pytest.mark.skip(reason='Skipping due to an error with dpytest for discord fetch user info')
     @pytest.mark.asyncio
     async def test_list_players(self, bot, command_prefix):
         await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
         channel = bot.guilds[0].text_channels[0]
         await channel.send(f"{command_prefix}players")
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        embeds = dpytest.get_message(peek=True).embeds
+        assert len(embeds) == 1
+        assert dpytest.verify().message().contains().embed(embeds[0])
+
+    @pytest.mark.asyncio
+    async def test_help(self, bot, command_prefix):
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}help")
         mess = dpytest.get_message()
         await messageHandler.handle_message(mess, bot, command_prefix)
         embeds = dpytest.get_message(peek=True).embeds
@@ -210,6 +221,40 @@ class TestLobby:
 
         # TODO temporary measure for now to implement dypytest verify
         assert dpytest.verify().message().contains().content("How can I help you? Use `help` to get started!")
+
+    @pytest.mark.asyncio
+    async def test_start_not_enough_players(self, bot, command_prefix):
+        await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}start")
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().content("There are not enough players in the game to start!")
+
+    @pytest.mark.skip(reason='Skipping due to not enough proper setup in utils')
+    @pytest.mark.asyncio()
+    async def test_start_too_many_players(self, bot, command_prefix):
+        await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}start")
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().content("There are too many players in the game to start!")
+
+    @pytest.mark.asyncio
+    async def test_start(self, bot, command_prefix):
+        await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        for i in range(4):
+            await channel.send(f"{command_prefix}join")
+            mess = dpytest.get_message()
+            mess.author = bot.guilds[0].members[i+3]
+            await messageHandler.handle_message(mess, bot, command_prefix)
+            assert dpytest.verify().message().content(f"Adding <@{mess.author.id}> to the new game of Tanks!")
+        await channel.send(f"{command_prefix}start")
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().content("")
 
     @pytest.mark.asyncio
     async def test_command_invalid_syntax(self, bot, command_prefix):
