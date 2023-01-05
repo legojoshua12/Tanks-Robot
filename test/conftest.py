@@ -1,6 +1,7 @@
 """Conftest setup for integration testing"""
 import glob
 import os
+import shutil
 import pytest
 import discord
 
@@ -20,10 +21,30 @@ def run_around_tests() -> None:
     with open('Games.json', 'w') as f:
         f.write('{}')
     f.close()
+    if os.path.exists("PlayerData.json"):
+        os.remove("PlayerData.json")
+    with open('PlayerData.json', 'w') as f:
+        f.write('{}')
+    f.close()
     yield
     # Runs after each test
     if os.path.exists("Games.json"):
         os.remove("Games.json")
+    if os.path.exists("PlayerData.json"):
+        os.remove("PlayerData.json")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def add_textures() -> None:
+    """Fixtures for grabbing and making a copy of the textures folder for the testing cases"""
+    if not os.path.exists("textures"):
+        os.mkdir("./textures")
+        shutil.copyfile(src="../src/tanks/textures/EmptySquare.png", dst="textures/EmptySquare.png")
+        shutil.copyfile(src="../src/tanks/textures/tank.png", dst="textures/tank.png")
+        shutil.copyfile(src="../src/tanks/textures/tankOnBackground.png", dst="textures/tankOnBackground.png")
+    yield
+    if os.path.exists("textures"):
+        shutil.rmtree("textures")
 
 
 @pytest_asyncio.fixture

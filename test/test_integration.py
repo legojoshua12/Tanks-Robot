@@ -7,8 +7,7 @@ import pytest
 
 import test.utilstest as utils
 
-from src.tanks.libraries import messageHandler
-from src.tanks.libraries import jsonManager
+from src.tanks.libraries import messageHandler, configUtils
 
 
 class TestGeneric:
@@ -27,6 +26,11 @@ class TestGeneric:
         mess = dpytest.get_message()
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.verify().message().nothing()
+
+    @pytest.mark.skip(reason="Skipping due to a lack of testing suite")
+    @pytest.mark.asyncio
+    async def test_queue(self):
+        assert True
 
 
 class TestDailyUpkeep:
@@ -174,7 +178,6 @@ class TestLobby:
         assert len(embeds) == 1
         assert dpytest.verify().message().contains().embed(embeds[0])
 
-    @pytest.mark.skip(reason='Skipping due to an error with dpytest for discord fetch user info')
     @pytest.mark.asyncio
     async def test_list_players(self, bot, command_prefix):
         await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
@@ -231,11 +234,17 @@ class TestLobby:
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.verify().message().content("There are not enough players in the game to start!")
 
-    @pytest.mark.skip(reason='Skipping due to not enough proper setup in utils')
     @pytest.mark.asyncio()
     async def test_start_too_many_players(self, bot, command_prefix):
-        await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
+        await utils.JsonUtility.add_many_players(bot, command_prefix)
+        members_list = bot.guilds[0].members[3:]
         channel = bot.guilds[0].text_channels[0]
+        for idx, member in enumerate(members_list):
+            await channel.send(f"{command_prefix}join")
+            mess = dpytest.get_message()
+            mess.author = bot.guilds[0].members[idx+3]
+            await messageHandler.handle_message(mess, bot, command_prefix)
+            assert dpytest.verify().message().content(f"Adding <@{member.id}> to the new game of Tanks!")
         await channel.send(f"{command_prefix}start")
         mess = dpytest.get_message()
         await messageHandler.handle_message(mess, bot, command_prefix)
@@ -251,10 +260,20 @@ class TestLobby:
             mess.author = bot.guilds[0].members[i+3]
             await messageHandler.handle_message(mess, bot, command_prefix)
             assert dpytest.verify().message().content(f"Adding <@{mess.author.id}> to the new game of Tanks!")
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        assert dpytest.verify().message().content("")
+        if not str(configUtils.read_value('startGame', 'adminTesting')).lower() == 'true':
+            await channel.send(f"{command_prefix}start")
+            mess = dpytest.get_message()
+            await messageHandler.handle_message(mess, bot, command_prefix)
+            assert dpytest.verify().message().content(f"Welcome to tanks <@{bot.guilds[0].members[2].id}>, " +
+                                                      f"<@{bot.guilds[0].members[3].id}>, " +
+                                                      f"<@{bot.guilds[0].members[4].id}>, " +
+                                                      f"<@{bot.guilds[0].members[5].id}>, " +
+                                                      f"<@{bot.guilds[0].members[6].id}>!")
+            mess = dpytest.get_message()
+            assert len(mess.attachments) == 1
+            assert mess.attachments[0].filename == 'image.png'
+        else:
+            assert True
 
     @pytest.mark.asyncio
     async def test_command_invalid_syntax(self, bot, command_prefix):
@@ -279,6 +298,47 @@ class TestLobby:
     @pytest.mark.asyncio
     async def test_mentioned(self, bot, command_prefix):
         await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"<@{bot.user.id}>")
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().nothing()
+
+
+class TestInGame:
+    @pytest.mark.asyncio
+    async def test_command_not_in_game(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}test")
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().content(f"You are not playing in this game <@{bot.user.id}>!")
+
+    @pytest.mark.asyncio
+    async def test_command_invalid_syntax(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}test")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().content(f"<@{bot.guilds[0].members[2].id}> Unknown command. "
+                                                  f"Please use `{command_prefix}help` "
+                                                  f"to view a list of commands and options.")
+
+    @pytest.mark.asyncio
+    async def test_ignored_message(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send('test')
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().nothing()
+
+    @pytest.mark.asyncio
+    async def test_mentioned(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
         channel = bot.guilds[0].text_channels[0]
         await channel.send(f"<@{bot.user.id}>")
         mess = dpytest.get_message()

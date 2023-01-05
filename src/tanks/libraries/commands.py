@@ -546,7 +546,7 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                     # Add a hit to the attacker's record
                     data['games'][guild_id][channel_id]['players'][str(message.author.id)]['hits'] += 1
                     jsonManager.save_data(data)
-                    user = await client.fetch_user(player)
+                    user = await client.fetch_user(int(player))
                     if lives > 0:
                         # Send a DM message that the enemy was shot
                         await message.channel.send('Player ' + user.mention + ' has been shot! They now have ' +
@@ -578,7 +578,7 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                     data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                         'hits'] += 1
                     jsonManager.save_data(data)
-                    user = await client.fetch_user(player)
+                    user = await client.fetch_user(int(player))
                     if lives > 0:
                         await message.channel.send(
                             'Player ' + user.mention + ' has been shot! They now have ' + str(lives) + '\u2665 lives left.')
@@ -731,7 +731,7 @@ async def list_players_lobby(message, data, client):
     embed = discord.Embed(title="Players List", description="Here is a list of all the players "
                                                             "currently queued to play", color=embed_color)
     for key in data['players']:
-        username = await client.fetch_user(key)
+        username = await client.fetch_user(int(key))
         player_number = data['players'][key]['playerNumber']
         embed.add_field(name=f"Player {player_number}", value=username, inline=False)
     await message.channel.send(embed=embed)
@@ -757,7 +757,7 @@ async def show_player_statistics(message, data, client, guild_id=None, channel_i
             player_id = key
             break
 
-    user = await client.fetch_user(player_id)
+    user = await client.fetch_user(int(player_id))
     color_info = data['playerColors'][str(data['players'][str(key)]['playerNumber'])]
     embed = add_player_card_fields(color_info, user, data['players'][str(key)]['playerNumber'],
                                    data['players'][str(key)]['lives'],
@@ -788,7 +788,7 @@ async def flip_through_player_stats_card(message, data, direction, client):
             player_id = key
             break
 
-    user = await client.fetch_user(player_id)
+    user = await client.fetch_user(int(player_id))
     color_info = data['playerColors'][player_index]
     embed = add_player_card_fields(color_info, user, data['players'][str(key)]['playerNumber'],
                                    data['players'][str(key)]['lives'],
