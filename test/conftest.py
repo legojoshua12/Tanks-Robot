@@ -34,19 +34,6 @@ def run_around_tests() -> None:
         os.remove("PlayerData.json")
 
 
-@pytest.fixture(scope="session", autouse=True)
-def add_textures() -> None:
-    """Fixtures for grabbing and making a copy of the textures folder for the testing cases"""
-    if not os.path.exists("textures"):
-        os.mkdir("./textures")
-        shutil.copyfile(src="../src/tanks/textures/EmptySquare.png", dst="textures/EmptySquare.png")
-        shutil.copyfile(src="../src/tanks/textures/tank.png", dst="textures/tank.png")
-        shutil.copyfile(src="../src/tanks/textures/tankOnBackground.png", dst="textures/tankOnBackground.png")
-    yield
-    if os.path.exists("textures"):
-        shutil.rmtree("textures")
-
-
 @pytest_asyncio.fixture
 async def bot(request, event_loop):
     intents = discord.Intents.default()
