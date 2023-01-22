@@ -1,10 +1,13 @@
 """
 Utility setup for hard JSON values as well as configuring states of testing classes for fixtures
 """
+import json
+
 import discord.ext.test as dpytest
 
 from src.tanks.libraries import messageHandler
 from src.tanks.libraries import jsonManager
+from src.tanks.libraries.CustomIndentEncoder import MyEncoder
 
 
 class CodecUtility:
@@ -13,7 +16,7 @@ class CodecUtility:
         return str(bytes(mess, 'utf-8'))
 
 
-# TODO implement code for utils class
+# TODO add definition annotations for documentation
 class JsonUtility:
     @staticmethod
     async def set_games_json_lobby(bot, command_prefix):
@@ -82,3 +85,33 @@ class JsonUtility:
         # Clear out the message queue
         dpytest.get_message()
         dpytest.get_message()
+
+    @staticmethod
+    def remove_player_actions(guild_id: str, channel_id: str, player_id: str) -> None:
+        data = jsonManager.read_games_json()
+        data['games'][guild_id][channel_id]['players'][player_id]['actions'] = 0
+        with open('Games.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+    @staticmethod
+    def infinite_player_actions(guild_id: str, channel_id: str, player_id: str) -> None:
+        data = jsonManager.read_games_json()
+        data['games'][guild_id][channel_id]['players'][player_id]['actions'] = 999
+        with open('Games.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+    @staticmethod
+    def get_player_range(message, guild_id=None, channel_id=None, player_id=None) -> int:
+        data = jsonManager.read_games_json()
+        if guild_id is not None and channel_id is not None:
+            return int(data['games'][str(guild_id)][str(channel_id)]['players'][str(player_id)]['range'])
+        else:
+            return int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+                           'range'])
+
+    @staticmethod
+    def kill_player(guild_id: str, channel_id: str, player_id: str) -> None:
+        data = jsonManager.read_games_json()
+        data['games'][guild_id][channel_id]['players'][player_id]['lives'] = 0
+        with open('Games.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)

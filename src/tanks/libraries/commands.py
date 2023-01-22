@@ -488,7 +488,8 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
         player_number = str(
             data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                 'playerNumber'])
-        if data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]['actions'] <= 0:
+        if data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
+            'actions'] <= 0:
             await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
             return
     if split_command[1] == str(player_number):
@@ -569,7 +570,8 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                 if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player][
                            'playerNumber']) == str(split_command[1]):
                     # Remove a life from an enemy
-                    lives = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] - 1
+                    lives = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player][
+                                'lives'] - 1
                     data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player]['lives'] = lives
                     # Remove an action from the attacker
                     data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
@@ -581,7 +583,8 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                     user = await client.fetch_user(int(player))
                     if lives > 0:
                         await message.channel.send(
-                            'Player ' + user.mention + ' has been shot! They now have ' + str(lives) + '\u2665 lives left.')
+                            'Player ' + user.mention + ' has been shot! They now have ' + str(
+                                lives) + '\u2665 lives left.')
                     else:
                         await jsonManager.kill_player(message, str(split_command[1]), user)
                     break
@@ -714,7 +717,7 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
                     dm_user = await client.fetch_user(int(player))
                     channel = await client.create_dm(dm_user)
                     await channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to you ' +
-                                           '<@!' + player + '>' + '!')
+                                       '<@!' + player + '>' + '!')
                 break
 
 

@@ -307,6 +307,143 @@ class TestLobby:
 
 class TestInGame:
     @pytest.mark.asyncio
+    async def test_board(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}board")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        mess = dpytest.get_message()
+        assert len(mess.attachments) == 1
+        assert mess.attachments[0].filename == 'image.png'
+
+    @pytest.mark.asyncio
+    async def test_players(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}players")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        message_embeds = dpytest.get_message(peek=True).embeds
+        assert len(message_embeds) == 1
+        assert dpytest.verify().message().embed(message_embeds[0])
+
+    # TODO Look into dpytest and verifying messages that contain emojis
+    @pytest.mark.asyncio
+    async def test_dm(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}dm")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        private_message = dpytest.get_message(peek=True)
+        assert private_message.channel.type == discord.ChannelType.private
+        assert utils.CodecUtility.encodeByteToString(private_message.content) == \
+               "b'Hey there! \\xf0\\x9f\\x91\\x8b How can I help you? Use `help` to get started!'"
+        # assert dpytest.verify().message().content(
+        #     "b'Hey there! \\xf0\\x9f\\x91\\x8b How can I help you? Use `help` to get started!'")
+
+        public_message = dpytest.get_message()
+        assert public_message.channel.type == discord.ChannelType.text
+        assert utils.CodecUtility.encodeByteToString(public_message.content) == \
+               f"b'<@{mess.author.id}> I just sent you a private message! \\xe2\\x9c\\x89'"
+        # assert dpytest.verify().message().content(
+        #     f"b'<@{mess.author.id}> I just sent you a private message! \\xe2\\x9c\\x89'")
+
+        # TODO temporary measure for now to implement dypytest verify
+        assert dpytest.verify().message().contains().content("How can I help you? Use `help` to get started!")
+
+    @pytest.mark.asyncio
+    async def test_increase_range_no_actions(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}increase range")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        utils.JsonUtility.remove_player_actions(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
+                                                str(bot.guilds[0].members[2].id))
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().content(
+            f"You do not have any actions to increase your range <@{mess.author.id}>!")
+
+    @pytest.mark.asyncio
+    async def test_increase_range(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}increase range")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        previous_range = utils.JsonUtility.get_player_range(mess)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().content(f"Your range is now {previous_range+1} tiles <@{mess.author.id}>!")
+
+    @pytest.mark.asyncio
+    async def test_vote_alive(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}vote")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().content(f"Only players with no more lives may vote on an extra action for a player <@{mess.author.id}>.")
+
+    @pytest.mark.asyncio
+    async def test_vote_no_player(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}vote")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
+                                      str(bot.guilds[0].members[2].id))
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        print(dpytest.get_message(peek=True).content)
+        assert dpytest.verify().message().content(f"Please specify a player to vote for <@{mess.author.id}>.")
+
+    @pytest.mark.asyncio
+    async def test_vote_non_existing_player(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}vote some_random_person")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
+                                      str(bot.guilds[0].members[2].id))
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        print(dpytest.get_message(peek=True).content)
+        assert dpytest.verify().message().content(f"*some_random_person* is not a player <@{mess.author.id}>!")
+
+    @pytest.mark.asyncio
+    async def test_vote_no_remaining(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}vote {bot.guilds[0].members[2].id}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
+                                      str(bot.guilds[0].members[2].id))
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        print(dpytest.get_message(peek=True).content)
+        assert dpytest.verify().message().content(f"You have no more remaining votes today <@{mess.author.id}>!")
+
+    @pytest.mark.asyncio
+    async def test_vote_self(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}vote {bot.guilds[0].members[2].id}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
+                                      str(bot.guilds[0].members[2].id))
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        print(dpytest.get_message(peek=True).content)
+        assert dpytest.verify().message().content(f"*some_random_person* is not a player <@{mess.author.id}>!")
+
+    @pytest.mark.asyncio
     async def test_command_not_in_game(self, bot, command_prefix):
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
         channel = bot.guilds[0].text_channels[0]
