@@ -512,7 +512,7 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                     'The player number of ' + str(specified_number) + ' does not exist ' + message.author.mention + '.')
                 return
     except ValueError:
-        if str(split_command[1][:3]) == '<@!' and is_dm is False:
+        if str(split_command[1][:2]) == '<@' and is_dm is False:
             try:
                 if guild_id is not None and channel_id is not None:
                     split_command[1] = data['games'][guild_id][channel_id]['players'][str((split_command[1][3:])[:-1])][
@@ -614,7 +614,7 @@ async def vote_action(message, data, command, guild_id=None, channel_id=None):
         data = data['games'][guild_id][channel_id]
     else:
         data = data['games'][str(message.guild.id)][str(message.channel.id)]
-    if command[5:8] != '<@!':
+    if command[5:7] != '<@':
         try:
             int(command[5:])
         except ValueError:
@@ -627,7 +627,7 @@ async def vote_action(message, data, command, guild_id=None, channel_id=None):
             return
         player_number = int(command[5:])
     else:
-        user_id = command[8:(len(command) - 1)]
+        user_id = command[7:(len(command) - 1)]
         player_number = int(data['players'][str(user_id)]['playerNumber'])
 
     # Prevents the edge case of player number not being assigned
@@ -677,7 +677,7 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
         return
     else:
         if guild_id is None and channel_id is None:
-            if locators[1][:3] == '<@!':
+            if locators[1][:2] == '<@':
                 player_id = locators[1][3:len(locators[1]) - 1]
                 for player in data['players']:
                     if player == player_id:
@@ -712,12 +712,12 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
                 data['players'][str(message.author.id)]['actions'] = \
                     int(data['players'][str(message.author.id)]['actions']) - int(locators[2])
                 await message.channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to ' +
-                                           '<@!' + player + '>')
+                                           '<@' + player + '>')
                 if guild_id is not None and channel_id is not None:
                     dm_user = await client.fetch_user(int(player))
                     channel = await client.create_dm(dm_user)
                     await channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to you ' +
-                                       '<@!' + player + '>' + '!')
+                                       '<@' + player + '>' + '!')
                 break
 
 

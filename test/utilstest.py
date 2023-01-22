@@ -115,3 +115,10 @@ class JsonUtility:
         data['games'][guild_id][channel_id]['players'][player_id]['lives'] = 0
         with open('Games.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+    @staticmethod
+    def give_dead_player_vote(guild_id: str, channel_id: str, player_id: str, votes: int = 1) -> None:
+        data = jsonManager.read_games_json()
+        data['games'][guild_id][channel_id]['players'][player_id]['remainingVotes'] = votes
+        with open('Games.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
