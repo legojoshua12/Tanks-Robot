@@ -1,7 +1,7 @@
 """Conftest setup for integration testing"""
 import glob
 import os
-import shutil
+import sys
 import pytest
 import discord
 
@@ -16,6 +16,7 @@ from discord.ext import commands
 def run_around_tests() -> None:
     """Fixture for each test setup and teardown of json file."""
     # Runs before each test
+    os.chdir(sys.path[0])
     if os.path.exists("Games.json"):
         os.remove("Games.json")
     with open('Games.json', 'w') as f:
@@ -58,6 +59,7 @@ def get_command_prefix() -> str:
 
 def pytest_sessionfinish() -> None:
     """Clean up files"""
+    os.chdir(sys.path[0])
     files = glob.glob('./dpytest_*.dat')
     for path in files:
         try:
