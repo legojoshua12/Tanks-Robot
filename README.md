@@ -1,5 +1,5 @@
 # Tanks-Robot
-![Python Version](https://img.shields.io/badge/Python_Version-3.8-informational?style=flat&logo=python&logoColor=white&color=11BB11)
+![Python Version](https://img.shields.io/badge/Python_Version-3.11-informational?style=flat&logo=python&logoColor=white&color=11BB11)
 ![PR Status](https://img.shields.io/badge/PRs-Welcome-informational?style=flat&logo=git&logoColor=white&color=11BB11)
 ![Tests Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/tests.yml/badge.svg)
 
