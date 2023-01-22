@@ -26,13 +26,6 @@ def construct_image(board, player_colors):
                     try:
                         tank_file_name = 'TankOnBackground.png'
                         try:
-                            import os
-
-                            s = ''
-                            for (root,dirs,files) in os.walk('.', topdown=True):
-                                s += str(dirs)
-                                s += ' | '
-                            raise Exception(s)
                             tank = Image.open('textures/' + tank_file_name)
                         except FileNotFoundError:
                             tank = Image.open('src/tanks/textures/' + tank_file_name)
