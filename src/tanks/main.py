@@ -10,7 +10,7 @@ import asyncio
 
 from dotenv import load_dotenv
 
-from libraries import configUtils, jsonManager, messageHandler, commands, dailyUpkeepManager
+from src.tanks.libraries import configUtils, jsonManager, messageHandler, commands, dailyUpkeepManager
 
 # This is a clean windows shutdown procedure as to not throw memory heap errors
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith('win'):
