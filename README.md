@@ -17,7 +17,7 @@ You can add the token to your `.env` file to initialize the connection with the 
 
 ## Integration Tests
 All code within the robot is unit and integration tested and all tests can be run on a local machine before deployment to a [docker container](https://www.docker.com/) or [Heroku](https://www.heroku.com/).
-Tests are run in github actions via tox and flake8.
+Tests are run in GitHub actions via tox and flake8.
 
 ## Heroku Deployment
 
