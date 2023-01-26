@@ -264,6 +264,7 @@ class TestLobby:
             await channel.send(f"{command_prefix}start")
             mess = dpytest.get_message()
             await messageHandler.handle_message(mess, bot, command_prefix)
+            print(dpytest.get_message(peek=True).content)
             assert dpytest.verify().message().content(f"Welcome to tanks {bot.guilds[0].members[2].mention}, " +
                                                       f"{bot.guilds[0].members[3].mention}, " +
                                                       f"{bot.guilds[0].members[4].mention}, " +

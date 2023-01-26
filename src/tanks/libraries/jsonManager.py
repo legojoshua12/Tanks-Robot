@@ -163,6 +163,8 @@ def check_if_game_is_in_channel(message):
     try:
         game_state = data['games'][str(message.guild.id)][str(message.channel.id)]['gameStatus']
         return game_state
+    except TypeError:
+        return 'none'
     except KeyError:
         return 'none'
 
@@ -296,7 +298,7 @@ def __format_board_json(guild_id, channel_id, data):
     format_data = data['games'][guild_id][channel_id]['board']
     try:
         format_data = format_data['data']
-    except KeyError:
+    except TypeError:
         pass
 
     format_data = {
