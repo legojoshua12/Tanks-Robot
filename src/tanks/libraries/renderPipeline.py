@@ -30,11 +30,11 @@ def construct_image(board, player_colors):
                 else:
                     try:
                         try:
-                            image_path = Path(__file__).resolve().parent / 'textures/TankOnBackground.png'
+                            image_path = Path(__file__).resolve().parent / 'textures/tankOnBackground.png'
                             tank = Image.open(image_path)
                         except FileNotFoundError:
                             try:
-                                image_path = 'src/tanks/textures/TankOnBackground.png'
+                                image_path = 'src/tanks/textures/tankOnBackground.png'
                                 tank = Image.open(image_path)
                             except FileNotFoundError:
                                 raise FileNotFoundError('Could not locate tank background in textures folder!')
@@ -51,11 +51,11 @@ def construct_image(board, player_colors):
                 else:
                     try:
                         try:
-                            image_path = Path(__file__).resolve().parent / 'textures/TankOnBackground.png'
+                            image_path = Path(__file__).resolve().parent / 'textures/tankOnBackground.png'
                             tank = Image.open(image_path)
                         except FileNotFoundError:
                             try:
-                                image_path = 'src/tanks/textures/TankOnBackground.png'
+                                image_path = 'src/tanks/textures/tankOnBackground.png'
                                 tank = Image.open(image_path)
                             except FileNotFoundError:
                                 raise FileNotFoundError('Could not locate tank background in textures folder!')
