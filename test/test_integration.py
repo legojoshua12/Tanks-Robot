@@ -264,7 +264,6 @@ class TestLobby:
             await channel.send(f"{command_prefix}start")
             mess = dpytest.get_message()
             await messageHandler.handle_message(mess, bot, command_prefix)
-            print(dpytest.get_message(peek=True).content)
             assert dpytest.verify().message().content(f"Welcome to tanks {bot.guilds[0].members[2].mention}, " +
                                                       f"{bot.guilds[0].members[3].mention}, " +
                                                       f"{bot.guilds[0].members[4].mention}, " +
@@ -403,7 +402,6 @@ class TestInGame:
         utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
                                       str(bot.guilds[0].members[2].id))
         await messageHandler.handle_message(mess, bot, command_prefix)
-        print(dpytest.get_message(peek=True).content)
         assert dpytest.verify().message().content(f"Please specify a player to vote for {mess.author.mention}.")
 
     @pytest.mark.asyncio
@@ -416,7 +414,6 @@ class TestInGame:
         utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
                                       str(bot.guilds[0].members[2].id))
         await messageHandler.handle_message(mess, bot, command_prefix)
-        print(dpytest.get_message(peek=True).content)
         assert dpytest.verify().message().content(f"*some_random_person* is not a player {mess.author.mention}!")
 
     @pytest.mark.asyncio
@@ -429,7 +426,6 @@ class TestInGame:
         utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
                                       str(bot.guilds[0].members[2].id))
         await messageHandler.handle_message(mess, bot, command_prefix)
-        print(dpytest.get_message(peek=True).content)
         assert dpytest.verify().message().content(f"You have no more remaining votes today {mess.author.mention}!")
 
     @pytest.mark.asyncio
@@ -444,7 +440,6 @@ class TestInGame:
         utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
                                                 str(bot.guilds[0].members[2].id), 1)
         await messageHandler.handle_message(mess, bot, command_prefix)
-        print(dpytest.get_message(peek=True).content)
         assert dpytest.verify().message().content(f"You may not vote for yourself {mess.author.mention}!")
 
     @pytest.mark.asyncio
