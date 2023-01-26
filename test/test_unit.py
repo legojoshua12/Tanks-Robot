@@ -1,8 +1,6 @@
 """
 Tests functions that require no use of the discord API and can be run locally
 """
-import pytest
-
 from src.tanks.libraries import boardConstructor as bc
 
 

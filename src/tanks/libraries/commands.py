@@ -356,7 +356,7 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
                         await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                        [channel_id]['playerColors']),
+                                            [channel_id]['playerColors']),
                                             ('You have moved north 1 tile ' + message.author.mention + '!'))
                     else:
                         await display_board(message, renderPipeline.construct_image(board,
@@ -385,7 +385,8 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
                         await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                        [channel_id]['playerColors']), ('You have moved south 1 tile ' + message.author.mention + '!'))
+                                            [channel_id]['playerColors']),
+                                            ('You have moved south 1 tile ' + message.author.mention + '!'))
                     else:
                         await display_board(message, renderPipeline.construct_image(board,
                                                                                     data['games'][

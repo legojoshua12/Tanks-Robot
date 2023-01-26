@@ -36,7 +36,8 @@ def populate_board(board, players):
 
 def __check_for_players_around_area(board, pos_x, pos_y):
     """
-    Returns a true or false if another player is within range of a given x & y from the config distance checker for spawns
+    Returns a true or false if another player is within range of a given x & y
+    from the config distance checker for spawns
     :param board: The player board
     :param pos_x: The x position of the check coordinate
     :param pos_y: The y position of the check coordinate
