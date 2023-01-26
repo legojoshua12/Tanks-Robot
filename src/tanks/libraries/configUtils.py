@@ -44,7 +44,7 @@ def read_value(section, key, uniqueLocation=None):
     try:
         value = config.get(section, key)
         return value
-    except:
+    except FileNotFoundError:
         config.read('../config.ini')
         value = config.get(section, key)
         return value

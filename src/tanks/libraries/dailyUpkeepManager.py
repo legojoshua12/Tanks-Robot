@@ -19,30 +19,30 @@ async def dailyActionsAndVoteUpkeep(client):
         for channel in data[server]:
             if data[server][channel]['gameStatus'] == "active":
                 # Here the votes are tallied for the day if they received enough dead votes
-                championPlayer = None
+                champion_player = None
                 champions = 0
-                championVotes = 0
+                champion_votes = 0
                 for player in data[server][channel]['players']:
                     if int(data[server][channel]['players'][player]['votes']) > 0:
-                        if champions == 0 and championPlayer is None:
+                        if champions == 0 and champion_player is None:
                             champions = 1
-                            championPlayer = player
-                            championVotes = int(data[server][channel]['players'][player]['votes'])
+                            champion_player = player
+                            champion_votes = int(data[server][channel]['players'][player]['votes'])
                         elif champions == 1:
-                            if int(data[server][channel]['players'][player]['votes']) > championVotes:
+                            if int(data[server][channel]['players'][player]['votes']) > champion_votes:
                                 champions = 1
-                                championPlayer = player
-                                championVotes = int(data[server][channel]['players'][player]['votes'])
-                            elif int(data[server][channel]['players'][player]['votes']) == championVotes:
+                                champion_player = player
+                                champion_votes = int(data[server][channel]['players'][player]['votes'])
+                            elif int(data[server][channel]['players'][player]['votes']) == champion_votes:
                                 champions += 1
                             else:
                                 data[server][channel]['players'][player]['votes'] = 0
                         data[server][channel]['players'][player]['votes'] = 0
                 if champions == 1:
-                    data[server][channel]['players'][championPlayer]['actions'] = int(data[server][channel]['players']
-                                                                                      [championPlayer]['actions']) + 1
+                    data[server][channel]['players'][champion_player]['actions'] = int(data[server][channel]['players']
+                                                                                       [champion_player]['actions']) + 1
                     await client.get_channel(id=int(channel)).send(
-                        '<@!' + str(championPlayer) + '> won the vote of the dead today and gets an extra action!')
+                        '<@!' + str(champion_player) + '> won the vote of the dead today and gets an extra action!')
                 elif champions >= 2:
                     await client.get_channel(id=int(channel)).send('There was a tie for votes today! No one got extra '
                                                                    'actions!')
@@ -60,7 +60,7 @@ async def dailyActionsAndVoteUpkeep(client):
                 await client.get_channel(id=int(channel)).send('Daily upkeep finished! All living players have '
                                                                'received an action and all others received a vote for'
                                                                ' the day!')
-    newData = {'games': data}
-    jsonManager.save_data(newData)
+    new_data = {'games': data}
+    jsonManager.save_data(new_data)
     print('Completed Daily Upkeep at: ' + str(datetime.utcnow()))
     return

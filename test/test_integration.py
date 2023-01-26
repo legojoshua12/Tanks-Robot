@@ -189,16 +189,6 @@ class TestLobby:
         assert len(embeds) == 1
         assert dpytest.verify().message().contains().embed(embeds[0])
 
-    @pytest.mark.asyncio
-    async def test_help(self, bot, command_prefix):
-        channel = bot.guilds[0].text_channels[0]
-        await channel.send(f"{command_prefix}help")
-        mess = dpytest.get_message()
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        embeds = dpytest.get_message(peek=True).embeds
-        assert len(embeds) == 1
-        assert dpytest.verify().message().contains().embed(embeds[0])
-
     # TODO Look into dpytest and verifying messages that contain emojis
     @pytest.mark.asyncio
     async def test_dm(self, bot, command_prefix):
@@ -379,7 +369,8 @@ class TestInGame:
         mess.author = bot.guilds[0].members[2]
         previous_range = utils.JsonUtility.get_player_range(mess)
         await messageHandler.handle_message(mess, bot, command_prefix)
-        assert dpytest.verify().message().content(f"Your range is now {previous_range + 1} tiles {mess.author.mention}!")
+        assert dpytest.verify().message().content(
+                                                f"Your range is now {previous_range + 1} tiles {mess.author.mention}!")
 
     @pytest.mark.asyncio
     async def test_vote_alive(self, bot, command_prefix):

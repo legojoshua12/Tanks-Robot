@@ -413,7 +413,7 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
                         await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                        [channel_id]['playerColors']),
+                                                                                    [channel_id]['playerColors']),
                                             ('You have moved east 1 tile ' + message.author.mention + '!'))
                     else:
                         await display_board(message, renderPipeline.construct_image(board,
@@ -442,7 +442,7 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
                         await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                        [channel_id]['playerColors']),
+                                                                                    [channel_id]['playerColors']),
                                             ('You have moved west 1 tile ' + message.author.mention + '!'))
                     else:
                         await display_board(message, renderPipeline.construct_image(board,
@@ -489,8 +489,9 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
         player_number = str(
             data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                 'playerNumber'])
-        if data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-            'actions'] <= 0:
+        player = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
+        player_actions = player['actions']
+        if player_actions <= 0:
             await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
             return
     if split_command[1] == str(player_number):

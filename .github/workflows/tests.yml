@@ -20,7 +20,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install project dependencies
       run: |
-        python -m pip install --upgrade pip >>$GITHUB_OUTPUT
-        pip install tox tox-gh-actions >>$GITHUB_OUTPUT
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions
     - name: Tox test suite
-      run: tox >>$GITHUB_OUTPUT
+      run: tox
