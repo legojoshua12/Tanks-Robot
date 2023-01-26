@@ -1,4 +1,5 @@
 """This builds the image and downscales it for showing the board or any image related processing"""
+from pathlib import Path
 from PIL import Image, ImageDraw
 
 from src.tanks.libraries import configUtils as configUtils
@@ -10,11 +11,15 @@ def construct_image(board, player_colors):
     :param board: The 2x2 array of the board from the JSON
     :param player_colors: An array of all the player colors from the JSON
     """
-    filename = 'EmptySquare.png'
     try:
-        tile = Image.open('textures/' + filename)
+        image_path = Path(__file__).resolve().parent / 'textures/EmptySquare.png'
+        tile = Image.open(image_path)
     except FileNotFoundError:
-        tile = Image.open('src/tanks/textures/' + filename)
+        try:
+            image_path = 'src/tanks/textures/EmptySquare.png'
+            tile = Image.open(image_path)
+        except FileNotFoundError:
+            raise FileNotFoundError("Could not locate textures folder!")
     complete_image = None
     for row in board:
         image = None
@@ -24,11 +29,15 @@ def construct_image(board, player_colors):
                     image = __stitch_tiles(image, tile)
                 else:
                     try:
-                        tank_file_name = 'TankOnBackground.png'
                         try:
-                            tank = Image.open('textures/' + tank_file_name)
+                            image_path = Path(__file__).resolve().parent / 'textures/TankOnBackground.png'
+                            tank = Image.open(image_path)
                         except FileNotFoundError:
-                            tank = Image.open('src/tanks/textures/' + tank_file_name)
+                            try:
+                                image_path = 'src/tanks/textures/TankOnBackground.png'
+                                tank = Image.open(image_path)
+                            except FileNotFoundError:
+                                raise FileNotFoundError('Could not locate tank background in textures folder!')
                         tank = __add_tank_number(tank, column)
                         tank = __recolor_tank(tank, player_colors[str(column)])
                         image = __stitch_tiles(image, tank)
@@ -41,8 +50,15 @@ def construct_image(board, player_colors):
                     image = tile
                 else:
                     try:
-                        tank_file_name = 'TankOnBackground.png'
-                        tank = Image.open('textures/' + tank_file_name)
+                        try:
+                            image_path = Path(__file__).resolve().parent / 'textures/TankOnBackground.png'
+                            tank = Image.open(image_path)
+                        except FileNotFoundError:
+                            try:
+                                image_path = 'src/tanks/textures/TankOnBackground.png'
+                                tank = Image.open(image_path)
+                            except FileNotFoundError:
+                                raise FileNotFoundError('Could not locate tank background in textures folder!')
                         tank = __add_tank_number(tank, column)
                         image = __recolor_tank(tank, player_colors[str(column)])
                     except KeyError:
