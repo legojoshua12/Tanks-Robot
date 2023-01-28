@@ -40,10 +40,9 @@ async def direct_message_commands(message, command, client):
         if is_in_games and not is_in_multiple_games:
             guild_id, channel_id = jsonManager.get_player_server_channel_single(message)
             if command == 'board':
-                rendered_board = renderPipeline.construct_image(jsonManager.get_board(message, guild_id, channel_id),
-                                                                jsonManager.read_games_json()['games'][
-                                                                    str(guild_id)][str(channel_id)][
-                                                                    'playerColors'])
+                board = jsonManager.get_board(message, guild_id, channel_id)
+                player_colors = jsonManager.read_games_json()['games'][str(guild_id)][str(channel_id)]['playerColors']
+                rendered_board = renderPipeline.construct_image(board, player_colors)
                 await display_board(message, rendered_board)
             elif command == 'players':
                 await show_player_statistics(message, jsonManager.read_games_json(), client, guild_id, channel_id)
@@ -104,7 +103,7 @@ def dm_help_embed(embed_color, in_single_game):
     return embed
 
 
-async def public_commands_no_game(message, command):
+async def public_commands_no_game(message, command) -> bool:
     embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
         command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
@@ -124,13 +123,14 @@ async def public_commands_no_game(message, command):
         await send_dm_starter(message)
     elif command == 'start':
         await message.channel.send('Starting a game...')
-        return 'startCommandReceived'
+        return True
     else:
-        await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
-                                                            'list of commands and options.')
+        unknown_command_response: str = ' Unknown command. Please use `*/help` to view a list of commands and options.'
+        await message.channel.send(message.author.mention + unknown_command_response)
+    return False
 
 
-async def send_dm_starter(message):
+async def send_dm_starter(message) -> None:
     """
     Sends a direct message to the person who sent the command with a hello from the robot
     :param message: The message of the command that was sent
@@ -293,8 +293,7 @@ async def active_game_help_embed(message, embed_color, command_prefix):
 
 async def increase_range(message, data, guild_id=None, channel_id=None):
     if guild_id is not None and channel_id is not None:
-        if int(data['games'][guild_id][channel_id]['players'][str(message.author.id)][
-                   'actions']) > 0:
+        if int(data['games'][guild_id][channel_id]['players'][str(message.author.id)]['actions']) > 0:
             data = jsonManager.update_player_range(message, data, guild_id, channel_id)
             await message.channel.send('Your range is now ' + str(
                 data['games'][guild_id][channel_id]['players'][str(message.author.id)][
@@ -303,8 +302,9 @@ async def increase_range(message, data, guild_id=None, channel_id=None):
             await message.channel.send('You do not have any actions to increase your range ' + message.author.mention +
                                        '!')
     else:
-        if int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                   'actions']) > 0:
+        players = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+        player_actions = players[str(message.author.id)]['actions']
+        if int(player_actions) > 0:
             data = jsonManager.update_player_range(message, data)
             await message.channel.send('Your range is now ' + str(
                 data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][

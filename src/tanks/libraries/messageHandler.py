@@ -134,7 +134,7 @@ async def handle_message(message, client, commandMessageStarter):
 
             elif is_game_present == 'none':
                 possible_command = await commands.public_commands_no_game(message, command)
-                if possible_command == 'startCommandReceived':
+                if possible_command:
                     wrote_to_json: bool = False
                     try:
                         jsonManager.create_game(message)
