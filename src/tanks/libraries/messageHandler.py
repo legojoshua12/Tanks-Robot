@@ -50,14 +50,14 @@ async def handle_message(message, client, commandMessageStarter):
                 if action == 'join':
                     data = jsonManager.read_games_json()
                     new_player_number = len(data['games'][str(message.guild.id)][str(message.channel.id)]['players'])+1
-                    is_present = jsonManager.add_player_to_game(message, new_player_number)
-                    if is_present == 'playerAlreadyPresent':
+                    is_present: bool = jsonManager.add_player_to_game(message, new_player_number)
+                    if is_present:
                         await message.channel.send(message.author.mention + ' is already in the game!')
                     else:
                         await message.channel.send('Adding ' + message.author.mention + ' to the new game of Tanks!')
                 elif action == 'leave':
-                    is_present = jsonManager.remove_player_from_game(message, 1)
-                    if is_present == 'playerNotPresent':
+                    is_not_present: bool = jsonManager.remove_player_from_game(message)
+                    if is_not_present:
                         await message.channel.send(message.author.mention + ' cannot leave when you are not in the '
                                                                             'game!')
                     else:

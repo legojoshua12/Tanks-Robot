@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw
 from src.tanks.libraries import configUtils as configUtils
 
 
-def construct_image(board, player_colors):
+def construct_image(board, player_colors) -> Image.Image:
     """
     Returns a rendered board image with the specified resolution from config file
     :param board: The 2x2 array of the board from the JSON
@@ -133,7 +133,7 @@ def __stitch_rows(image1, image2):
 
 def __rescale_image(image):
     resolution_value = int(configUtils.read_value('botSettings', 'boardImageResolution'))
-    # TODO One day come back and update this to use dynamic scaling from only 1 axis so that maps can be non-square
+    # TODO Come back and update this to use dynamic scaling from only 1 axis so that maps can be non-square
     new_size = (resolution_value, resolution_value)
     image = image.resize(new_size)
     return image
