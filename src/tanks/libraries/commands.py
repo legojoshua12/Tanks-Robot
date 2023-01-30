@@ -9,7 +9,7 @@ import src.tanks.libraries.jsonManager as jsonManager
 import src.tanks.libraries.renderPipeline as renderPipeline
 
 
-async def direct_message_commands(message, command, client):
+async def direct_message_commands(message, command, client) -> None:
     embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command.startswith(configUtils.read_value('botSettings', 'botCommandPrefix')):
         command = command[2:].lower()
@@ -68,7 +68,7 @@ async def direct_message_commands(message, command, client):
                                                                 'list of commands and options.')
 
 
-def dm_help_embed(embed_color, in_single_game):
+def dm_help_embed(embed_color, in_single_game) -> discord.Embed:
     embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
                                                                  "reference! Simply type one of these to get "
                                                                  "started.",
