@@ -4,7 +4,7 @@ import re
 
 
 class NoIndent(object):
-    """ Value wrapper. """
+    """Value wrapper"""
 
     def __init__(self, value):
         if not isinstance(value, (list, tuple)):
@@ -13,9 +13,7 @@ class NoIndent(object):
 
 
 class MyEncoder(json.JSONEncoder):
-    """
-    Formats a JSON string to be human read-able for multidimensional arrays
-    """
+    """Formats a JSON string to be human read-able for multidimensional arrays"""
     FORMAT_SPEC = '@@{}@@'  # Unique string pattern of NoIndent object ids.
     regex = re.compile(FORMAT_SPEC.format(r'(\d+)'))  # compile(r'@@(\d+)@@')
 
