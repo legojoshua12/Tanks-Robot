@@ -4,10 +4,8 @@ from datetime import datetime
 from src.tanks.libraries import jsonManager, configUtils
 
 
-async def dailyActionsAndVoteUpkeep(client):
-    """
-    Performs the daily action giving and vote tally
-    """
+async def dailyActionsAndVoteUpkeep(client) -> None:
+    """Performs the daily action giving and vote tally"""
     print('Daily upkeep started at: ' + str(datetime.utcnow()))
     data = jsonManager.read_games_json()
     try:
