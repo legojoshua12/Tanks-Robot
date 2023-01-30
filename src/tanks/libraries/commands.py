@@ -2,6 +2,7 @@
 import io
 import random
 
+import PIL.Image
 import discord
 
 import src.tanks.libraries.configUtils as configUtils
@@ -103,7 +104,11 @@ def dm_help_embed(embed_color, in_single_game) -> discord.Embed:
     return embed
 
 
-async def public_commands_no_game(message, command) -> bool:
+async def public_commands_no_game(message: discord.Message, command) -> bool:
+    """Returns whether the user is asking to start a new lobby or handles incoming message
+    :param message: The message with the command data within and locational information
+    :param command: A sliced version of the message content
+    """
     embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
         command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
@@ -131,8 +136,7 @@ async def public_commands_no_game(message, command) -> bool:
 
 
 async def send_dm_starter(message) -> None:
-    """
-    Sends a direct message to the person who sent the command with a hello from the robot
+    """Sends a direct message to the person who sent the command with a hello from the robot
     :param message: The message of the command that was sent
     """
     letter_emoji = '\U00002709'
@@ -141,7 +145,11 @@ async def send_dm_starter(message) -> None:
     await message.author.send(f"Hey there! {wave_emoji} How can I help you? Use `help` to get started!")
 
 
-async def public_commands_lobby(message, command):
+async def public_commands_lobby(message: discord.Message, command):
+    """A checker for which command a user has issued
+    :param message: The message sent asking for a certain action
+    :param command: A sliced version of message content to determine which command is run
+    """
     if command == 'help':
         return command
     elif command == 'players':
@@ -356,7 +364,7 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
                         await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                                            [channel_id]['playerColors']),
+                        [channel_id]['playerColors']),
                                             ('You have moved north 1 tile ' + message.author.mention + '!'))
                     else:
                         await display_board(message, renderPipeline.construct_image(board,
@@ -385,7 +393,7 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
                         await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                                            [channel_id]['playerColors']),
+                        [channel_id]['playerColors']),
                                             ('You have moved south 1 tile ' + message.author.mention + '!'))
                     else:
                         await display_board(message, renderPipeline.construct_image(board,
@@ -413,7 +421,7 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
                         await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                                                                                    [channel_id]['playerColors']),
+                        [channel_id]['playerColors']),
                                             ('You have moved east 1 tile ' + message.author.mention + '!'))
                     else:
                         await display_board(message, renderPipeline.construct_image(board,
@@ -442,7 +450,7 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
                         await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                                                                                    [channel_id]['playerColors']),
+                        [channel_id]['playerColors']),
                                             ('You have moved west 1 tile ' + message.author.mention + '!'))
                     else:
                         await display_board(message, renderPipeline.construct_image(board,
@@ -464,17 +472,16 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                                                                          'coordinate ' + message.author.mention + '!')
 
 
-async def shoot(message, data, command, client, guild_id=None, channel_id=None, is_dm=False):
+async def shoot(message, data, command, client, guild_id=None, channel_id=None, is_dm=False) -> None:
     split_command = command.split(' ')
     if len(split_command) == 1:
-        await message.channel.send(
-            'Please specify a tile, player, or a direction to shoot at ' + message.author.mention + '!')
+        message_string = f"Please specify a tile, player, or a direction to shoot at {message.author.mention}!"
+        await message.channel.send(message_string)
         return
     elif len(split_command) > 2:
-        await message.channel.send(
-            'Invalid information provided for where to shoot ' + message.author.mention + '! Please specify a tile, '
-                                                                                          'player, or a direction to '
-                                                                                          'shoot.')
+        message_string = f"Invalid information provided for where to shoot {message.author.mention}! "
+        message_string += f"Please specify a tile, player, or a direction to shoot."
+        await message.channel.send(message_string)
         return
 
     if guild_id is not None and channel_id is not None:
@@ -595,7 +602,13 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                 'Player ' + str(split_command[1]) + ' is out of range ' + message.author.mention + '!')
 
 
-def is_player_in_range(board, player_range, attacker, defense):
+def is_player_in_range(board, player_range, attacker, defense) -> bool:
+    """Returns whether a player is within range to be shot by another or not
+    :param board: The data of the game board
+    :param player_range: The range of the attacker
+    :param attacker: The id of the attacking player on the board
+    :param defense: The id of the defending player on the board
+    """
     attacker_pos = None
     defender_pos = None
     for i in range(len(board)):
@@ -611,7 +624,14 @@ def is_player_in_range(board, player_range, attacker, defense):
     return True
 
 
-async def vote_action(message, data, command, guild_id=None, channel_id=None):
+async def vote_action(message: discord.Message, data, command: str, guild_id=None, channel_id=None) -> None:
+    """A vote for a player if the player is dead
+    :param message: The message sent by the user requesting to vote
+    :param data: The complete games dataset from the json
+    :param command: The start of the message content
+    :param guild_id: (Optional) A specifier for which game in guild from direct messages
+    :param channel_id: (Optional) A specifier for which game in channel from direct messages
+    """
     if guild_id is not None and channel_id is not None:
         data = data['games'][guild_id][channel_id]
     else:
@@ -660,11 +680,14 @@ async def vote_action(message, data, command, guild_id=None, channel_id=None):
             break
 
 
-async def send_actions(message, data, client=None, guild_id=None, channel_id=None):
+async def send_actions(message, data, client=None, guild_id=None, channel_id=None) -> None:
     """
     Sends a number of actions from the message sender to their desired target
     :param message: The original message sent by the commander
     :param data: The complete json dataset
+    :param client: (Optional) The discord client connection for fetching data
+    :param guild_id: (Optional) A specifier for which game in guild from direct messages
+    :param channel_id: (Optional) A specifier for which game in channel from direct messages
     """
     if guild_id is not None and channel_id is not None:
         data = data['games'][guild_id][channel_id]
@@ -723,7 +746,7 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
                 break
 
 
-async def list_players_lobby(message, data, client):
+async def list_players_lobby(message, data, client) -> None:
     """
     Shows the players in queue before a game has been started that used */join
     :param message: The original message with command
@@ -742,7 +765,7 @@ async def list_players_lobby(message, data, client):
     await message.channel.send(embed=embed)
 
 
-async def show_player_statistics(message, data, client, guild_id=None, channel_id=None, player_number=1):
+async def show_player_statistics(message, data, client, guild_id=None, channel_id=None, player_number=1) -> None:
     """
     Shows player 1 in the game and their information, along with the template for the player card moving forward
     :param message: The original message sent
@@ -764,17 +787,20 @@ async def show_player_statistics(message, data, client, guild_id=None, channel_i
 
     user = await client.fetch_user(int(player_id))
     color_info = data['playerColors'][str(data['players'][str(key)]['playerNumber'])]
-    embed = add_player_card_fields(color_info, user, data['players'][str(key)]['playerNumber'],
-                                   data['players'][str(key)]['lives'],
-                                   data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
-                                   data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
+    number = data['players'][str(key)]['playerNumber']
+    lives = data['players'][str(key)]['lives']
+    actions = data['players'][str(key)]['actions']
+    player_range = data['players'][str(key)]['range']
+    hits = data['players'][str(key)]['hits']
+    moves = data['players'][str(key)]['moves']
+    embed = add_player_card_fields(color_info, user, number, lives, actions, player_range, hits, moves)
     msg = await message.channel.send(embed=embed)
 
     await msg.add_reaction("\u2B05")
     await msg.add_reaction("\u27A1")
 
 
-async def flip_through_player_stats_card(message, data, direction, client):
+async def flip_through_player_stats_card(message, data, direction, client) -> None:
     """
     Edits an original sent message by the robot to a new embed of player statistics
     :param message: The message sent by the discord robot
@@ -803,14 +829,20 @@ async def flip_through_player_stats_card(message, data, direction, client):
 
 
 def add_player_card_fields(color_info, user, player_number, lives, actions, shooting_range, hits, moves):
-    """
-    Adds information to an embed of player statistics
+    """Adds information to an embed of player statistics
+    :param color_info: The player's assigned color at game generation
+    :param user: The discord user's uuid
+    :param player_number: The player number assigned at game generation
+    :param lives: The remaining lives a player has
+    :param actions: The remaining actions a player has
+    :param shooting_range: The player's shooting range
+    :param hits: The number of times the player has shot another player
+    :param moves: The number of times the player has moved
     """
     embed_color = int('0x' + str('%02x%02x%02x' % (color_info[0], color_info[1], color_info[2])).upper(), 16)
-    embed = discord.Embed(title=str(user)[:-5] + ' Statistics',
-                          description='Here is ' + str(user)[:-5] + ' and how much they have done this game!',
-                          color=embed_color
-                          )
+    title = f"{str(user)[:-5]} Statistics"
+    description = f"Here is {str(user)[:-5]} and how much they have done this game!"
+    embed: discord.Embed = discord.Embed(title=title, description=description, color=embed_color)
     if user.avatar is not None:
         embed.set_thumbnail(url=user.avatar.url)
     else:
@@ -824,50 +856,46 @@ def add_player_card_fields(color_info, user, player_number, lives, actions, shoo
     return embed
 
 
-def make_rules_embed(embed_color):
-    """
-    Returns a discord embed of the game rules
+def make_rules_embed(embed_color) -> discord.Embed:
+    """Returns a discord embed of the game rules
     :param embed_color: The color used for the embed
     """
     wave_emoji = '\U0001F52B'
-    embed = discord.Embed(title="Rules", description=f"This is the rules on how to play tanks! {wave_emoji}",
-                          color=embed_color)
-    embed.add_field(name="1. You use actions to do things", value="Actions are the the core of the game, "
-                                                                  "they can be used to move, shoot, or "
-                                                                  "increase your tank's range.",
-                    inline=False)
-    embed.add_field(name="2. You receive 1 action a day", value="Every player in the game receives 1 "
-                                                                "action a day at 12pm (noon) PST",
-                    inline=False)
-    embed.add_field(name="3. Dead players can give an extra action",
-                    value="All dead players have the option to vote once a day. If a living player "
-                          "receives 3+ votes, they will get 2 actions instead of 1 at 12pm.",
-                    inline=False)
-    embed.add_field(name="4. You have health",
-                    value="Each player has a total of 3 health points. If you lose a health point, "
-                          "it cannot be regenerated and the damage is permanent.",
-                    inline=False)
-    embed.add_field(name="5. Actions can be given",
-                    value="You can bribe other players to give you actions. You are not bound by the "
-                          "actions you receive each day and can get more from other players by asking them.",
-                    inline=False)
-    embed.add_field(name="6. You use actions whenever you want",
-                    value="Using your actions is not time bound. You may chose to use them at any point in "
-                          "the day should you still be alive and have the available actions.",
-                    inline=False)
-    embed.add_field(name="7. There are 5-20 players",
-                    value="The game requires at least 5 unique players to get started and will work with up to "
-                          "a maximum of 20 people.",
-                    inline=False)
-    embed.add_field(name="8. Last person standing wins!",
-                    value="If you have the ability to make it to being the last person alive, you will "
-                          "win! Congratulations if you manage to make it here!",
-                    inline=False)
+    description: str = f"This is the rules on how to play tanks! {wave_emoji}"
+    rules: list[str] = [
+        "Actions are the the core of the game, they can be used to move, shoot, or increase your tank's range.",
+        "Every player in the game receives 1 action a day at 12pm (noon) PST",
+        "All dead players have the option to vote once a day. "
+        "If a living player receives 3+ votes, they will get 2 actions instead of 1 at 12pm.",
+        "Each player has a total of 3 health points. "
+        "If you lose a health point, it cannot be regenerated and the damage is permanent.",
+        "You can bribe other players to give you actions. "
+        "You are not bound by the actions you receive each day and can get more from other players by asking them.",
+        "Using your actions is not time bound. "
+        "You may chose to use them at any point in the day should you still be alive and have the available actions.",
+        "The game requires at least 5 unique players to get started and will work with up to a maximum of 20 people.",
+        "If you have the ability to make it to being the last person alive, you will win! "
+        "Congratulations if you manage to make it here!"
+    ]
+    embed = discord.Embed(title="Rules", description=description, color=embed_color)
+    embed.add_field(name="1. You use actions to do things", value=rules[0], inline=False)
+    embed.add_field(name="2. You receive 1 action a day", value=rules[1], inline=False)
+    embed.add_field(name="3. Dead players can give an extra action", value=rules[2], inline=False)
+    embed.add_field(name="4. You have health", value=rules[3], inline=False)
+    embed.add_field(name="5. Actions can be given", value=rules[4], inline=False)
+    embed.add_field(name="6. You use actions whenever you want", value=rules[5], inline=False)
+    embed.add_field(name="7. There are 5-20 players", value=rules[6], inline=False)
+    embed.add_field(name="8. Last person standing wins!", value=rules[7], inline=False)
     return embed
 
 
-async def display_board(message, board, ping=False):
-    if ping:
+async def display_board(message: discord.Message, board: PIL.Image.Image, ping='') -> None:
+    """Sends the board image to the discord channel
+    :param message: The message asking for the game board
+    :param board: The image file of the board and not the data
+    :param ping: Extra message to be sent before sending the board image
+    """
+    if not ping == '':
         await message.channel.send(ping)
 
     with io.BytesIO() as image_binary:
