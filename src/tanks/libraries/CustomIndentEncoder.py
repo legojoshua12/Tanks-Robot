@@ -1,3 +1,4 @@
+"""Custom json encoder for writing the board data to json in a clean format"""
 from _ctypes import PyObj_FromPtr  # see https://stackoverflow.com/a/15012814/355230
 import json
 import re

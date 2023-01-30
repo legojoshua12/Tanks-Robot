@@ -6,8 +6,7 @@ from src.tanks.libraries import jsonManager, renderPipeline, commands, configUti
 
 
 async def handle_message(message, client, commandMessageStarter):
-    """
-    Used to parse and perform functions based on an incoming message
+    """Used to parse and perform functions based on an incoming message
     :param message: Main message from the queue
     :param client: Discord client for instantiation of user objects
     :param commandMessageStarter: Start prefix for a command

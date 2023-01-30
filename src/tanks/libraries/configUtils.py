@@ -1,3 +1,4 @@
+"""Handles reading the config file and providing values when given a key"""
 import os
 from configparser import ConfigParser
 

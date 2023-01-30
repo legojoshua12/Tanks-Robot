@@ -1,3 +1,4 @@
+"""General class for reading and writing data to json files with correct formatting and data protection"""
 import json
 import logging
 import os
