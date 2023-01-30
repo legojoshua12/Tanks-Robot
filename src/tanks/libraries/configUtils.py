@@ -5,9 +5,7 @@ config = ConfigParser()
 
 
 def initialize():
-    """
-    Calls a shutdown if a config file cannot be located
-    """
+    """Calls a shutdown if a config file cannot be located"""
     if os.path.exists('config.ini'):
         print('Config file located, initializing...')
     else:
@@ -16,8 +14,7 @@ def initialize():
 
 
 def write_value(section, key, value):
-    """
-    Adds config values to the config file
+    """Adds config values to the config file
     :param section: Which header to write or write to
     :param key: Which key to be used in the section
     :param value: The value of the given key
@@ -30,8 +27,7 @@ def write_value(section, key, value):
 
 
 def read_value(section, key, uniqueLocation=None):
-    """
-    Grabs a configuration option out of the config file
+    """Grabs a configuration option out of the config file
     :param section: Which header to grab
     :param key: Which value is desired
     :param uniqueLocation: Default None but can pass a string type for a location reader of a config file
