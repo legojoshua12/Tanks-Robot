@@ -46,5 +46,4 @@ class MyEncoder(json.JSONEncoder):
                 # of the corresponding Python object.
                 encoded = encoded.replace(
                     '"{}"'.format(format_spec.format(match_id)), json_repr)
-
             yield encoded

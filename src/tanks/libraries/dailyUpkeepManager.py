@@ -1,7 +1,7 @@
 """Completes the daily upkeep with a call from the main class coroutine"""
 from datetime import datetime
 
-from src.tanks.libraries import jsonManager
+from src.tanks.libraries import jsonManager, configUtils
 
 
 async def dailyActionsAndVoteUpkeep(client):
@@ -39,28 +39,32 @@ async def dailyActionsAndVoteUpkeep(client):
                                 data[server][channel]['players'][player]['votes'] = 0
                         data[server][channel]['players'][player]['votes'] = 0
                 if champions == 1:
-                    data[server][channel]['players'][champion_player]['actions'] = int(data[server][channel]['players']
-                                                                                       [champion_player]['actions']) + 1
-                    await client.get_channel(id=int(channel)).send(
-                        '<@!' + str(champion_player) + '> won the vote of the dead today and gets an extra action!')
+                    contender_actions = int(data[server][channel]['players'][champion_player]['actions']) + 1
+                    data[server][channel]['players'][champion_player]['actions'] = contender_actions
+                    message = f"<@!{str(champion_player)}> won the vote of the dead today and gets an extra action!"
+                    await client.get_channel(id=int(channel)).send(message)
                 elif champions >= 2:
-                    await client.get_channel(id=int(channel)).send('There was a tie for votes today! No one got extra '
-                                                                   'actions!')
+                    message = "There was a tie for votes today! No one got extra actions!"
+                    await client.get_channel(id=int(channel)).send(message)
                 else:
-                    await client.get_channel(id=int(channel)).send('There were no votes today and no one got an extra '
-                                                                   'action!')
+                    message = "There were no votes today and no one got an extra action!"
+                    await client.get_channel(id=int(channel)).send(message)
 
-                    # Here each person receives either a vote if they are dead or an action if they are alive
+                # Here each person receives either a vote if they are dead or an action if they are alive
                 for player in data[server][channel]['players']:
                     if data[server][channel]['players'][player]['lives'] <= 0:
                         data[server][channel]['players'][player]['remainingVotes'] = 1
                     else:
-                        data[server][channel]['players'][player]['actions'] = (int(data[server][channel]['players']
-                                                                                   [player]['actions']) + 1)
-                await client.get_channel(id=int(channel)).send('Daily upkeep finished! All living players have '
-                                                               'received an action and all others received a vote for'
-                                                               ' the day!')
+                        extra_action = (int(data[server][channel]['players'][player]['actions']) + 1)
+                        data[server][channel]['players'][player]['actions'] = extra_action
+                upkeep_finished_msg = "Daily upkeep finished! "
+                extra_action_msg = "All living players have received an action "
+                extra_vote_msg = "and all others received a vote for the day!"
+                await client.get_channel(id=int(channel)).send(upkeep_finished_msg + extra_action_msg + extra_vote_msg)
     new_data = {'games': data}
     jsonManager.save_data(new_data)
-    print('Completed Daily Upkeep at: ' + str(datetime.utcnow()))
+
+    # Print time finished to process if admin
+    if str(configUtils.read_value('startGame', 'adminTesting')).lower() == 'true':
+        print('Completed Daily Upkeep at: ' + str(datetime.utcnow()))
     return
