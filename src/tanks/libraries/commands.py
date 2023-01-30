@@ -363,9 +363,10 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     board[i + 1][j] = int(player_number)
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
-                        await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                        [channel_id]['playerColors']),
-                                            ('You have moved north 1 tile ' + message.author.mention + '!'))
+                        player_colors = data['games'][guild_id][channel_id]['playerColors']
+                        board_image = renderPipeline.construct_image(board, player_colors)
+                        extra_message = f"You have moved north 1 tile {message.author.mention}!"
+                        await display_board(message, board_image, extra_message)
                     else:
                         await display_board(message, renderPipeline.construct_image(board,
                                                                                     data['games'][
@@ -392,16 +393,15 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     board[i - 1][j] = int(player_number)
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
-                        await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                        [channel_id]['playerColors']),
-                                            ('You have moved south 1 tile ' + message.author.mention + '!'))
+                        player_colors = data['games'][guild_id][channel_id]['playerColors']
+                        board_image = renderPipeline.construct_image(board, player_colors)
+                        extra_message = f"You have moved south 1 tile {message.author.mention}!"
+                        await display_board(message, board_image, extra_message)
                     else:
-                        await display_board(message, renderPipeline.construct_image(board,
-                                                                                    data['games'][
-                                                                                        str(message.guild.id)][
-                                                                                        str(message.channel.id)][
-                                                                                        'playerColors']),
-                                            ('You have moved south 1 tile ' + message.author.mention + '!'))
+                        player_colors = data['games'][str(message.guild.id)][str(message.channel.id)]['playerColors']
+                        board_image = renderPipeline.construct_image(board, player_colors)
+                        extra_message = f"You have moved south 1 tile {message.author.mention}!"
+                        await display_board(message, board_image, extra_message)
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
                     jsonManager.save_player(message, message.author.id, new_player_stats, guild_id, channel_id)
@@ -412,24 +412,23 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                             'You may not move any farther east ' + message.author.mention + ', as you are at the edge!')
                         return
                     if board[i][j + 1] != 0:
-                        await message.channel.send(
-                            'There is a player to the right of you ' + message.author.mention + '. You may not move '
-                                                                                                'onto players.')
+                        message_info = f"There is a player to the right of you {message.author.mention}. "
+                        message_info += "You may not move onto players."
+                        await message.channel.send(message_info)
                         return
                     board[i][j] = 0
                     board[i][j + 1] = int(player_number)
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
-                        await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                        [channel_id]['playerColors']),
-                                            ('You have moved east 1 tile ' + message.author.mention + '!'))
+                        player_colors = data['games'][guild_id][channel_id]['playerColors']
+                        board_image = renderPipeline.construct_image(board, player_colors)
+                        extra_message = f"You have moved east 1 tile {message.author.mention}!"
+                        await display_board(message, board_image, extra_message)
                     else:
-                        await display_board(message, renderPipeline.construct_image(board,
-                                                                                    data['games'][
-                                                                                        str(message.guild.id)][
-                                                                                        str(message.channel.id)][
-                                                                                        'playerColors']),
-                                            ('You have moved east 1 tile ' + message.author.mention + '!'))
+                        player_colors = data['games'][str(message.guild.id)][str(message.channel.id)]['playerColors']
+                        board_image = renderPipeline.construct_image(board, player_colors)
+                        extra_message = f"You have moved east 1 tile {message.author.mention}!"
+                        await display_board(message, board_image, extra_message)
 
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
@@ -449,16 +448,15 @@ async def move(message, data, command, guild_id=None, channel_id=None):
                     board[i][j - 1] = int(player_number)
                     jsonManager.save_board(message, board, guild_id, channel_id)
                     if guild_id is not None and channel_id is not None:
-                        await display_board(message, renderPipeline.construct_image(board, data['games'][guild_id]
-                        [channel_id]['playerColors']),
-                                            ('You have moved west 1 tile ' + message.author.mention + '!'))
+                        player_colors = data['games'][guild_id][channel_id]['playerColors']
+                        board_image = renderPipeline.construct_image(board, player_colors)
+                        extra_message = f"You have moved west 1 tile {message.author.mention}!"
+                        await display_board(message, board_image, extra_message)
                     else:
-                        await display_board(message, renderPipeline.construct_image(board,
-                                                                                    data['games'][
-                                                                                        str(message.guild.id)][
-                                                                                        str(message.channel.id)][
-                                                                                        'playerColors']),
-                                            ('You have moved west 1 tile ' + message.author.mention + '!'))
+                        player_colors = data['games'][str(message.guild.id)][str(message.channel.id)]['playerColors']
+                        board_image = renderPipeline.construct_image(board, player_colors)
+                        extra_message = f"You have moved west 1 tile {message.author.mention}!"
+                        await display_board(message, board_image, extra_message)
 
                     new_player_stats['actions'] -= 1
                     new_player_stats['moves'] += 1
@@ -480,7 +478,7 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
         return
     elif len(split_command) > 2:
         message_string = f"Invalid information provided for where to shoot {message.author.mention}! "
-        message_string += f"Please specify a tile, player, or a direction to shoot."
+        message_string += "Please specify a tile, player, or a direction to shoot."
         await message.channel.send(message_string)
         return
 
