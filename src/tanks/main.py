@@ -41,10 +41,8 @@ dailyQueue = Queue()
 
 
 @client.event
-async def on_ready():
-    """
-    Runs when the robot has connected to discord and begin setup of status and queue handler
-    """
+async def on_ready() -> None:
+    """Runs when the robot has connected to discord and begin setup of status and queue handler"""
     print(f'{client.user} has connected to Discord!')
     # First set up a coroutine for handling jobs
     asyncio.get_event_loop().create_task(handle_queue())
@@ -58,10 +56,8 @@ async def on_ready():
 
 
 @client.event
-async def on_message(message):
-    """
-    Runs on any message sent that the robot can see, then it takes that message and sends it to the queue
-    """
+async def on_message(message) -> None:
+    """Runs on any message sent that the robot can see, then it takes that message and sends it to the queue"""
     # So the bot doesn't talk to itself
     if message.author == client.user:
         return
@@ -70,9 +66,7 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
-    """
-    Runs whenever a reaction is added to a message sent by this robot, then handles it with the correct action
-    """
+    """Runs whenever a reaction is added to a message sent by this robot, then handles it with the correct action"""
     if (reaction.message.author != client.user) or (user == client.user):
         return
     if len(reaction.message.embeds) > 0:
@@ -112,10 +106,8 @@ async def on_reaction_add(reaction, user):
 
 
 async def handle_queue():
-    """
-    Takes items off of the queue and sends the message to the processor. Once it has been fully handled, it will grab
-    the next message in the queue
-    """
+    """Takes items off of the queue and sends the message to the processor
+    Once it has been fully handled, it will grab the next message in the queue"""
     while True:
         if messageQueue.qsize() > 0:
             await messageHandler.handle_message(messageQueue.get(), client, commandMessageStarter)
@@ -125,16 +117,12 @@ async def handle_queue():
 
 
 def add_daily_queue():
-    """
-    Adds a value to the daily queue for when it is time to start daily upkeep
-    """
+    """Adds a value to the daily queue for when it is time to start daily upkeep"""
     dailyQueue.put('Daily upkeep ordered')
 
 
 async def check_schedule_time():
-    """
-    Checks for the current system time and if it is daily upkeep for the games to gain an action
-    """
+    """Checks for the current system time and if it is daily upkeep for the games to gain an action"""
     while True:
         schedule.run_pending()
         if dailyQueue.qsize() > 0:
