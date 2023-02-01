@@ -194,20 +194,24 @@ async def send_lobby_help_menu(message):
 
 
 async def public_commands_game(message, command):
+    command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
+    embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    if command == 'help':
+        embed = active_game_help_embed(embed_color, command_prefix)
+        await message.channel.send(embed=embed)
+        return
+    elif command == 'rules':
+        embed = make_rules_embed(embed_color)
+        await message.channel.send(embed=embed)
+        return
+
     data = jsonManager.read_games_json()
     try:
         data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
     except KeyError:
         await message.channel.send('You are not playing in this game ' + message.author.mention + '!')
         return
-    command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
-    embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
-    if command == 'help':
-        await active_game_help_embed(message, embed_color, command_prefix)
-    elif command == 'rules':
-        embed = make_rules_embed(embed_color)
-        await message.channel.send(embed=embed)
-    elif command == 'board':
+    if command == 'board':
         return command
     elif command == 'players':
         return command
@@ -265,7 +269,7 @@ async def public_commands_game(message, command):
                                                             'list of commands and options.')
 
 
-async def active_game_help_embed(message, embed_color, command_prefix):
+def active_game_help_embed(embed_color, command_prefix) -> discord.Embed:
     embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
                                                                  "reference! Simply type one of these to get "
                                                                  "started.",
@@ -296,7 +300,7 @@ async def active_game_help_embed(message, embed_color, command_prefix):
                     value=f'Sends a player the number of specified actions '
                           f'(Example: {command_prefix}send @testsubject 2) '
                           f'(Example: {command_prefix}send 3 1)', inline=False)
-    await message.channel.send(embed=embed)
+    return embed
 
 
 async def increase_range(message, data, guild_id=None, channel_id=None):
