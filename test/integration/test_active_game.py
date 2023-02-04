@@ -138,8 +138,8 @@ async def test_increase_range_no_actions(bot, command_prefix):
     member_id: str = str(bot.guilds[0].members[2].id)
     utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
     await messageHandler.handle_message(mess, bot, command_prefix)
-    assert dpytest.verify().message().content(
-        f"You do not have any actions to increase your range {mess.author.mention}!")
+    verifier: str = f"You do not have any actions to increase your range {mess.author.mention}!"
+    assert dpytest.verify().message().content(verifier)
 
 
 @pytest.mark.asyncio
@@ -151,8 +151,8 @@ async def test_increase_range(bot, command_prefix):
     mess.author = bot.guilds[0].members[2]
     previous_range = utils.JsonUtility.get_player_range(mess)
     await messageHandler.handle_message(mess, bot, command_prefix)
-    assert dpytest.verify().message().content(
-                                            f"Your range is now {previous_range + 1} tiles {mess.author.mention}!")
+    verifier: str = f"Your range is now {previous_range + 1} tiles {mess.author.mention}!"
+    assert dpytest.verify().message().content(verifier)
 
 
 @pytest.mark.asyncio
@@ -163,8 +163,8 @@ async def test_vote_alive(bot, command_prefix):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
     await messageHandler.handle_message(mess, bot, command_prefix)
-    assert dpytest.verify().message().content(
-        f"Only players with no more lives may vote on an extra action for a player {mess.author.mention}.")
+    verifier: str = f"Only players with no more lives may vote on an extra action for a player {mess.author.mention}."
+    assert dpytest.verify().message().content(verifier)
 
 
 @pytest.mark.asyncio
