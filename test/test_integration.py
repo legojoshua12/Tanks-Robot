@@ -103,9 +103,9 @@ class TestBeforeGame:
         await channel.send(f"{command_prefix}test")
         mess = dpytest.get_message()
         await messageHandler.handle_message(mess, bot, command_prefix)
-        assert dpytest.verify().message().content(f"{bot.user.mention} Unknown command. "
-                                                  f"Please use `{command_prefix}help` "
-                                                  f"to view a list of commands and options.")
+        verify_message: str = f"{bot.user.mention} Unknown command. Please use `{command_prefix}help` "
+        verify_message += "to view a list of commands and options."
+        assert dpytest.verify().message().content(verify_message)
 
     @pytest.mark.asyncio
     async def test_ignored_message(self, bot, command_prefix):
@@ -272,9 +272,9 @@ class TestLobby:
         await channel.send(f"{command_prefix}test")
         mess = dpytest.get_message()
         await messageHandler.handle_message(mess, bot, command_prefix)
-        assert dpytest.verify().message().content(f"{bot.user.mention} Unknown command. "
-                                                  f"Please use `{command_prefix}help` "
-                                                  f"to view a list of commands and options.")
+        verify_message: str = f"{bot.user.mention} Unknown command. Please use `{command_prefix}help` "
+        verify_message += "to view a list of commands and options."
+        assert dpytest.verify().message().content(verify_message)
 
     @pytest.mark.asyncio
     async def test_ignored_message(self, bot, command_prefix):
@@ -412,8 +412,10 @@ class TestInGame:
         await channel.send(f"{command_prefix}increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        utils.JsonUtility.remove_player_actions(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                                str(bot.guilds[0].members[2].id))
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        member_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.verify().message().content(
             f"You do not have any actions to increase your range {mess.author.mention}!")
@@ -442,14 +444,32 @@ class TestInGame:
             f"Only players with no more lives may vote on an extra action for a player {mess.author.mention}.")
 
     @pytest.mark.asyncio
+    async def test_vote_no_info(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}vote")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        player_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.verify().message().content(f"Please specify a player to vote for {mess.author.mention}.")
+
+    @pytest.mark.asyncio
     async def test_vote_no_player(self, bot, command_prefix):
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
         channel = bot.guilds[0].text_channels[0]
         await channel.send(f"{command_prefix}vote")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                      str(bot.guilds[0].members[2].id))
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        player_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.verify().message().content(f"Please specify a player to vote for {mess.author.mention}.")
 
@@ -460,8 +480,11 @@ class TestInGame:
         await channel.send(f"{command_prefix}vote some_random_person")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                      str(bot.guilds[0].members[2].id))
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        player_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.verify().message().content(f"*some_random_person* is not a player {mess.author.mention}!")
 
@@ -472,8 +495,11 @@ class TestInGame:
         await channel.send(f"{command_prefix}vote {bot.guilds[0].members[2].id}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                      str(bot.guilds[0].members[2].id))
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        player_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.verify().message().content(f"You have no more remaining votes today {mess.author.mention}!")
 
@@ -484,12 +510,132 @@ class TestInGame:
         await channel.send(f"{command_prefix}vote {bot.guilds[0].members[2].mention}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        utils.JsonUtility.kill_player(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                      str(bot.guilds[0].members[2].id))
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        player_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
         utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
                                                 str(bot.guilds[0].members[2].id), 1)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.verify().message().content(f"You may not vote for yourself {mess.author.mention}!")
+
+    @pytest.mark.asyncio
+    async def test_send_no_info(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        notification: str = f"Invalid command {mess.author.mention}! "
+        notification += "Please use */send [player or player number] [number of actions]"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_send_too_much_info(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send some random information")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        notification: str = f"Invalid command {mess.author.mention}! "
+        notification += "Please use */send [player or player number] [number of actions]"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_send_no_player(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send some_random_player 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        notification: str = f"Please specify the player number or @the_player instead {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_send_mention(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send {bot.guilds[0].members[3].mention} 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        notification: str = f"{mess.author.mention} gave 1 actions to {bot.guilds[0].members[3].mention}"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_send_mention_not_in_game(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send {bot.guilds[0].members[1].mention} 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        notification: str = f"{bot.guilds[0].members[1].mention} is not in this game {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_send_number(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send 2 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        notification: str = f"{mess.author.mention} gave 1 actions to {bot.guilds[0].members[3].mention}"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_send_number_not_in_game(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send 6 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        print(dpytest.get_message(peek=True).content)
+        notification: str = f"6 is not a player number in this game {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_send_self(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send {bot.guilds[0].members[2].mention} 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        notification: str = f"You may not send actions to yourself {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_send_self_player_number(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send 1 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        notification: str = f"You may not send actions to yourself {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_send_no_actions(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}send 2 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        member_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        notification: str = f"You do not have enough actions to do that {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
     async def test_command_not_in_game(self, bot, command_prefix):
@@ -508,9 +654,9 @@ class TestInGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         await messageHandler.handle_message(mess, bot, command_prefix)
-        assert dpytest.verify().message().content(f"{bot.guilds[0].members[2].mention} Unknown command. "
-                                                  f"Please use `{command_prefix}help` "
-                                                  f"to view a list of commands and options.")
+        verify_message: str = f"{bot.guilds[0].members[2].mention} Unknown command. Please use `{command_prefix}help` "
+        verify_message += "to view a list of commands and options."
+        assert dpytest.verify().message().content(verify_message)
 
     @pytest.mark.asyncio
     async def test_ignored_message(self, bot, command_prefix):

@@ -218,46 +218,51 @@ async def public_commands_game(message, command):
     elif command == 'dm':
         return command
     elif command == 'increase range':
-        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                   'lives']) == str(0):
+        player_data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+        player_lives: str = str(player_data[str(message.author.id)]['lives'])
+        if player_lives == str(0):
             await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
             return
         else:
             return command
     elif command[0:5] == 'move ' or (len(command) == 4 and command == 'move'):
-        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                   'lives']) == str(0):
+        player_data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+        player_lives: str = str(player_data[str(message.author.id)]['lives'])
+        if player_lives == str(0):
             await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
             return
         else:
             return 'move'
     elif command[0:6] == 'shoot ' or (len(command) == 5 and command == 'shoot'):
-        if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                   'lives']) == str(0):
+        player_data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+        player_lives: str = str(player_data[str(message.author.id)]['lives'])
+        if player_lives == str(0):
             await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
             return
         else:
             return 'shoot'
     elif command[0:4] == 'vote':
         if len(command) == 4:
-            if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                       'lives']) == str(0):
-                await message.channel.send('Please specify a player to vote for '
-                                           + message.author.mention + '.')
+            player_data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+            player_lives: str = str(player_data[str(message.author.id)]['lives'])
+            if player_lives == str(0):
+                await message.channel.send(f"Please specify a player to vote for {message.author.mention}.")
                 return
             else:
-                await message.channel.send('Only players with no more lives may vote on an extra action for a player '
-                                           + message.author.mention + '.')
+                notification: str = "Only players with no more lives may vote on an extra action for a player "
+                notification += f"{message.author.mention}."
+                await message.channel.send(notification)
                 return
         else:
             if command[0:5] == 'vote ':
-                if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                           'lives']) == str(0):
+                player_data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+                player_lives: str = str(player_data[str(message.author.id)]['lives'])
+                if player_lives == str(0):
                     return 'vote'
                 else:
-                    await message.channel.send(
-                        'Only players with no more lives may vote on an extra action for a player '
-                        + message.author.mention + '.')
+                    notification: str = "Only players with no more lives may vote on an extra action for a player "
+                    notification += f"{message.author.mention}."
+                    await message.channel.send(notification)
                     return
             else:
                 # TODO pass to next if
@@ -265,8 +270,9 @@ async def public_commands_game(message, command):
     elif command[0:4] == 'send':
         return 'send'
     else:
-        await message.channel.send(message.author.mention + ' Unknown command. Please use `*/help` to view a '
-                                                            'list of commands and options.')
+        notification: str = f"{message.author.mention} Unknown command. "
+        notification += "Please use `*/help` to view a list of commands and options."
+        await message.channel.send(notification)
 
 
 def active_game_help_embed(embed_color, command_prefix) -> discord.Embed:
@@ -705,17 +711,39 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
     else:
         if guild_id is None and channel_id is None:
             if locators[1][:2] == '<@':
-                player_id = locators[1][3:len(locators[1]) - 1]
+                player_id = locators[1][2:len(locators[1]) - 1]
                 for player in data['players']:
                     if player == player_id:
-                        locators[1] = int(data['players'][player]['playerNumber'])
-                        break
+                        if int(player_id) == int(message.author.id):
+                            notification: str = f"You may not send actions to yourself {message.author.mention}!"
+                            await message.channel.send(notification)
+                            return
+                        else:
+                            locators[1] = int(data['players'][player]['playerNumber'])
+                            break
                 if not isinstance(locators[1], int):
                     await message.channel.send(locators[1] + ' is not in this game ' + message.author.mention + '!')
                     return
             else:
-                await message.channel.send('You cannot use @ in a dm! Please specify the player number instead')
-                return
+                try:
+                    for player in data['players']:
+                        if int(data['players'][player]['playerNumber']) == int(locators[1]):
+                            # noinspection PyTypeChecker
+                            if int(player) == int(message.author.id):
+                                notification: str = f"You may not send actions to yourself {message.author.mention}!"
+                                await message.channel.send(notification)
+                                return
+                            else:
+                                locators[1] = int(data['players'][player]['playerNumber'])
+                                break
+                    if not isinstance(locators[1], int):
+                        notification = f"{locators[1]} is not a player number in this game {message.author.mention}!"
+                        await message.channel.send(notification)
+                        return
+                except ValueError:
+                    notification = f"Please specify the player number or @the_player instead {message.author.mention}!"
+                    await message.channel.send(notification)
+                    return
         else:
             try:
                 # noinspection PyTypeChecker
@@ -730,7 +758,7 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
             await message.channel.send('Invalid number of actions specified ' + message.author.mention)
             return
         if int(data['players'][str(message.author.id)]['actions']) < int(locators[2]):
-            await message.channel.send('You do not have enough actions to do that ' + message.author.mention)
+            await message.channel.send(f"You do not have enough actions to do that {message.author.mention}!")
             return
 
         for player in data['players']:
