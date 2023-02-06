@@ -122,3 +122,8 @@ class JsonUtility:
         data['games'][guild_id][channel_id]['players'][player_id]['remainingVotes'] = votes
         with open('Games.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+    @staticmethod
+    def get_game_board(guild_id: str, channel_id: str) -> list[list]:
+        data = jsonManager.read_games_json()
+        return data['games'][guild_id][channel_id]['board']['data']

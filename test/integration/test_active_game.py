@@ -45,7 +45,7 @@ async def test_rules_not_in_game(bot, command_prefix):
     try:
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
     except Exception:
-        print("trying again")
+        print("Clearing Queue...")
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}rules")
@@ -153,6 +153,302 @@ async def test_increase_range(bot, command_prefix):
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = f"Your range is now {previous_range + 1} tiles {mess.author.mention}!"
     assert dpytest.verify().message().content(verifier)
+
+
+@pytest.mark.asyncio
+async def test_move_no_information(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}move")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"Please specify a tile or a direction to move in {mess.author.mention}!"
+    assert dpytest.verify().message().content(verifier)
+
+
+@pytest.mark.asyncio
+async def test_move_too_many_args(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}move some info")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"Invalid information provided for where to go {mess.author.mention}! "
+    verifier += "Please specify a tile or a direction to move."
+    assert dpytest.verify().message().content(verifier)
+
+
+@pytest.mark.asyncio
+async def test_move_invalid_arg(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    channel = bot.guilds[0].text_channels[0]
+    direction: str = "somewhere"
+    await channel.send(f"{command_prefix}move {direction}")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"'{direction}' is not an ordinal direction or a coordinate {mess.author.mention}!"
+    print(dpytest.get_message(peek=True).content)
+    assert dpytest.verify().message().content(verifier)
+
+
+@pytest.mark.asyncio
+async def test_move_no_actions(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}move north")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    guild_id: str = str(bot.guilds[0].id)
+    channel_id: str = str(bot.guilds[0].text_channels[0].id)
+    player_id: str = str(bot.guilds[0].members[2].id)
+    utils.JsonUtility.remove_player_actions(guild_id, channel_id, player_id)
+
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"You have no more actions remaining {mess.author.mention}!"
+    assert dpytest.verify().message().content(verifier)
+
+
+@pytest.mark.asyncio
+async def test_move_north(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    guild_id: str = str(bot.guilds[0].id)
+    channel_id = str(bot.guilds[0].text_channels[0].id)
+    old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+    i, j = 0, 0
+    for row in range(len(old_board)):
+        for col in range(len(old_board[row])):
+            if str(old_board[row][col]) == "1":
+                i = row
+                j = col
+                break
+    if i == len(old_board)-1:
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}move south")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        dpytest.get_message()
+        dpytest.get_message()
+        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+        i, j = 0, 0
+        for row in range(len(old_board)):
+            for col in range(len(old_board[row])):
+                if str(old_board[row][col]) == "1":
+                    i = row
+                    j = col
+                    break
+
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}move north")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"You have moved north 1 tile {mess.author.mention}!"
+    assert dpytest.verify().message().content(verifier)
+    response: discord.Message = dpytest.get_message()
+    assert len(response.attachments) == 1
+    assert response.attachments[0].filename == 'image.png'
+
+    new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+    assert old_board != new_board
+    k, l = 0, 0
+    for row in range(len(new_board)):
+        for col in range(len(new_board[row])):
+            if str(new_board[row][col]) == "1":
+                k = row
+                l = col
+                break
+    assert k == (i+1) and l == j
+
+
+@pytest.mark.asyncio
+async def test_move_south(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    guild_id: str = str(bot.guilds[0].id)
+    channel_id = str(bot.guilds[0].text_channels[0].id)
+    old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+    i, j = 0, 0
+    for row in range(len(old_board)):
+        for col in range(len(old_board[row])):
+            if str(old_board[row][col]) == "1":
+                i = row
+                j = col
+                break
+    if i == 0:
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}move north")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        dpytest.get_message()
+        dpytest.get_message()
+        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+        i, j = 0, 0
+        for row in range(len(old_board)):
+            for col in range(len(old_board[row])):
+                if str(old_board[row][col]) == "1":
+                    i = row
+                    j = col
+                    break
+
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}move south")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"You have moved south 1 tile {mess.author.mention}!"
+    assert dpytest.verify().message().content(verifier)
+    response: discord.Message = dpytest.get_message()
+    assert len(response.attachments) == 1
+    assert response.attachments[0].filename == 'image.png'
+
+    new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+    assert old_board != new_board
+    k, l = 0, 0
+    for row in range(len(new_board)):
+        for col in range(len(new_board[row])):
+            if str(new_board[row][col]) == "1":
+                k = row
+                l = col
+                break
+    assert k == (i-1) and l == j
+
+
+@pytest.mark.asyncio
+async def test_move_west(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    guild_id: str = str(bot.guilds[0].id)
+    channel_id = str(bot.guilds[0].text_channels[0].id)
+    old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+    i, j = 0, 0
+    for row in range(len(old_board)):
+        for col in range(len(old_board[row])):
+            if str(old_board[row][col]) == "1":
+                i = row
+                j = col
+                break
+    if j == 0:
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}move east")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        dpytest.get_message()
+        dpytest.get_message()
+        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+        i, j = 0, 0
+        for row in range(len(old_board)):
+            for col in range(len(old_board[row])):
+                if str(old_board[row][col]) == "1":
+                    i = row
+                    j = col
+                    break
+
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}move west")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"You have moved west 1 tile {mess.author.mention}!"
+    assert dpytest.verify().message().content(verifier)
+    response: discord.Message = dpytest.get_message()
+    assert len(response.attachments) == 1
+    assert response.attachments[0].filename == 'image.png'
+
+    new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+    assert old_board != new_board
+    k, l = 0, 0
+    for row in range(len(new_board)):
+        for col in range(len(new_board[row])):
+            if str(new_board[row][col]) == "1":
+                k = row
+                l = col
+                break
+    assert k == i and l == (j-1)
+
+
+@pytest.mark.asyncio
+async def test_move_east(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    guild_id: str = str(bot.guilds[0].id)
+    channel_id = str(bot.guilds[0].text_channels[0].id)
+    old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+    i, j = 0, 0
+    for row in range(len(old_board)):
+        for col in range(len(old_board[row])):
+            if str(old_board[row][col]) == "1":
+                i = row
+                j = col
+                break
+    if j == len(old_board[0])-1:
+        channel = bot.guilds[0].text_channels[0]
+        await channel.send(f"{command_prefix}move west")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        dpytest.get_message()
+        dpytest.get_message()
+        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+        i, j = 0, 0
+        for row in range(len(old_board)):
+            for col in range(len(old_board[row])):
+                if str(old_board[row][col]) == "1":
+                    i = row
+                    j = col
+                    break
+
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}move east")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"You have moved east 1 tile {mess.author.mention}!"
+    assert dpytest.verify().message().content(verifier)
+    response: discord.Message = dpytest.get_message()
+    assert len(response.attachments) == 1
+    assert response.attachments[0].filename == 'image.png'
+
+    new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+    assert old_board != new_board
+    k, l = 0, 0
+    for row in range(len(new_board)):
+        for col in range(len(new_board[row])):
+            if str(new_board[row][col]) == "1":
+                k = row
+                l = col
+                break
+    assert k == i and l == (j+1)
+
+
+@pytest.mark.asyncio
+async def test_move_easter_egg(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    guild_id: str = str(bot.guilds[0].id)
+    channel_id = str(bot.guilds[0].text_channels[0].id)
+    old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}move weast")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"I am sorry {mess.author.mention}, but you do not have the power to move weast."
+    assert dpytest.verify().message().content(verifier)
+
+    new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+    assert old_board == new_board
 
 
 @pytest.mark.asyncio
