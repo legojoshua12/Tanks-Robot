@@ -251,14 +251,14 @@ async def test_move_north(bot, command_prefix):
 
     new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
     assert old_board != new_board
-    k, l = 0, 0
+    k, w = 0, 0
     for row in range(len(new_board)):
         for col in range(len(new_board[row])):
             if str(new_board[row][col]) == "1":
                 k = row
-                l = col
+                w = col
                 break
-    assert k == (i+1) and l == j
+    assert k == (i+1) and w == j
 
 
 @pytest.mark.asyncio
@@ -305,14 +305,14 @@ async def test_move_south(bot, command_prefix):
 
     new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
     assert old_board != new_board
-    k, l = 0, 0
+    k, w = 0, 0
     for row in range(len(new_board)):
         for col in range(len(new_board[row])):
             if str(new_board[row][col]) == "1":
                 k = row
-                l = col
+                w = col
                 break
-    assert k == (i-1) and l == j
+    assert k == (i-1) and w == j
 
 
 @pytest.mark.asyncio
@@ -359,14 +359,14 @@ async def test_move_west(bot, command_prefix):
 
     new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
     assert old_board != new_board
-    k, l = 0, 0
+    k, w = 0, 0
     for row in range(len(new_board)):
         for col in range(len(new_board[row])):
             if str(new_board[row][col]) == "1":
                 k = row
-                l = col
+                w = col
                 break
-    assert k == i and l == (j-1)
+    assert k == i and w == (j-1)
 
 
 @pytest.mark.asyncio
@@ -413,14 +413,14 @@ async def test_move_east(bot, command_prefix):
 
     new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
     assert old_board != new_board
-    k, l = 0, 0
+    k, w = 0, 0
     for row in range(len(new_board)):
         for col in range(len(new_board[row])):
             if str(new_board[row][col]) == "1":
                 k = row
-                l = col
+                w = col
                 break
-    assert k == i and l == (j+1)
+    assert k == i and w == (j+1)
 
 
 @pytest.mark.asyncio

@@ -527,10 +527,11 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
         if str(split_command[1][:2]) == '<@' and is_dm is False:
             try:
                 if guild_id is not None and channel_id is not None:
-                    split_command[1] = data['games'][guild_id][channel_id]['players'][str((split_command[1][3:])[:-1])]['playerNumber']
+                    players = data['games'][guild_id][channel_id]['players']
+                    split_command[1] = players[str((split_command[1][3:])[:-1])]['playerNumber']
                 else:
-                    split_command[1] = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][
-                        str((split_command[1][2:])[:-1])]['playerNumber']
+                    players = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+                    split_command[1] = players[str((split_command[1][2:])[:-1])]['playerNumber']
             except KeyError:
                 await message.channel.send('That player is not currently in the game ' + message.author.mention + '!')
                 return
