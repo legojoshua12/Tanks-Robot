@@ -509,11 +509,6 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
         if player_actions <= 0:
             await message.channel.send('You have no more actions remaining ' + message.author.mention + '!')
             return
-    if split_command[1] == str(player_number):
-        # Reason we don't say shoot yourself here is that is not something everyone can handle hearing,
-        # so we say you cannot shoot your own player instead
-        await message.channel.send('You cannot shoot your own player ' + message.author.mention + '!')
-        return
     try:
         specified_number = int(split_command[1])
         if guild_id is not None and channel_id is not None:
@@ -532,11 +527,10 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
         if str(split_command[1][:2]) == '<@' and is_dm is False:
             try:
                 if guild_id is not None and channel_id is not None:
-                    split_command[1] = data['games'][guild_id][channel_id]['players'][str((split_command[1][3:])[:-1])][
-                        'playerNumber']
+                    split_command[1] = data['games'][guild_id][channel_id]['players'][str((split_command[1][3:])[:-1])]['playerNumber']
                 else:
                     split_command[1] = data['games'][str(message.guild.id)][str(message.channel.id)]['players'][
-                        str((split_command[1][3:])[:-1])]['playerNumber']
+                        str((split_command[1][2:])[:-1])]['playerNumber']
             except KeyError:
                 await message.channel.send('That player is not currently in the game ' + message.author.mention + '!')
                 return
@@ -550,10 +544,18 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                 await message.channel.send('That player is not currently in the game ' + message.author.mention + '!')
                 return
         else:
+            notification: str = f"`{split_command[1]}` is not a player {message.author.mention}! "
+            notification += "Please specify a tile, player, or a direction to shoot."
+            await message.channel.send(notification)
             return
+    if str(split_command[1]) == str(player_number):
+        # Reason we don't say shoot yourself here is that is not something everyone can handle hearing,
+        # so we say you cannot shoot your own player instead
+        await message.channel.send(f"You cannot shoot your own player {message.author.mention}!")
+        return
     if guild_id is not None and channel_id is not None:
-        if is_player_in_range(board, str(data['games'][guild_id][channel_id]['players'][str(message.author.id)][
-                                             'range']), str(player_number), str(split_command[1])):
+        player_range: int = int(data['games'][guild_id][channel_id]['players'][str(message.author.id)]['range'])
+        if is_player_in_range(board, player_range, int(player_number), int(split_command[1])):
             for player in data['games'][guild_id][channel_id]['players']:
                 if str(data['games'][guild_id][channel_id]['players'][player]['playerNumber']) == str(split_command[1]):
                     # Remove a life from an enemy
@@ -580,9 +582,9 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
             await message.channel.send(
                 'Player ' + str(split_command[1]) + ' is out of range ' + message.author.mention + '!')
     else:
-        if is_player_in_range(board, str(
-                data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
-                    'range']), str(player_number), str(split_command[1])):
+        players: list = data['games'][str(message.guild.id)][str(message.channel.id)]
+        player_range: int = int(players['players'][str(message.author.id)]['range'])
+        if is_player_in_range(board, player_range, int(player_number), int(split_command[1])):
             for player in data['games'][str(message.guild.id)][str(message.channel.id)]['players']:
                 if str(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][player][
                            'playerNumber']) == str(split_command[1]):
@@ -610,12 +612,12 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                 'Player ' + str(split_command[1]) + ' is out of range ' + message.author.mention + '!')
 
 
-def is_player_in_range(board, player_range, attacker, defense) -> bool:
+def is_player_in_range(board, player_range: int, attacker: int, defense: int) -> bool:
     """Returns whether a player is within range to be shot by another or not
     :param board: The data of the game board
     :param player_range: The range of the attacker
-    :param attacker: The id of the attacking player on the board
-    :param defense: The id of the defending player on the board
+    :param attacker: The game assigned id of the attacking player on the board
+    :param defense: The game assigned id of the defending player on the board
     """
     attacker_pos = None
     defender_pos = None

@@ -110,6 +110,16 @@ class JsonUtility:
                            'range'])
 
     @staticmethod
+    def get_player_number(message, guild_id=None, channel_id=None, player_id=None) -> int:
+        data = jsonManager.read_games_json()
+        if guild_id is not None and channel_id is not None:
+            players: list = data['games'][str(guild_id)][str(channel_id)]['players']
+            return int(players[str(player_id)]['playerNumber'])
+        else:
+            players: list = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+            return int(players[str(message.author.id)]['playerNumber'])
+
+    @staticmethod
     def kill_player(guild_id: str, channel_id: str, player_id: str) -> None:
         data = jsonManager.read_games_json()
         data['games'][guild_id][channel_id]['players'][player_id]['lives'] = 0
@@ -127,3 +137,47 @@ class JsonUtility:
     def get_game_board(guild_id: str, channel_id: str) -> list[list]:
         data = jsonManager.read_games_json()
         return data['games'][guild_id][channel_id]['board']['data']
+
+    @staticmethod
+    def move_players_away(guild_id: str, channel_id: str) -> None:
+        board: list[list] = JsonUtility.get_game_board(guild_id, channel_id)
+        board_x: int = len(board)
+        board_y: int = len(board[0])
+        found_single: bool = False
+        for x in range(board_x):
+            for y in range(board_y):
+                if int(board[x][y]) == 1 or int(board[x][y]) == 2:
+                    board[x][y] = 0
+                    if found_single:
+                        break
+                    else:
+                        found_single = True
+
+        board[0][0] = 1
+        board[4][4] = 2
+        data = jsonManager.read_games_json()
+        data['games'][guild_id][channel_id]['board']['data'] = board
+        with open('Games.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+    @staticmethod
+    def move_players_together(guild_id: str, channel_id: str) -> None:
+        board: list[list] = JsonUtility.get_game_board(guild_id, channel_id)
+        board_x: int = len(board)
+        board_y: int = len(board[0])
+        found_single: bool = False
+        for x in range(board_x):
+            for y in range(board_y):
+                if int(board[x][y]) == 1 or int(board[x][y]) == 2:
+                    board[x][y] = 0
+                    if found_single:
+                        break
+                    else:
+                        found_single = True
+
+        board[0][0] = 1
+        board[0][1] = 2
+        data = jsonManager.read_games_json()
+        data['games'][guild_id][channel_id]['board']['data'] = board
+        with open('Games.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
