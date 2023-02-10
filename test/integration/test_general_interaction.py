@@ -25,7 +25,11 @@ async def test_mentioned(bot, command_prefix):
     assert dpytest.verify().message().nothing()
 
 
-@pytest.mark.skip(reason="Skipping due to a lack of testing suite")
 @pytest.mark.asyncio
-async def test_queue():
-    assert True
+async def test_queue(full_bot):
+    guild = full_bot.guilds[0]
+    channel = guild.text_channels[0]
+
+    await channel.send("Test Message")
+    print(dpytest.get_message(peek=True).author)
+    assert dpytest.verify().message().content("Test Message")

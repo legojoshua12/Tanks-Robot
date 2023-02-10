@@ -41,12 +41,7 @@ async def test_help(bot, command_prefix):
 
 @pytest.mark.asyncio
 async def test_rules_not_in_game(bot, command_prefix):
-    # TODO WTF?! This works but if you remove the try again clause it fails
-    try:
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
-    except Exception:
-        print("Clearing Queue...")
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}rules")
     mess = dpytest.get_message()
