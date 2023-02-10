@@ -80,31 +80,25 @@ async def test_list_players(bot, command_prefix):
     assert dpytest.verify().message().contains().embed(embeds[0])
 
 
-# TODO Look into dpytest and verifying messages that contain emojis
 @pytest.mark.asyncio
 async def test_dm(bot, command_prefix):
-    await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
     channel = bot.guilds[0].text_channels[0]
-    await channel.send((command_prefix + "dm"))
+    await channel.send(f"{command_prefix}dm")
     mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
     await messageHandler.handle_message(mess, bot, command_prefix)
 
     private_message = dpytest.get_message(peek=True)
     assert private_message.channel.type == discord.ChannelType.private
-    assert utils.CodecUtility.encodeByteToString(private_message.content) == \
-           "b'Hey there! \\xf0\\x9f\\x91\\x8b How can I help you? Use `help` to get started!'"
-    # assert dpytest.verify().message().content(
-    #     "b'Hey there! \\xf0\\x9f\\x91\\x8b How can I help you? Use `help` to get started!'")
+    assert private_message.content == "Hey there! 👋 How can I help you? Use `help` to get started!"
 
     public_message = dpytest.get_message()
     assert public_message.channel.type == discord.ChannelType.text
-    assert utils.CodecUtility.encodeByteToString(public_message.content) == \
-           f"b'{mess.author.mention} I just sent you a private message! \\xe2\\x9c\\x89'"
-    # assert dpytest.verify().message().content(
-    #     f"b'{mess.author.mention} I just sent you a private message! \\xe2\\x9c\\x89'")
+    assert public_message.content == f"{mess.author.mention} I just sent you a private message! ✉"
 
-    # TODO temporary measure for now to implement dypytest verify
-    assert dpytest.verify().message().contains().content("How can I help you? Use `help` to get started!")
+    # Clear the queue
+    dpytest.get_message()
 
 
 @pytest.mark.asyncio
