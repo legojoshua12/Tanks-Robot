@@ -39,7 +39,7 @@ async def bot(request, event_loop):
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
-    b = commands.Bot(command_prefix=get_command_prefix(), event_loop=event_loop,intents=intents)
+    b = commands.Bot(command_prefix=get_command_prefix(), event_loop=event_loop, intents=intents)
     await b._async_setup_hook()
 
     dpytest.configure(b)
@@ -54,11 +54,8 @@ async def cleanup():
 
 @pytest_asyncio.fixture
 async def full_bot(request):
-    intents = discord.Intents.default()
-    intents.members = True
-    intents.message_content = True
-    b = commands.Bot(command_prefix="!",
-                     intents=intents)
+    intents = discord.Intents.all()
+    b = commands.Bot(command_prefix=get_command_prefix(), intents=intents)
     # set up the loop
     if isinstance(b.loop, _LoopSentinel):
         await b._async_setup_hook()
@@ -71,7 +68,7 @@ async def full_bot(request):
 
     if mark is not None:
         for extension in mark.args:
-            await b.load_extension("tests.internal." + extension)
+            await b.load_extension("test.integration.internal." + extension)
 
     dpytest.configure(b)
     return b

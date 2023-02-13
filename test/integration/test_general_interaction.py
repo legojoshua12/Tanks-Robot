@@ -26,10 +26,21 @@ async def test_mentioned(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_queue(full_bot):
+async def test_extra_marks(bot, command_prefix):
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}{command_prefix}")
+    mess = dpytest.get_message()
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    assert dpytest.verify().message().nothing()
+
+
+@pytest.mark.asyncio
+@pytest.mark.cogs("cogs.message")
+async def test_queue(full_bot, command_prefix):
     guild = full_bot.guilds[0]
     channel = guild.text_channels[0]
 
-    await channel.send("Test Message")
-    print(dpytest.get_message(peek=True).author)
-    assert dpytest.verify().message().content("Test Message")
+    await channel.send("Hey!")
+    dpytest.get_message()
+    await dpytest.run_all_events()
+    assert dpytest.verify().message().content(f"Hello there!")
