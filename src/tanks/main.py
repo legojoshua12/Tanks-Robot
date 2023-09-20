@@ -52,7 +52,6 @@ if __name__ == "__main__":
     commandMessageStarter = configUtils.read_value('botSettings', 'botCommandPrefix')
     client = discord.Client(intents=discord.Intents.all())
 
-
     @client.event
     async def on_ready() -> None:
         """Runs when the robot has connected to discord and begin setup of status and queue handler"""
@@ -70,7 +69,6 @@ if __name__ == "__main__":
         # Set discord presence
         await client.change_presence(activity=discord.Game(name='Tanks'), status=discord.Status.online)
 
-
     @client.event
     async def on_message(message) -> None:
         """Runs on any message sent that the robot can see, then it takes that message and sends it to the queue"""
@@ -78,7 +76,6 @@ if __name__ == "__main__":
         if message.author == client.user:
             return
         messageQueue.put(message)
-
 
     @client.event
     async def on_reaction_add(reaction, user):
@@ -120,11 +117,9 @@ if __name__ == "__main__":
                 except TypeError:
                     return
 
-
     def add_daily_queue():
         """Adds a value to the daily queue for when it is time to start daily upkeep"""
         dailyQueue.put('Daily upkeep ordered')
-
 
     async def check_schedule_time():
         """Checks for the current system time and if it is daily upkeep for the games to gain an action"""
@@ -134,7 +129,6 @@ if __name__ == "__main__":
                 dailyQueue.get()
                 await dailyUpkeepManager.dailyActionsAndVoteUpkeep(client)
             await asyncio.sleep(1)
-
 
     # Start main program and connect to discord
     print('Connecting to discord...')
