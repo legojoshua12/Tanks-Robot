@@ -1,3 +1,5 @@
+import asyncio
+
 from src.tanks import main
 
 import discord.ext.commands.bot
@@ -10,10 +12,8 @@ class Message(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        await main.on_message(message)
-        channel = self.bot.guilds[0].text_channels[0]
-        if channel is not None:
-            await channel.send(f"Hello there!")
+        queue = main.messageQueue
+        queue.put(message)
 
 
 async def setup(bot: discord.ext.commands.bot.Bot):

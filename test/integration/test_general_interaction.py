@@ -1,9 +1,12 @@
 """
 Integration tests for command interaction and interfacing generically
 """
+import asyncio
+
 import discord.ext.test as dpytest
 import pytest
 
+from src.tanks import main
 from src.tanks.libraries import messageHandler
 
 
@@ -40,7 +43,13 @@ async def test_queue(full_bot, command_prefix):
     guild = full_bot.guilds[0]
     channel = guild.text_channels[0]
 
+    assert main.messageQueue.unfinished_tasks == 0
+    assert len(main.messageQueue.queue) == 0
     await channel.send("Hey!")
-    dpytest.get_message()
+    main.messageQueue.put(dpytest.get_message())
+    assert main.messageQueue.unfinished_tasks == 1
+    assert len(main.messageQueue.queue) == 1
+    asyncio.create_task(main.__handle_queue__(full_bot, command_prefix))
+    await asyncio.sleep(2)
     await dpytest.run_all_events()
-    assert dpytest.verify().message().content(f"Hello there!")
+    assert len(main.messageQueue.queue) == 0

@@ -12,6 +12,19 @@ from dotenv import load_dotenv
 
 from src.tanks.libraries import configUtils, jsonManager, messageHandler, commands, dailyUpkeepManager
 
+messageQueue = Queue()
+dailyQueue = Queue()
+
+
+async def __handle_queue__(client=None, commandMessageStarter=None):
+    """Takes items off of the queue and sends the message to the processor
+    Once it has been fully handled, it will grab the next message in the queue"""
+    while True:
+        if messageQueue.qsize() > 0:
+            await messageHandler.handle_message(messageQueue.get(), client, commandMessageStarter)
+        # This is a delay to slow down the processing speed of the queue if it is too processor intensive
+        # Param is in seconds
+        await asyncio.sleep(1)
 
 if __name__ == "__main__":
     # This is a clean windows shutdown procedure as to not throw memory heap errors
@@ -38,8 +51,6 @@ if __name__ == "__main__":
     jsonManager.initialize()
     commandMessageStarter = configUtils.read_value('botSettings', 'botCommandPrefix')
     client = discord.Client(intents=discord.Intents.all())
-    messageQueue = Queue()
-    dailyQueue = Queue()
 
 
     @client.event
@@ -47,7 +58,7 @@ if __name__ == "__main__":
         """Runs when the robot has connected to discord and begin setup of status and queue handler"""
         print(f'{client.user} has connected to Discord!')
         # First set up a coroutine for handling jobs
-        asyncio.get_event_loop().create_task(handle_queue())
+        asyncio.get_event_loop().create_task(__handle_queue__(client=client, commandMessageStarter=commandMessageStarter))
         # Add a schedule for daily upkeep
         upkeep_time = str(configUtils.read_value('gameSettings', 'dailyUpkeepTime'))
         # Run a coroutine for checking the schedule
@@ -105,17 +116,6 @@ if __name__ == "__main__":
                         await commands.flip_through_player_stats_card(reaction.message, data, -1, client)
                 except TypeError:
                     return
-
-
-    async def handle_queue():
-        """Takes items off of the queue and sends the message to the processor
-        Once it has been fully handled, it will grab the next message in the queue"""
-        while True:
-            if messageQueue.qsize() > 0:
-                await messageHandler.handle_message(messageQueue.get(), client, commandMessageStarter)
-            # This is a delay to slow down the processing speed of the queue if it is too processor intensive
-            # Param is in seconds
-            await asyncio.sleep(1)
 
 
     def add_daily_queue():
