@@ -1,5 +1,3 @@
-import asyncio
-
 from src.tanks import main
 
 import discord.ext.commands.bot

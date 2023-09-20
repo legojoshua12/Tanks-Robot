@@ -58,7 +58,10 @@ if __name__ == "__main__":
         """Runs when the robot has connected to discord and begin setup of status and queue handler"""
         print(f'{client.user} has connected to Discord!')
         # First set up a coroutine for handling jobs
-        asyncio.get_event_loop().create_task(__handle_queue__(client=client, commandMessageStarter=commandMessageStarter))
+        asyncio.get_event_loop().create_task(__handle_queue__(
+            client=client,
+            commandMessageStarter=commandMessageStarter)
+        )
         # Add a schedule for daily upkeep
         upkeep_time = str(configUtils.read_value('gameSettings', 'dailyUpkeepTime'))
         # Run a coroutine for checking the schedule
@@ -92,8 +95,8 @@ if __name__ == "__main__":
                         if is_in_games and not is_in_multiple_games:
                             guild_id, channel_id = jsonManager.get_player_server_channel_single(None, user.id)
                             player_index = str(int(reaction.message.embeds[0].fields[0].value[2:]) + 1)
-                            await commands.show_player_statistics(reaction.message, jsonManager.read_games_json(), client,
-                                                                  guild_id, channel_id, player_index)
+                            await commands.show_player_statistics(reaction.message, jsonManager.read_games_json(),
+                                                                  client, guild_id, channel_id, player_index)
 
                     elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
                         is_in_games = jsonManager.is_player_in_game(None, user.id)
@@ -102,8 +105,8 @@ if __name__ == "__main__":
                         if is_in_games and not is_in_multiple_games:
                             guild_id, channel_id = jsonManager.get_player_server_channel_single(None, user.id)
                             player_index = str(int(reaction.message.embeds[0].fields[0].value[2:]) - 1)
-                            await commands.show_player_statistics(reaction.message, jsonManager.read_games_json(), client,
-                                                                  guild_id, channel_id, player_index)
+                            await commands.show_player_statistics(reaction.message, jsonManager.read_games_json(),
+                                                                  client, guild_id, channel_id, player_index)
                 except TypeError:
                     return
             else:
