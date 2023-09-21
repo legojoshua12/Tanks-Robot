@@ -7,7 +7,7 @@ import pytest
 
 import test.utilstest as utils
 
-from src.tanks.libraries import messageHandler, configUtils
+from src.tanks.libraries import messageHandler
 
 
 @pytest.mark.asyncio

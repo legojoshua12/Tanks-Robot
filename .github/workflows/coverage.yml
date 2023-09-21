@@ -1,0 +1,35 @@
+name: Coverage Badge
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install coverage-badge
+
+      - name: Generate Coverage Badge
+        run: coverage-badge -o coverage.svg
+
+      - name: Commit Badge
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add coverage.svg
+          git commit -m "Update coverage badge [skip ci]"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -3,6 +3,7 @@
 ![PR Status](https://img.shields.io/badge/PRs-Welcome-informational?style=flat&logo=git&logoColor=white&color=11BB11)
 ![Tests Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/tests.yml/badge.svg?branch=multiple_dm)
 ![Lint Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/lint.yml/badge.svg?branch=multiple_dm)
+![Coverage](coverage.svg)
 
 This is a robot for the game tanks inspired by [HalfBrick studios](https://www.halfbrick.com/).
 
