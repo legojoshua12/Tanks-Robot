@@ -3,7 +3,6 @@ Utility setup for hard JSON values as well as configuring states of testing clas
 """
 import json
 
-import discord
 import discord.ext.test as dpytest
 
 from src.tanks.libraries import messageHandler
