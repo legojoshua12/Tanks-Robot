@@ -102,7 +102,9 @@ async def test_dm(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_start_not_enough_players(bot, command_prefix):
+async def test_start_not_enough_players(bot, command_prefix, is_admin):
+    if is_admin:
+        pytest.skip("Admin currently enabled in config, skipping test")
     await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}start")
@@ -111,8 +113,25 @@ async def test_start_not_enough_players(bot, command_prefix):
     assert dpytest.verify().message().content("There are not enough players in the game to start!")
 
 
+@pytest.mark.asyncio
+async def test_admin_start(bot, command_prefix, is_admin):
+    if not is_admin:
+        pytest.skip("Admin config not currently enabled, skipping test")
+    await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}start")
+    mess = dpytest.get_message()
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    assert dpytest.verify().message().content(f"Welcome to tanks {bot.guilds[0].members[2].mention}!")
+    mess = dpytest.get_message()
+    assert len(mess.attachments) == 1
+    assert mess.attachments[0].filename == 'image.png'
+
+
 @pytest.mark.asyncio()
-async def test_start_too_many_players(bot, command_prefix):
+async def test_start_too_many_players(bot, command_prefix, is_admin):
+    if is_admin:
+        pytest.skip("Admin currently enabled in config, skipping test")
     await utils.JsonUtility.add_many_players(bot, command_prefix)
     members_list = bot.guilds[0].members[3:]
     channel = bot.guilds[0].text_channels[0]
@@ -129,7 +148,7 @@ async def test_start_too_many_players(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_start(bot, command_prefix):
+async def test_start(bot, command_prefix, is_admin):
     await utils.JsonUtility.set_games_json_lobby(bot, command_prefix)
     channel = bot.guilds[0].text_channels[0]
     for i in range(4):
@@ -138,7 +157,7 @@ async def test_start(bot, command_prefix):
         mess.author = bot.guilds[0].members[i + 3]
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.verify().message().content(f"Adding {mess.author.mention} to the new game of Tanks!")
-    if not str(configUtils.read_value('startGame', 'adminTesting')).lower() == 'true':
+    if not is_admin:
         await channel.send(f"{command_prefix}start")
         mess = dpytest.get_message()
         await messageHandler.handle_message(mess, bot, command_prefix)

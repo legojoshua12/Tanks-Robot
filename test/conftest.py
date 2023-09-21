@@ -79,6 +79,12 @@ def command_prefix() -> str:
     return cfgUtils.read_value('botSettings', 'botCommandPrefix')
 
 
+@pytest.fixture
+def is_admin() -> bool:
+    val: str = cfgUtils.read_value('startGame', 'adminTesting')
+    return True if val.lower() == "true" else False
+
+
 def get_command_prefix() -> str:
     return cfgUtils.read_value('botSettings', 'botCommandPrefix')
 
