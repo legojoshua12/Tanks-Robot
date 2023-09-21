@@ -19,6 +19,9 @@ jobs:
       - name: Install dependencies
         run: pip install coverage-badge
 
+      - name: Run test coverage
+        run: pytest --cov=src
+
       - name: Generate Coverage Badge
         run: coverage-badge -o coverage.svg
 
