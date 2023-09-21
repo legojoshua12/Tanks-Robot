@@ -3,6 +3,7 @@ Utility setup for hard JSON values as well as configuring states of testing clas
 """
 import json
 
+import discord
 import discord.ext.test as dpytest
 
 from src.tanks.libraries import messageHandler
@@ -181,3 +182,10 @@ class JsonUtility:
         data['games'][guild_id][channel_id]['board']['data'] = board
         with open('Games.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+
+    @staticmethod
+    async def get_private_channel(bot, command_prefix):
+        guild = bot.guilds[0]
+        member = guild.members[0]
+        channel = await member.create_dm()
+        return channel
