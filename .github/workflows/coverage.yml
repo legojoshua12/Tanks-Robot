@@ -1,8 +1,10 @@
 name: Coverage Badge
 
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
+      - multiple_dm
 
 jobs:
   update-badge:
