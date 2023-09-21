@@ -183,8 +183,8 @@ class JsonUtility:
             json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
     @staticmethod
-    async def get_private_channel(bot, command_prefix):
+    async def get_private_channel(bot, member_id: int = 0):
         guild = bot.guilds[0]
-        member = guild.members[0]
+        member = guild.members[member_id]
         channel = await member.create_dm()
         return channel

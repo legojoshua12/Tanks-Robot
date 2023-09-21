@@ -13,7 +13,7 @@ from src.tanks.libraries import messageHandler, commands
 
 @pytest.mark.asyncio
 async def test_unknown_command_no_prefix(bot, command_prefix):
-    channel = await utils.JsonUtility.get_private_channel(bot, command_prefix)
+    channel = await utils.JsonUtility.get_private_channel(bot, 0)
     await channel.send("hello")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[0]
@@ -26,7 +26,7 @@ async def test_unknown_command_no_prefix(bot, command_prefix):
 
 @pytest.mark.asyncio
 async def test_unknown_command_with_prefix(bot, command_prefix):
-    channel = await utils.JsonUtility.get_private_channel(bot, command_prefix)
+    channel = await utils.JsonUtility.get_private_channel(bot, 0)
     await channel.send(f"{command_prefix}hello")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[0]
@@ -39,7 +39,7 @@ async def test_unknown_command_with_prefix(bot, command_prefix):
 
 @pytest.mark.asyncio
 async def test_help_no_prefix(bot, command_prefix):
-    channel = await utils.JsonUtility.get_private_channel(bot, command_prefix)
+    channel = await utils.JsonUtility.get_private_channel(bot, 0)
     await channel.send("help")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[0]
@@ -54,7 +54,7 @@ async def test_help_no_prefix(bot, command_prefix):
 
 @pytest.mark.asyncio
 async def test_help_with_prefix(bot, command_prefix):
-    channel = await utils.JsonUtility.get_private_channel(bot, command_prefix)
+    channel = await utils.JsonUtility.get_private_channel(bot, 0)
     await channel.send(f"{command_prefix}help")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[0]
@@ -69,7 +69,7 @@ async def test_help_with_prefix(bot, command_prefix):
 
 @pytest.mark.asyncio
 async def test_rules_with_prefix(bot, command_prefix):
-    channel = await utils.JsonUtility.get_private_channel(bot, command_prefix)
+    channel = await utils.JsonUtility.get_private_channel(bot, 0)
     await channel.send(f"{command_prefix}rules")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[0]
@@ -84,7 +84,7 @@ async def test_rules_with_prefix(bot, command_prefix):
 
 @pytest.mark.asyncio
 async def test_rules_no_prefix(bot, command_prefix):
-    channel = await utils.JsonUtility.get_private_channel(bot, command_prefix)
+    channel = await utils.JsonUtility.get_private_channel(bot, 0)
     await channel.send("rules")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[0]
@@ -99,7 +99,7 @@ async def test_rules_no_prefix(bot, command_prefix):
 
 @pytest.mark.asyncio
 async def test_rules_dm(bot, command_prefix):
-    channel = await utils.JsonUtility.get_private_channel(bot, command_prefix)
+    channel = await utils.JsonUtility.get_private_channel(bot, 0)
     await channel.send("dm")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[0]
