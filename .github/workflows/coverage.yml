@@ -28,16 +28,13 @@ jobs:
       - name: Generate Coverage Badge
         run: coverage-badge -o coverage.svg
 
-      - name: Commit Badge
+      - name: Commit and Push Badge
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git checkout $GITHUB_REF
           git add coverage.svg -f
           git commit -m "Update coverage badge"
-
-      - name: Push changes
-        run: |
           git push origin $GITHUB_REF
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
