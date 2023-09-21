@@ -3,8 +3,10 @@ name: Coverage Badge
 on:
   push:
     branches:
-      - main
       - multiple_dm
+  pull_request:
+    branches:
+      - main
 
 jobs:
   update-badge:
@@ -30,9 +32,9 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git checkout $GITHUB_REF # Checkout the branch specified in GITHUB_REF
+          git checkout $GITHUB_REF
           git add coverage.svg -f
-          git commit -m "Update coverage badge [skip ci]"
+          git commit -m "Update coverage badge"
 
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
