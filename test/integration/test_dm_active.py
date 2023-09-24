@@ -21,7 +21,8 @@ class TestSingleActiveGame:
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"{mess.author.mention} Unknown command. Please use `help` to view a list of commands and options."
+        verifier: str = (f"{mess.author.mention} Unknown command. "
+                         f"Please use `help` to view a list of commands and options.")
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
@@ -34,7 +35,8 @@ class TestSingleActiveGame:
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"{mess.author.mention} Unknown command. Please use `help` to view a list of commands and options."
+        verifier: str = (f"{mess.author.mention} Unknown command. "
+                         f"Please use `help` to view a list of commands and options.")
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
@@ -238,7 +240,7 @@ class TestSingleActiveGame:
     async def test_single_increase_range_dead_dm_no_prefix(self, bot, command_prefix):
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"increase range")
+        await channel.send("increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         guild_id: str = str(bot.guilds[0].id)
@@ -270,7 +272,7 @@ class TestSingleActiveGame:
     async def test_single_move_no_information_dm_no_prefix(self, bot, command_prefix):
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"move")
+        await channel.send("move")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         await messageHandler.handle_message(mess, bot, command_prefix)
@@ -352,7 +354,7 @@ class TestSingleActiveGame:
     async def test_single_move_no_actions_dm_no_prefix(self, bot, command_prefix):
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"move north")
+        await channel.send("move north")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
@@ -399,7 +401,7 @@ class TestSingleActiveGame:
                     break
         if i == len(old_board) - 1:
             channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send(f"move south")
+            await channel.send("move south")
             mess = dpytest.get_message()
             mess.author = bot.guilds[0].members[2]
             await messageHandler.handle_message(mess, bot, command_prefix)
@@ -415,7 +417,7 @@ class TestSingleActiveGame:
                         break
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"move north")
+        await channel.send("move north")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
@@ -507,7 +509,7 @@ class TestSingleActiveGame:
                     break
         if i == 0:
             channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send(f"move north")
+            await channel.send("move north")
             mess = dpytest.get_message()
             mess.author = bot.guilds[0].members[2]
             await messageHandler.handle_message(mess, bot, command_prefix)
@@ -523,7 +525,7 @@ class TestSingleActiveGame:
                         break
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"move south")
+        await channel.send("move south")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
@@ -615,7 +617,7 @@ class TestSingleActiveGame:
                     break
         if j == 0:
             channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send(f"move east")
+            await channel.send("move east")
             mess = dpytest.get_message()
             mess.author = bot.guilds[0].members[2]
             await messageHandler.handle_message(mess, bot, command_prefix)
@@ -631,7 +633,7 @@ class TestSingleActiveGame:
                         break
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"move west")
+        await channel.send("move west")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
@@ -723,7 +725,7 @@ class TestSingleActiveGame:
                     break
         if j == len(old_board[0]) - 1:
             channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send(f"move west")
+            await channel.send("move west")
             mess = dpytest.get_message()
             mess.author = bot.guilds[0].members[2]
             await messageHandler.handle_message(mess, bot, command_prefix)
@@ -739,7 +741,7 @@ class TestSingleActiveGame:
                         break
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"move east")
+        await channel.send("move east")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
@@ -824,7 +826,7 @@ class TestSingleActiveGame:
         old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"move weast")
+        await channel.send("move weast")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
