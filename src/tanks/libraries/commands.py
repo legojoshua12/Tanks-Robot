@@ -13,7 +13,7 @@ import src.tanks.libraries.renderPipeline as renderPipeline
 async def direct_message_commands(message, command, client) -> None:
     embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command.startswith(configUtils.read_value('botSettings', 'botCommandPrefix')):
-        command = command[2:].lower()
+        command = command[len(configUtils.read_value('botSettings', 'botCommandPrefix')):].lower()
     else:
         command = command.lower()
     if command == 'help':
@@ -48,8 +48,18 @@ async def direct_message_commands(message, command, client) -> None:
             elif command == 'players':
                 await show_player_statistics(message, jsonManager.read_games_json(), client, guild_id, channel_id)
             elif command == 'increase range':
+                player_data: dict = jsonManager.read_games_json()['games'][guild_id][channel_id]['players']
+                player_lives: str = str(player_data[str(message.author.id)]['lives'])
+                if player_lives == str(0):
+                    await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
+                    return
                 await increase_range(message, jsonManager.read_games_json(), guild_id, channel_id)
             elif command == 'move':
+                player_data: dict = jsonManager.read_games_json()['games'][guild_id][channel_id]['players']
+                player_lives: str = str(player_data[str(message.author.id)]['lives'])
+                if player_lives == str(0):
+                    await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
+                    return
                 await move(message, jsonManager.read_games_json(), total_command, guild_id, channel_id)
             elif command == 'shoot':
                 await shoot(message, jsonManager.read_games_json(), total_command, client, guild_id, channel_id, True)
