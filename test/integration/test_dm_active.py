@@ -899,6 +899,294 @@ class TestSingleActiveGame:
         new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
         assert old_board == new_board
 
+    @pytest.mark.asyncio
+    async def test_single_shoot_no_args_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send("shoot")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"Please specify a tile, player, or a direction to shoot at {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_no_args_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}shoot")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"Please specify a tile, player, or a direction to shoot at {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_too_many_args_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send("shoot someone somewhere")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"Invalid information provided for where to shoot {mess.author.mention}! "
+        verifier += "Please specify a tile, player, or a direction to shoot."
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_too_many_args_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}shoot someone somewhere")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"Invalid information provided for where to shoot {mess.author.mention}! "
+        verifier += "Please specify a tile, player, or a direction to shoot."
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_no_actions_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send("shoot 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        player_id: str = str(mess.author.id)
+        utils.JsonUtility.remove_player_actions(guild_id, channel_id, player_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You have no more actions remaining {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_no_actions_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}shoot 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        player_id: str = str(mess.author.id)
+        utils.JsonUtility.remove_player_actions(guild_id, channel_id, player_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You have no more actions remaining {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_no_player_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        non_player: str = "someone"
+        await channel.send(f"shoot {non_player}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"That player is not currently in the game {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_no_player_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        non_player: str = "someone"
+        await channel.send(f"{command_prefix}shoot {non_player}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"That player is not currently in the game {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_self_mention_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}shoot {bot.guilds[0].members[2].mention}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot @ people in direct messages {mess.author.mention}! "
+        verifier += f"Please use their in-game player-number found on {command_prefix}players"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_self_mention_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"shoot {bot.guilds[0].members[2].mention}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot @ people in direct messages {mess.author.mention}! "
+        verifier += f"Please use their in-game player-number found on {command_prefix}players"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_self_number_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send("shoot 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot shoot your own player {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_self_number_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}shoot 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot shoot your own player {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_out_of_range_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        enemy_player_number: int = 2
+        await channel.send(f"shoot {enemy_player_number}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        utils.JsonUtility.move_players_away(guild_id, channel_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"Player {enemy_player_number} is out of range {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_out_of_range_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        enemy_player_number: int = 2
+        await channel.send(f"{command_prefix}shoot {enemy_player_number}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        utils.JsonUtility.move_players_away(guild_id, channel_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"Player {enemy_player_number} is out of range {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_mention_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"shoot {bot.guilds[0].members[3].mention}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot @ people in direct messages {mess.author.mention}! "
+        verifier += f"Please use their in-game player-number found on {command_prefix}players"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_mention_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}shoot {bot.guilds[0].members[3].mention}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot @ people in direct messages {mess.author.mention}! "
+        verifier += f"Please use their in-game player-number found on {command_prefix}players"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_number_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        enemy_player_number: int = 2
+        await channel.send(f"shoot {enemy_player_number}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot by {mess.author.mention}! "
+        verifier += "They now have 2♥ lives left."
+        verifier_dm: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+        response = dpytest.get_message()
+        second_response = dpytest.get_message()
+        assert response.channel.type == discord.ChannelType.private
+        assert response.content == verifier_dm
+        assert second_response.channel.type == discord.ChannelType.text
+        assert second_response.content == verifier
+
+    @pytest.mark.asyncio
+    async def test_single_shoot_number_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        enemy_player_number: int = 2
+        await channel.send(f"{command_prefix}shoot {enemy_player_number}")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot by {mess.author.mention}! "
+        verifier += "They now have 2♥ lives left."
+        verifier_dm: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+        response = dpytest.get_message()
+        second_response = dpytest.get_message()
+        assert response.channel.type == discord.ChannelType.private
+        assert response.content == verifier_dm
+        assert second_response.channel.type == discord.ChannelType.text
+        assert second_response.content == verifier
+
 
 class TestMultipleActiveGames:
     @pytest.mark.asyncio
