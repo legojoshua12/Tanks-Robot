@@ -123,7 +123,7 @@ async def handle_message(message, client, commandMessageStarter):
                 elif action == 'shoot':
                     await commands.shoot(message, jsonManager.read_games_json(), command, client)
                 elif action == 'vote':
-                    await commands.vote_action(message, jsonManager.read_games_json(), command)
+                    await commands.vote_action(message, jsonManager.read_games_json(), client, command)
                 elif action == 'send':
                     await commands.send_actions(message, jsonManager.read_games_json())
 

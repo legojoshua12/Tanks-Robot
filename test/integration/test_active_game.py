@@ -683,6 +683,56 @@ async def test_vote_self(bot, command_prefix):
 
 
 @pytest.mark.asyncio
+async def test_vote_number(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}vote 2")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    guild_id: str = str(bot.guilds[0].id)
+    channel_id: str = str(bot.guilds[0].text_channels[0].id)
+    player_id: str = str(bot.guilds[0].members[2].id)
+    utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+    utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
+                                            str(bot.guilds[0].members[2].id), 1)
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = (f"{bot.guilds[0].members[2].mention} voted for {bot.guilds[0].members[3].mention} "
+                     f"to receive 1 extra action.")
+    assert dpytest.verify().message().content(verifier)
+
+    data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, player_id)
+    assert int(data['remainingVotes']) == 0
+    data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, str(bot.guilds[0].members[3].id))
+    assert int(data['votes']) == 1
+
+
+@pytest.mark.asyncio
+async def test_vote_mention(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}vote {bot.guilds[0].members[3].mention}")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+
+    guild_id: str = str(bot.guilds[0].id)
+    channel_id: str = str(bot.guilds[0].text_channels[0].id)
+    player_id: str = str(bot.guilds[0].members[2].id)
+    utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+    utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
+                                            str(bot.guilds[0].members[2].id), 1)
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = (f"{bot.guilds[0].members[2].mention} voted for {bot.guilds[0].members[3].mention} "
+                     f"to receive 1 extra action.")
+    assert dpytest.verify().message().content(verifier)
+
+    data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, player_id)
+    assert int(data['remainingVotes']) == 0
+    data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, str(bot.guilds[0].members[3].id))
+    assert int(data['votes']) == 1
+
+
+@pytest.mark.asyncio
 async def test_send_no_info(bot, command_prefix):
     await utils.JsonUtility.start_sample_game(bot, command_prefix)
     channel = bot.guilds[0].text_channels[0]

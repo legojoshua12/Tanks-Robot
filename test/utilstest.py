@@ -120,6 +120,16 @@ class JsonUtility:
             return int(players[str(message.author.id)]['playerNumber'])
 
     @staticmethod
+    def get_player_stats(message, guild_id=None, channel_id=None, player_id=None) -> dict:
+        data = jsonManager.read_games_json()
+        if guild_id is not None and channel_id is not None:
+            players: list = data['games'][str(guild_id)][str(channel_id)]['players']
+            return players[str(player_id)]
+        else:
+            players: list = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+            return players[str(message.author.id)]
+
+    @staticmethod
     def kill_player(guild_id: str, channel_id: str, player_id: str) -> None:
         data = jsonManager.read_games_json()
         data['games'][guild_id][channel_id]['players'][player_id]['lives'] = 0

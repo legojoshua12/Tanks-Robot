@@ -64,7 +64,13 @@ async def direct_message_commands(message, command, client) -> None:
             elif command == 'shoot':
                 await shoot(message, jsonManager.read_games_json(), total_command, client, guild_id, channel_id, True)
             elif command == 'vote':
-                await vote_action(message, jsonManager.read_games_json(), total_command, guild_id, channel_id)
+                player_data: dict = jsonManager.read_games_json()['games'][guild_id][channel_id]['players']
+                player_lives: str = str(player_data[str(message.author.id)]['lives'])
+                if player_lives != str(0):
+                    await message.channel.send('Only players with no more lives may vote on an extra action for a '
+                                               'player ' + message.author.mention + '.')
+                    return
+                await vote_action(message, jsonManager.read_games_json(), client, total_command, guild_id, channel_id)
             elif command == 'send':
                 await send_actions(message, jsonManager.read_games_json(), client, guild_id, channel_id)
                 pass
@@ -645,10 +651,11 @@ def is_player_in_range(board, player_range: int, attacker: int, defense: int) ->
     return True
 
 
-async def vote_action(message: discord.Message, data, command: str, guild_id=None, channel_id=None) -> None:
+async def vote_action(message: discord.Message, data, client, command: str, guild_id=None, channel_id=None) -> None:
     """A vote for a player if the player is dead
     :param message: The message sent by the user requesting to vote
     :param data: The complete games dataset from the json
+    :param client: The discord client for making API fetches
     :param command: The start of the message content
     :param guild_id: (Optional) A specifier for which game in guild from direct messages
     :param channel_id: (Optional) A specifier for which game in channel from direct messages
@@ -657,21 +664,27 @@ async def vote_action(message: discord.Message, data, command: str, guild_id=Non
         data = data['games'][guild_id][channel_id]
     else:
         data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    if len(str(command).split()) == 1:
+        await message.channel.send(f"Please specify a player to vote for {message.author.mention}.")
+        return
     if command[5:7] != '<@':
         try:
             int(command[5:])
         except ValueError:
-            if guild_id is not None and channel_id is not None:
-                await message.channel.send(
-                    'You cannot vote for players using @ in a direct message ' + message.author.mention +
-                    '! Please use player-number instead')
-            else:
-                await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
+            await message.channel.send('*' + str(command[5:]) + '* is not a player ' + message.author.mention + '!')
             return
         player_number = int(command[5:])
     else:
+        if guild_id is not None and channel_id is not None:
+            await message.channel.send(
+                'You cannot vote for players using @ in a direct message ' + message.author.mention +
+                '! Please use player-number instead')
         user_id = command[7:(len(command) - 1)]
-        player_number = int(data['players'][str(user_id)]['playerNumber'])
+        try:
+            player_number = int(data['players'][str(user_id)]['playerNumber'])
+        except ValueError:
+            await message.channel.send(str(command[5:]) + ' is not a player ' + message.author.mention + '!')
+            return
 
     # Prevents the edge case of player number not being assigned
     if player_number == 0:
@@ -693,12 +706,28 @@ async def vote_action(message: discord.Message, data, command: str, guild_id=Non
 
     data['players'][str(message.author.id)]['remainingVotes'] = int(data['players'][str(message.author.id)]
                                                                     ['remainingVotes']) - 1
-    jsonManager.save_player(message, message.author.id, data['players'][str(message.author.id)])
+    if guild_id is not None and channel_id is not None:
+        jsonManager.save_player(message=message, userId=message.author.id,
+                                playerInfo=data['players'][str(message.author.id)], guild_id=guild_id,
+                                channel_id=channel_id)
+    else:
+        jsonManager.save_player(message, message.author.id, data['players'][str(message.author.id)])
     for player in data['players']:
         if int(data['players'][player]['playerNumber']) == player_number:
             data['players'][player]['votes'] = int(data['players'][player]['votes']) + 1
-            jsonManager.save_player(message, message.author.id, data['players'][player])
+            if guild_id is not None and channel_id is not None:
+                jsonManager.save_player(message=message, userId=player,
+                                        playerInfo=data['players'][player], guild_id=guild_id,
+                                        channel_id=channel_id)
+            else:
+                jsonManager.save_player(message, player, data['players'][player])
             break
+    user: discord.User = await client.fetch_user(int(player))
+    if guild_id is not None and channel_id is not None:
+        await message.channel.send('Your vote for ' + user.mention + ' to receive 1 extra action has been counted.')
+    else:
+        await message.channel.send(message.author.mention + ' voted for ' + user.mention + ' to receive '
+                                                                                           '1 extra action.')
 
 
 async def send_actions(message, data, client=None, guild_id=None, channel_id=None) -> None:
