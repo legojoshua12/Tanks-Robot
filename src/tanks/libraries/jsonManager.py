@@ -43,7 +43,7 @@ def create_game(message: discord.Message):
 def save_player_json(message: discord.Message, data: dict):
     """Appends over old player data if there is an update or cancels writing if that player does not exist
     :param message: The message by the player whose data is being overwritten
-    :param data: The new dataset
+    :param data: The new complete dataset with {'games': ...}
     """
     players: dict = read_players_json()
     players_data: dict = data['games'][str(message.guild.id)][str(message.channel.id)]['players']

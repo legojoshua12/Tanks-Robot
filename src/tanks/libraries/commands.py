@@ -744,11 +744,15 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
         locators = str(message.content).split()
     else:
         data = data['games'][str(message.guild.id)][str(message.channel.id)]
-        locators = str(message.content)[2:].split()
+        locators = str(message.content)[len(configUtils.read_value('botSettings', 'botCommandPrefix')):].split()
     if len(locators) != 3:
         command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
-        await message.channel.send('Invalid command ' + message.author.mention +
-                                   f'! Please use {command_prefix}send [player or player number] [number of actions]')
+        if guild_id is not None and channel_id is not None:
+            await message.channel.send('Invalid command ' + message.author.mention + f'! Please use {command_prefix}'
+                                       f'send [player number] [number of actions]')
+        else:
+            await message.channel.send('Invalid command ' + message.author.mention + f'! Please use {command_prefix}'
+                                       f'send [player or player number] [number of actions]')
         return
     else:
         if guild_id is None and channel_id is None:
@@ -808,6 +812,18 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
                 data['players'][player]['actions'] = int(data['players'][player]['actions']) + int(locators[2])
                 data['players'][str(message.author.id)]['actions'] = \
                     int(data['players'][str(message.author.id)]['actions']) - int(locators[2])
+                if guild_id is not None and channel_id is not None:
+                    jsonManager.save_player(message=message, userId=player, playerInfo=data['players'][player],
+                                            guild_id=guild_id, channel_id=channel_id)
+                    jsonManager.save_player(message=message, userId=message.author.id,
+                                            playerInfo=data['players'][str(message.author.id)], guild_id=guild_id,
+                                            channel_id=channel_id)
+                else:
+                    jsonManager.save_player(message=message, userId=player, playerInfo=data['players'][player],
+                                            guild_id=str(message.guild.id), channel_id=str(message.channel.id))
+                    jsonManager.save_player(message=message, userId=message.author.id,
+                                            playerInfo=data['players'][str(message.author.id)],
+                                            guild_id=str(message.guild.id), channel_id=str(message.channel.id))
                 await message.channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to ' +
                                            '<@' + player + '>')
                 if guild_id is not None and channel_id is not None:

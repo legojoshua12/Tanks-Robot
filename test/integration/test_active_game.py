@@ -781,6 +781,11 @@ async def test_send_mention(bot, command_prefix):
     notification: str = f"{mess.author.mention} gave 1 actions to {bot.guilds[0].members[3].mention}"
     assert dpytest.verify().message().content(notification)
 
+    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[2].id))
+    assert int(data['actions']) == 0
+    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[3].id))
+    assert int(data['actions']) == 2
+
 
 @pytest.mark.asyncio
 async def test_send_mention_not_in_game(bot, command_prefix):
@@ -792,6 +797,11 @@ async def test_send_mention_not_in_game(bot, command_prefix):
     await messageHandler.handle_message(mess, bot, command_prefix)
     notification: str = f"{bot.guilds[0].members[1].mention} is not in this game {mess.author.mention}!"
     assert dpytest.verify().message().content(notification)
+
+    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[2].id))
+    assert int(data['actions']) == 1
+    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[3].id))
+    assert int(data['actions']) == 1
 
 
 @pytest.mark.asyncio
@@ -805,6 +815,11 @@ async def test_send_number(bot, command_prefix):
     notification: str = f"{mess.author.mention} gave 1 actions to {bot.guilds[0].members[3].mention}"
     assert dpytest.verify().message().content(notification)
 
+    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[2].id))
+    assert int(data['actions']) == 0
+    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[3].id))
+    assert int(data['actions']) == 2
+
 
 @pytest.mark.asyncio
 async def test_send_number_not_in_game(bot, command_prefix):
@@ -816,6 +831,8 @@ async def test_send_number_not_in_game(bot, command_prefix):
     await messageHandler.handle_message(mess, bot, command_prefix)
     notification: str = f"6 is not a player number in this game {mess.author.mention}!"
     assert dpytest.verify().message().content(notification)
+    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[2].id))
+    assert int(data['actions']) == 1
 
 
 @pytest.mark.asyncio
@@ -856,6 +873,11 @@ async def test_send_no_actions(bot, command_prefix):
     await messageHandler.handle_message(mess, bot, command_prefix)
     notification: str = f"You do not have enough actions to do that {mess.author.mention}!"
     assert dpytest.verify().message().content(notification)
+
+    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[2].id))
+    assert int(data['actions']) == 0
+    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[3].id))
+    assert int(data['actions']) == 1
 
 
 @pytest.mark.asyncio
