@@ -1389,7 +1389,7 @@ class TestSingleActiveGame:
     async def test_single_vote_self_dm_no_prefix(self, bot, command_prefix):
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"vote 1")
+        await channel.send("vote 1")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
@@ -1425,7 +1425,7 @@ class TestSingleActiveGame:
     async def test_single_vote_dm_no_prefix(self, bot, command_prefix):
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"vote 2")
+        await channel.send("vote 2")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
@@ -1601,7 +1601,7 @@ class TestSingleActiveGame:
     async def test_single_send_not_in_game_dm_no_prefix(self, bot, command_prefix):
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"send 6 1")
+        await channel.send("send 6 1")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         await messageHandler.handle_message(mess, bot, command_prefix)
