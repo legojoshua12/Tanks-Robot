@@ -1,3 +1,4 @@
+"""Handles reading the config file and providing values when given a key"""
 import os
 from configparser import ConfigParser
 
@@ -5,9 +6,7 @@ config = ConfigParser()
 
 
 def initialize():
-    """
-    Calls a shutdown if a config file cannot be located
-    """
+    """Calls a shutdown if a config file cannot be located"""
     if os.path.exists('config.ini'):
         print('Config file located, initializing...')
     else:
@@ -16,8 +15,7 @@ def initialize():
 
 
 def write_value(section, key, value):
-    """
-    Adds config values to the config file
+    """Adds config values to the config file
     :param section: Which header to write or write to
     :param key: Which key to be used in the section
     :param value: The value of the given key
@@ -25,13 +23,12 @@ def write_value(section, key, value):
     config.read('config.ini')
     config.set(section, key, value)
 
-    with open('../config.ini', 'w') as f:
+    with open('../../../config.ini', 'w') as f:
         config.write(f)
 
 
 def read_value(section, key, uniqueLocation=None):
-    """
-    Grabs a configuration option out of the config file
+    """Grabs a configuration option out of the config file
     :param section: Which header to grab
     :param key: Which value is desired
     :param uniqueLocation: Default None but can pass a string type for a location reader of a config file
@@ -44,7 +41,7 @@ def read_value(section, key, uniqueLocation=None):
     try:
         value = config.get(section, key)
         return value
-    except:
+    except FileNotFoundError:
         config.read('../config.ini')
         value = config.get(section, key)
         return value

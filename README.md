@@ -1,13 +1,15 @@
 # Tanks-Robot
-![Python Version](https://img.shields.io/badge/Python_Version-3.8-informational?style=flat&logo=python&logoColor=white&color=11BB11)
+![Python Version](https://img.shields.io/badge/Python_Version-3.9_|_3.10_|_3.11-informational?style=flat&logo=python&logoColor=white&color=11BB11)
 ![PR Status](https://img.shields.io/badge/PRs-Welcome-informational?style=flat&logo=git&logoColor=white&color=11BB11)
-![Tests Status](https://img.shields.io/badge/test-passing-informational?style=flat&logo=pytest&logoColor=white&color=11BB11)
+![Tests Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/tests.yml/badge.svg?branch=multiple_dm)
+![Lint Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/lint.yml/badge.svg?branch=multiple_dm)
+![Coverage](coverage.svg)
 
 This is a robot for the game tanks inspired by [HalfBrick studios](https://www.halfbrick.com/).
 
 ## Local Compiling
-In order to run a local instance of this robot, you need [Python 3.8](https://www.python.org/downloads/release/python-380/).
-All required libraries can be obtained with correct versioning for pip via the [requirements.txt](requirements.txt) file.
+In order to run a local instance of this robot, you need [Python 3.9](https://www.python.org/downloads/release/python-390/) or [higher](https://www.python.org/downloads/).
+All required libraries can be obtained with correct versioning for pip via the [requirements.txt](requirements.txt) file. If you would like to run the project and the tests, then use the [requirements_dev.txt](requirements_dev.txt) file.
 
 The libraries referenced come with lower level libraries needed for operation and pip will automatically install those as needed.
 
@@ -16,6 +18,7 @@ You can add the token to your `.env` file to initialize the connection with the 
 
 ## Integration Tests
 All code within the robot is unit and integration tested and all tests can be run on a local machine before deployment to a [docker container](https://www.docker.com/) or [Heroku](https://www.heroku.com/).
+Tests are run in GitHub actions via tox and flake8.
 
 ## Heroku Deployment
 

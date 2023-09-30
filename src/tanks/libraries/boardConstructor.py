@@ -1,10 +1,10 @@
 """Builds and returns a board function, as well as the search area function on the board"""
 import random
 
-import libraries.configUtils as configUtils
+import src.tanks.libraries.configUtils as configUtils
 
 
-def construct_board_data(players):
+def construct_board_data(players) -> list[list]:
     """
     Returns a 2x2 array which is the board filled with the players
     :param players: The number of players in the game
@@ -17,7 +17,7 @@ def construct_board_data(players):
     return board
 
 
-def populate_board(board, players):
+def populate_board(board, players) -> list[list]:
     """
     Inserts each player on the board in random positions while constructing a new board
     :param board: The partially completed board array
@@ -34,9 +34,10 @@ def populate_board(board, players):
     return board
 
 
-def __check_for_players_around_area(board, pos_x, pos_y):
+def __check_for_players_around_area(board, pos_x, pos_y) -> bool:
     """
-    Returns a true or false if another player is within range of a given x & y from the config distance checker for spawns
+    Returns a true or false if another player is within range of a given x & y
+    from the config distance checker for spawns
     :param board: The player board
     :param pos_x: The x position of the check coordinate
     :param pos_y: The y position of the check coordinate
