@@ -771,6 +771,18 @@ async def test_send_no_player(bot, command_prefix):
 
 
 @pytest.mark.asyncio
+async def test_send_not_in_game_number(bot, command_prefix):
+    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    channel = bot.guilds[0].text_channels[0]
+    await channel.send(f"{command_prefix}send 6 1")
+    mess = dpytest.get_message()
+    mess.author = bot.guilds[0].members[2]
+    await messageHandler.handle_message(mess, bot, command_prefix)
+    verifier: str = f"6 is not a player number in this game {mess.author.mention}!"
+    assert dpytest.verify().message().content(verifier)
+
+
+@pytest.mark.asyncio
 async def test_send_mention(bot, command_prefix):
     await utils.JsonUtility.start_sample_game(bot, command_prefix)
     channel = bot.guilds[0].text_channels[0]

@@ -1546,15 +1546,188 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
-    async def test_send_mention(self, bot, command_prefix):
+    async def test_single_send_mention_dm_no_prefix(self, bot, command_prefix):
         await utils.JsonUtility.start_sample_game(bot, command_prefix)
-        channel = bot.guilds[0].text_channels[0]
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"send {bot.guilds[0].members[3].mention} 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot @ people in direct messages {mess.author.mention}! "
+        verifier += f"Please use their in-game player-number found on {command_prefix}players"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_send_mention_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send {bot.guilds[0].members[3].mention} 1")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot @ people in direct messages {mess.author.mention}! "
+        verifier += f"Please use their in-game player-number found on {command_prefix}players"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_send_mention_not_in_game_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"send {bot.guilds[0].members[1].mention} 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot @ people in direct messages {mess.author.mention}! "
+        verifier += f"Please use their in-game player-number found on {command_prefix}players"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_send_mention_not_in_game_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}send {bot.guilds[0].members[1].mention} 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You cannot @ people in direct messages {mess.author.mention}! "
+        verifier += f"Please use their in-game player-number found on {command_prefix}players"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_send_not_in_game_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"send 6 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"6 is not a player number in this game {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_send_not_in_game_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}send 6 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"6 is not a player number in this game {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_single_send_number_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send("send 2 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         notification: str = f"{mess.author.mention} gave 1 actions to {bot.guilds[0].members[3].mention}"
         assert dpytest.verify().message().content(notification)
+
+        data = utils.JsonUtility.get_player_stats(mess, bot.guilds[0].id, bot.guilds[0].channels[0].id,
+                                                  str(bot.guilds[0].members[2].id))
+        assert int(data['actions']) == 0
+        data = utils.JsonUtility.get_player_stats(mess, bot.guilds[0].id, bot.guilds[0].channels[0].id,
+                                                  str(bot.guilds[0].members[3].id))
+        assert int(data['actions']) == 2
+
+    @pytest.mark.asyncio
+    async def test_single_send_number_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}send 2 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        notification: str = f"{mess.author.mention} gave 1 actions to {bot.guilds[0].members[3].mention}"
+        assert dpytest.verify().message().content(notification)
+
+        data = utils.JsonUtility.get_player_stats(mess, bot.guilds[0].id, bot.guilds[0].channels[0].id,
+                                                  str(bot.guilds[0].members[2].id))
+        assert int(data['actions']) == 0
+        data = utils.JsonUtility.get_player_stats(mess, bot.guilds[0].id, bot.guilds[0].channels[0].id,
+                                                  str(bot.guilds[0].members[3].id))
+        assert int(data['actions']) == 2
+
+    @pytest.mark.asyncio
+    async def test_single_send_self_player_number_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send("send 1 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        notification: str = f"You may not send actions to yourself {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_single_send_self_player_number_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}send 1 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        notification: str = f"You may not send actions to yourself {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
+
+    @pytest.mark.asyncio
+    async def test_single_send_no_actions_dm_no_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send("send 2 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        member_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        notification: str = f"You do not have enough actions to do that {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
+
+        data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id,
+                                                  str(bot.guilds[0].members[2].id))
+        assert int(data['actions']) == 0
+        data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id,
+                                                  str(bot.guilds[0].members[3].id))
+        assert int(data['actions']) == 1
+
+    @pytest.mark.asyncio
+    async def test_single_send_no_actions_dm_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}send 2 1")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        member_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        notification: str = f"You do not have enough actions to do that {mess.author.mention}!"
+        assert dpytest.verify().message().content(notification)
+
+        data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id,
+                                                  str(bot.guilds[0].members[2].id))
+        assert int(data['actions']) == 0
+        data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id,
+                                                  str(bot.guilds[0].members[3].id))
+        assert int(data['actions']) == 1
 
 
 class TestMultipleActiveGames:

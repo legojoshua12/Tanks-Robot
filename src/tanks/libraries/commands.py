@@ -730,7 +730,7 @@ async def vote_action(message: discord.Message, data, client, command: str, guil
                                                                                            '1 extra action.')
 
 
-async def send_actions(message, data, client=None, guild_id=None, channel_id=None) -> None:
+async def send_actions(message, data, client, guild_id=None, channel_id=None) -> None:
     """
     Sends a number of actions from the message sender to their desired target
     :param message: The original message sent by the commander
@@ -758,6 +758,7 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
         if guild_id is None and channel_id is None:
             if locators[1][:2] == '<@':
                 player_id = locators[1][2:len(locators[1]) - 1]
+                found_player: bool = False
                 for player in data['players']:
                     if player == player_id:
                         if int(player_id) == int(message.author.id):
@@ -766,12 +767,18 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
                             return
                         else:
                             locators[1] = int(data['players'][player]['playerNumber'])
+                            found_player = True
                             break
                 if not isinstance(locators[1], int):
                     await message.channel.send(locators[1] + ' is not in this game ' + message.author.mention + '!')
                     return
+                if not found_player:
+                    notification = f"{locators[1]} is not a player number in this game {message.author.mention}!"
+                    await message.channel.send(notification)
+                    return
             else:
                 try:
+                    found_player: bool = False
                     for player in data['players']:
                         if int(data['players'][player]['playerNumber']) == int(locators[1]):
                             # noinspection PyTypeChecker
@@ -781,8 +788,13 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
                                 return
                             else:
                                 locators[1] = int(data['players'][player]['playerNumber'])
+                                found_player = True
                                 break
                     if not isinstance(locators[1], int):
+                        notification = f"{locators[1]} is not a player number in this game {message.author.mention}!"
+                        await message.channel.send(notification)
+                        return
+                    if not found_player:
                         notification = f"{locators[1]} is not a player number in this game {message.author.mention}!"
                         await message.channel.send(notification)
                         return
@@ -794,8 +806,35 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
             try:
                 # noinspection PyTypeChecker
                 locators[1] = int(locators[1])
+                found_player: bool = False
+                for player in data['players']:
+                    if int(data['players'][player]['playerNumber']) == int(locators[1]):
+                        # noinspection PyTypeChecker
+                        if int(player) == int(message.author.id):
+                            notification: str = f"You may not send actions to yourself {message.author.mention}!"
+                            await message.channel.send(notification)
+                            return
+                        else:
+                            # noinspection PyTypeChecker
+                            locators[1] = int(data['players'][player]['playerNumber'])
+                            found_player = True
+                            break
+                if not isinstance(locators[1], int):
+                    notification = f"{locators[1]} is not a player number in this game {message.author.mention}!"
+                    await message.channel.send(notification)
+                    return
+                if not found_player:
+                    notification = f"{locators[1]} is not a player number in this game {message.author.mention}!"
+                    await message.channel.send(notification)
+                    return
             except ValueError:
-                await message.channel.send('Invalid player number given ' + message.author.mention)
+                if str(locators[1][0:2]) == '<@':
+                    command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
+                    await message.channel.send('You cannot @ people in direct messages ' + message.author.mention +
+                                               f'! Please use their in-game player-number '
+                                               f'found on {command_prefix}players')
+                else:
+                    await message.channel.send('Invalid player number given ' + message.author.mention)
                 return
         try:
             # noinspection PyTypeChecker
@@ -827,10 +866,13 @@ async def send_actions(message, data, client=None, guild_id=None, channel_id=Non
                 await message.channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to ' +
                                            '<@' + player + '>')
                 if guild_id is not None and channel_id is not None:
-                    dm_user = await client.fetch_user(int(player))
-                    channel = await client.create_dm(dm_user)
-                    await channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to you ' +
-                                       '<@' + player + '>' + '!')
+                    try:
+                        dm_user = await client.fetch_user(int(player))
+                        channel = await client.create_dm(dm_user)
+                        await channel.send(message.author.mention + ' gave ' + str(locators[2]) + ' actions to you ' +
+                                           '<@' + player + '>' + '!')
+                    except AttributeError:
+                        break
                 break
 
 
