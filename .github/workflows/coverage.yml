@@ -9,11 +9,12 @@ jobs:
   update-badge:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Python 3.11
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3.1.2
         with:
           python-version: 3.11
+
       - name: Install project dependencies
         run: |
           python -m pip install --upgrade pip
@@ -28,16 +29,13 @@ jobs:
       - name: Generate Coverage Badge
         run: coverage-badge -o coverage.svg
 
-      - name: Debug Branches
-        run: git branch -a
-
-      - name: Commit and Push Badge
+      - name: Commit and Push Badge to ${GITHUB_REF##*/}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git checkout ${{ github.event.pull_request.head.ref }}
+          git checkout ${GITHUB_REF##*/}
           git add coverage.svg -f
           git commit -m "Update coverage badge"
-          git push origin ${{ github.event.pull_request.head.ref }}
+          git push origin ${GITHUB_REF##*/}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
