@@ -8,6 +8,7 @@ import discord
 import src.tanks.libraries.configUtils as configUtils
 import src.tanks.libraries.jsonManager as jsonManager
 import src.tanks.libraries.renderPipeline as renderPipeline
+import src.tanks.libraries.UIElements as ui
 
 
 async def direct_message_commands(message, command, client) -> None:
@@ -78,7 +79,9 @@ async def direct_message_commands(message, command, client) -> None:
                 await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
                                                                     'list of commands and options.')
         elif is_in_multiple_games and is_in_games:
-            # TODO add clauses for handling if a player is in multiple games
+            # TODO Implement multiple game handling
+            await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
+                                                                'list of commands and options.')
             pass
         else:
             await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
@@ -924,23 +927,27 @@ async def show_player_statistics(message, data, client, guild_id=None, channel_i
     hits = data['players'][str(key)]['hits']
     moves = data['players'][str(key)]['moves']
     embed = add_player_card_fields(color_info, user, number, lives, actions, player_range, hits, moves)
-    msg = await message.channel.send(embed=embed)
-
-    await msg.add_reaction("\u2B05")
-    await msg.add_reaction("\u27A1")
+    await message.channel.send(embed=embed, view=ui.PlayerCardRotatorButtons(client))
 
 
-async def flip_through_player_stats_card(message, data, direction, client) -> None:
+async def flip_through_player_stats_card(message, data, direction, client, guild_id=None, channel_id=None) -> (
+        discord.Embed or None):
     """
     Edits an original sent message by the robot to a new embed of player statistics
     :param message: The message sent by the discord robot
     :param data: The complete JSON dataset
     :param direction: A positive or negative 1 for which index to grab
-    :param client: Discord RPC client connection
+    :param client: Current running discord client
+    :param guild_id: The guild id instead of from the message
+    :param channel_id: The channel id instead of from the message
+    :returns: A discord embed for editing the previous card
     """
-    data = data['games'][str(message.guild.id)][str(message.channel.id)]
+    if guild_id is not None and channel_id is not None:
+        data = data['games'][str(guild_id)][str(channel_id)]
+    else:
+        data = data['games'][str(message.guild.id)][str(message.channel.id)]
     embed = message.embeds[0]
-    player_index = str(int(embed.fields[0].value[2:]) + direction)
+    player_index = str(int(embed.fields[0].value[21:]) + direction)
     if player_index == str(0) or int(player_index) > len(data['players']):
         return
 
@@ -955,7 +962,7 @@ async def flip_through_player_stats_card(message, data, direction, client) -> No
                                    data['players'][str(key)]['lives'],
                                    data['players'][str(key)]['actions'], data['players'][str(key)]['range'],
                                    data['players'][str(key)]['hits'], data['players'][str(key)]['moves'])
-    await message.edit(embed=embed)
+    return embed
 
 
 def add_player_card_fields(color_info, user, player_number, lives, actions, shooting_range, hits, moves):
@@ -970,19 +977,19 @@ def add_player_card_fields(color_info, user, player_number, lives, actions, shoo
     :param moves: The number of times the player has moved
     """
     embed_color = int('0x' + str('%02x%02x%02x' % (color_info[0], color_info[1], color_info[2])).upper(), 16)
-    title = f"{str(user)[:-5]} Statistics"
-    description = f"Here is {str(user)[:-5]} and how much they have done this game!"
+    title = f"{str(user.display_name)} Statistics"
+    description = f"Here is {str(user.display_name)} and how much they have done this game!"
     embed: discord.Embed = discord.Embed(title=title, description=description, color=embed_color)
     if user.avatar is not None:
         embed.set_thumbnail(url=user.avatar.url)
     else:
         embed.set_thumbnail(url=user.display_avatar)
-    embed.add_field(name='Player Number', value='\U0001F464 ' + str(player_number), inline=True)
-    embed.add_field(name='Health', value='\u2665 ' + str(lives), inline=True)
-    embed.add_field(name='Actions', value='\u2694 ' + str(actions), inline=True)
-    embed.add_field(name='Range', value='\U0001F3AF ' + str(shooting_range), inline=True)
-    embed.add_field(name='Hits', value='\U0001F4A5 ' + str(hits), inline=True)
-    embed.add_field(name='Times Moved', value='\U000026A1 ' + str(moves), inline=True)
+    embed.add_field(name='Player Number', value=':bust_in_silhouette: ' + str(player_number), inline=True)
+    embed.add_field(name='Health', value=':heart: ' + str(lives), inline=True)
+    embed.add_field(name='Actions', value=':crossed_swords: ' + str(actions), inline=True)
+    embed.add_field(name='Range', value=':dart: ' + str(shooting_range), inline=True)
+    embed.add_field(name='Hits', value=':boom: ' + str(hits), inline=True)
+    embed.add_field(name='Times Moved', value=':zap: ' + str(moves), inline=True)
     return embed
 
 
