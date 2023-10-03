@@ -110,6 +110,23 @@ def get_player_server_channel_single(message: discord.Message, user_id=None) -> 
     return False
 
 
+def get_player_server_channels(message: discord.Message, user_id=None) -> list[tuple[str, str]]:
+    """Attempts to provide the player guild and channel id for an assigned game from direct message context
+    :param message: The message of the player being checked
+    :param user_id: (Optional) Search by discord uuid instead
+    """
+    player_data = read_players_json()
+    located_servers = []
+    if user_id is not None:
+        located_servers = player_data[str(message.author.id)]
+    if message is not None:
+        located_servers = player_data[str(message.author.id)]
+    servers = []
+    for entry in located_servers:
+        servers.append(tuple(entry))
+    return servers
+
+
 def add_player_to_game(message: discord.Message, player_number: int) -> bool:
     """Adds a player to the game within the lobby
     :param message: The join command message

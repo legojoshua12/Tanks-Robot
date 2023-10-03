@@ -19,13 +19,10 @@ async def direct_message_commands(message, command, client) -> None:
         command = command.lower()
     if command == 'help':
         is_in_games = jsonManager.is_player_in_game(message)
-        is_in_multiple_games = jsonManager.is_player_in_multiple_games(message)
-        if is_in_games and not is_in_multiple_games:
+        if is_in_games:
             embed = dm_help_embed(embed_color, True)
-        elif is_in_multiple_games and is_in_games:
-            embed = dm_help_embed(embed_color, False)
         else:
-            embed = dm_help_embed(embed_color, None)
+            embed = dm_help_embed(embed_color, False)
         await message.channel.send(embed=embed)
     elif command == 'rules':
         embed = make_rules_embed(embed_color)
@@ -79,23 +76,71 @@ async def direct_message_commands(message, command, client) -> None:
                 await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
                                                                     'list of commands and options.')
         elif is_in_multiple_games and is_in_games:
-            # TODO Implement multiple game handling
-            await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
-                                                                'list of commands and options.')
-            pass
+            await message.channel.send(content=f'Please select a game {message.author.mention}.',
+                                       view=ui.SelectDMGameView(message, client))
         else:
             await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
                                                                 'list of commands and options.')
 
 
-def dm_help_embed(embed_color, in_single_game) -> discord.Embed:
+async def dm_multiple_commands(client, message, guild_id, channel_id):
+    command = message.content
+    if command.startswith(configUtils.read_value('botSettings', 'botCommandPrefix')):
+        command = command[len(configUtils.read_value('botSettings', 'botCommandPrefix')):].lower()
+    else:
+        command = command.lower()
+    total_command = command
+    if len(command.split()) > 1 and command != 'increase range':
+        command = (command.split())[0]
+    if len(command.split()) > 1 and command != 'increase range':
+        command = (command.split())[0]
+    if command == 'board':
+        board = jsonManager.get_board(message, guild_id, channel_id)
+        player_colors = jsonManager.read_games_json()['games'][str(guild_id)][str(channel_id)]['playerColors']
+        rendered_board = renderPipeline.construct_image(board, player_colors)
+        await display_board(message, rendered_board)
+    elif command == 'players':
+        await show_player_statistics(message, jsonManager.read_games_json(), client, guild_id, channel_id)
+    elif command == 'increase range':
+        player_data: dict = jsonManager.read_games_json()['games'][guild_id][channel_id]['players']
+        player_lives: str = str(player_data[str(message.author.id)]['lives'])
+        if player_lives == str(0):
+            await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
+            return
+        await increase_range(message, jsonManager.read_games_json(), guild_id, channel_id)
+    elif command == 'move':
+        player_data: dict = jsonManager.read_games_json()['games'][guild_id][channel_id]['players']
+        player_lives: str = str(player_data[str(message.author.id)]['lives'])
+        if player_lives == str(0):
+            await message.channel.send('You are dead and have no more lives ' + message.author.mention + '.')
+            return
+        await move(message, jsonManager.read_games_json(), total_command, guild_id, channel_id)
+    elif command == 'shoot':
+        await shoot(message, jsonManager.read_games_json(), total_command, client, guild_id, channel_id, True)
+    elif command == 'vote':
+        player_data: dict = jsonManager.read_games_json()['games'][guild_id][channel_id]['players']
+        player_lives: str = str(player_data[str(message.author.id)]['lives'])
+        if player_lives != str(0):
+            await message.channel.send('Only players with no more lives may vote on an extra action for a '
+                                       'player ' + message.author.mention + '.')
+            return
+        await vote_action(message, jsonManager.read_games_json(), client, total_command, guild_id, channel_id)
+    elif command == 'send':
+        await send_actions(message, jsonManager.read_games_json(), client, guild_id, channel_id)
+        pass
+    else:
+        await message.channel.send(message.author.mention + ' Unknown command. Please use `help` to view a '
+                                                            'list of commands and options.')
+
+
+def dm_help_embed(embed_color, in_game) -> discord.Embed:
     embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
                                                                  "reference! Simply type one of these to get "
                                                                  "started.",
                           color=embed_color)
     embed.add_field(name="help", value="Gives a list of commands", inline=False)
     embed.add_field(name="rules", value="Gives the game rules and how to play", inline=False)
-    if in_single_game:
+    if in_game:
         embed.add_field(name='board', value="Shows the board of the only game you are in", inline=False)
         embed.add_field(name='players', value="Shows the players of the game you are in and their statistics",
                         inline=False)
@@ -117,9 +162,6 @@ def dm_help_embed(embed_color, in_single_game) -> discord.Embed:
         embed.add_field(name='send [player number] [number of actions]',
                         value='Sends a player in your current game the number of specified actions '
                               '(Example: send 3 1)', inline=False)
-    elif not in_single_game and in_single_game is not None:
-        # TODO Figure out a way to specify games
-        embed.add_field(name='TODO', value="Need to figure out how to specify games ADMIN CODE ONLY", inline=False)
     return embed
 
 
@@ -752,10 +794,10 @@ async def send_actions(message, data, client, guild_id=None, channel_id=None) ->
         command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
         if guild_id is not None and channel_id is not None:
             await message.channel.send('Invalid command ' + message.author.mention + f'! Please use {command_prefix}'
-                                       f'send [player number] [number of actions]')
+                                                                                     f'send [player number] [number of actions]')
         else:
             await message.channel.send('Invalid command ' + message.author.mention + f'! Please use {command_prefix}'
-                                       f'send [player or player number] [number of actions]')
+                                                                                     f'send [player or player number] [number of actions]')
         return
     else:
         if guild_id is None and channel_id is None:
