@@ -794,10 +794,12 @@ async def send_actions(message, data, client, guild_id=None, channel_id=None) ->
         command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
         if guild_id is not None and channel_id is not None:
             await message.channel.send('Invalid command ' + message.author.mention + f'! Please use {command_prefix}'
-                                                                                     f'send [player number] [number of actions]')
+                                                                                     f'send [player number] '
+                                                                                     f'[number of actions]')
         else:
             await message.channel.send('Invalid command ' + message.author.mention + f'! Please use {command_prefix}'
-                                                                                     f'send [player or player number] [number of actions]')
+                                                                                     f'send [player or player number] '
+                                                                                     f'[number of actions]')
         return
     else:
         if guild_id is None and channel_id is None:

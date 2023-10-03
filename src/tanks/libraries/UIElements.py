@@ -2,7 +2,6 @@ import discord
 
 import src.tanks.libraries.jsonManager as jsonManager
 import src.tanks.libraries.commands as commands
-from src.tanks.libraries import configUtils
 
 
 class PlayerCardRotatorButtons(discord.ui.View):
@@ -19,7 +18,8 @@ class PlayerCardRotatorButtons(discord.ui.View):
         client = self.client
         new_embed = None
         if message.channel.type == discord.ChannelType.private:
-            new_embed = await commands.flip_through_player_stats_card(message, data, -1, client, self.guild_id, self.channel_id)
+            new_embed = await commands.flip_through_player_stats_card(message, data, -1, client, self.guild_id,
+                                                                      self.channel_id)
         else:
             new_embed = await commands.flip_through_player_stats_card(message, data, -1, client)
         if new_embed is not None:
@@ -34,7 +34,8 @@ class PlayerCardRotatorButtons(discord.ui.View):
         client = self.client
         new_embed = None
         if message.channel.type == discord.ChannelType.private:
-            new_embed = await commands.flip_through_player_stats_card(message, data, 1, client, self.guild_id, self.channel_id)
+            new_embed = await commands.flip_through_player_stats_card(message, data, 1, client, self.guild_id,
+                                                                      self.channel_id)
         else:
             new_embed = await commands.flip_through_player_stats_card(message, data, 1, client)
         if new_embed is not None:
