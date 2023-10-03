@@ -1,12 +1,15 @@
 # Tanks-Robot
 ![Python Version](https://img.shields.io/badge/Python_Version-3.9_|_3.10_|_3.11-informational?style=flat&logo=python&logoColor=white&color=11BB11)
 ![PR Status](https://img.shields.io/badge/PRs-Welcome-informational?style=flat&logo=git&logoColor=white&color=11BB11)
-![Tests Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/tests.yml/badge.svg?branch=main)
-![Lint Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/lint.yml/badge.svg?branch=main)
-![CodeQL](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
+![Tests Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/tests.yml/badge.svg?branch=multiple_dm)
+![Lint Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/lint.yml/badge.svg?branch=multiple_dm)
+![CodeQL](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/github-code-scanning/codeql/badge.svg?branch=multiple_dm)
 ![Coverage](coverage.svg)
 
 This is a robot for the game tanks inspired by [HalfBrick studios](https://www.halfbrick.com/).
+
+Here is a sample of a running game with players controlling their respective tank.
+![Sample Game](sample.png)
 
 ## Local Compiling
 In order to run a local instance of this robot, you need [Python 3.9](https://www.python.org/downloads/release/python-390/) or [higher](https://www.python.org/downloads/).
@@ -21,11 +24,17 @@ You can add the token to your `.env` file to initialize the connection with the 
 All code within the robot is unit and integration tested and all tests can be run on a local machine before deployment to a [docker container](https://www.docker.com/) or [Heroku](https://www.heroku.com/).
 Tests are run in GitHub actions via tox and flake8.
 
-## Heroku Deployment
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-### Planned Features
+## Planned Features
  - Set up a game with random map (mountains, rivers, hills, etc.)
  - Different kinds of tanks with different abilities
  - Fire mechanic that makes some tiles temporarily unusable
+
+## Remaining Work Before Beta
+ - Switch database system to redis rather than a simple JSON file currently
+ - Write integration tests for multiple game dms
+ - Integration test for handling new buttons on player cards
+ - Support for / commands
+ - Tests for daily upkeep
+ - Bot profile artwork
+ - Win game state
+ - Handling new game generation after a game is completed in a channel
