@@ -969,7 +969,7 @@ async def show_player_statistics(message, data, client, guild_id=None, channel_i
     hits = data['players'][str(key)]['hits']
     moves = data['players'][str(key)]['moves']
     embed = add_player_card_fields(color_info, user, number, lives, actions, player_range, hits, moves)
-    await message.channel.send(embed=embed, view=ui.PlayerCardRotatorButtons(client))
+    await message.channel.send(embed=embed, view=ui.PlayerCardRotatorButtons(client, guild_id, channel_id))
 
 
 async def flip_through_player_stats_card(message, data, direction, client, guild_id=None, channel_id=None) -> (
