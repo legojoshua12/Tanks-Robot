@@ -59,7 +59,7 @@ if __name__ == "__main__":
     async def on_ready() -> None:
         """Runs when the robot has connected to discord and begin setup of status and queue handler"""
         print(f'{client.user} has connected to Discord!')
-        print(f'Initializing coroutine loops...')
+        print('Initializing coroutine loops...')
         # First set up a coroutine for handling jobs
         asyncio.get_event_loop().create_task(__handle_queue__(
             client=client,
@@ -75,7 +75,6 @@ if __name__ == "__main__":
         await tree.sync(guild=None)
         print('Initialization complete, bot is now running! (づ｡◕‿‿◕｡)づ')
 
-
     @tree.command(name="help", description="Gives a list of all possible commands")
     async def help_slash_command(interaction: discord.Interaction):
         is_game_present: str = jsonManager.check_if_game_is_in_channel(None,
@@ -86,7 +85,6 @@ if __name__ == "__main__":
         else:
             embed = commands.active_game_help_embed()
             await interaction.response.send_message(embed=embed, ephemeral=True)
-
 
     @tree.command(name="rules", description="List the rules for how to play tanks")
     async def rules_slash_command(interaction: discord.Interaction):
