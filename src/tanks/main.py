@@ -1,17 +1,21 @@
 """This is the main function that should be run to start the robot"""
 import logging
+import random
 import sys
 import os
 from queue import Queue
 import schedule
 
 import discord
+import discord.ext
 import asyncio
 
 from dotenv import load_dotenv
 
-from src.tanks.libraries import configUtils, jsonManager, messageHandler, dailyUpkeepManager
+from src.tanks.libraries import configUtils, jsonManager, messageHandler, dailyUpkeepManager, commands
 
+client = discord.Client(intents=discord.Intents.all())
+tree = discord.app_commands.CommandTree(client)
 messageQueue = Queue()
 dailyQueue = Queue()
 
@@ -50,12 +54,12 @@ if __name__ == "__main__":
     configUtils.initialize()
     jsonManager.initialize()
     commandMessageStarter = configUtils.read_value('botSettings', 'botCommandPrefix')
-    client = discord.Client(intents=discord.Intents.all())
 
     @client.event
     async def on_ready() -> None:
         """Runs when the robot has connected to discord and begin setup of status and queue handler"""
         print(f'{client.user} has connected to Discord!')
+        print(f'Initializing coroutine loops...')
         # First set up a coroutine for handling jobs
         asyncio.get_event_loop().create_task(__handle_queue__(
             client=client,
@@ -68,6 +72,27 @@ if __name__ == "__main__":
         asyncio.get_event_loop().create_task(check_schedule_time())
         # Set discord presence
         await client.change_presence(activity=discord.Game(name='Tanks'), status=discord.Status.online)
+        await tree.sync(guild=None)
+        print('Initialization complete, bot is now running! (づ｡◕‿‿◕｡)づ')
+
+
+    @tree.command(name="help", description="Gives a list of all possible commands")
+    async def help_slash_command(interaction: discord.Interaction):
+        is_game_present: str = jsonManager.check_if_game_is_in_channel(None,
+                                                                       interaction.guild_id, interaction.channel_id)
+        if is_game_present != "active":
+            embed = commands.get_lobby_help_menu()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        else:
+            embed = commands.active_game_help_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+    @tree.command(name="rules", description="List the rules for how to play tanks")
+    async def rules_slash_command(interaction: discord.Interaction):
+        embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+        embed = commands.make_rules_embed(embed_color)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @client.event
     async def on_message(message) -> None:

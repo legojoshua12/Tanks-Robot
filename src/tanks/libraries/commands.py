@@ -229,7 +229,7 @@ async def public_commands_lobby(message: discord.Message, command):
                                                             'list of commands and options.')
 
 
-async def send_lobby_help_menu(message):
+def get_lobby_help_menu() -> discord.Embed:
     command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
     embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     embed = discord.Embed(title="Welcome to the game of Tanks!",
@@ -251,7 +251,7 @@ async def send_lobby_help_menu(message):
                     value="Sends a direct message for privacy", inline=False)
     embed.add_field(name=f'{command_prefix}start',
                     value='Will start the game if enough players have joined', inline=False)
-    await message.channel.send(embed=embed)
+    return embed
 
 
 async def public_commands_game(message, command):
@@ -336,7 +336,11 @@ async def public_commands_game(message, command):
         await message.channel.send(notification)
 
 
-def active_game_help_embed(embed_color, command_prefix) -> discord.Embed:
+def active_game_help_embed(embed_color=None, command_prefix=None) -> discord.Embed:
+    if command_prefix is None:
+        command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
+    if embed_color is None:
+        embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
                                                                  "reference! Simply type one of these to get "
                                                                  "started.",

@@ -59,7 +59,8 @@ async def handle_message(message, client, commandMessageStarter):
                         sad_emoji = '\U0001F622'
                         await message.channel.send(message.author.mention + f' left the game. {sad_emoji}')
                 elif action == 'help':
-                    await commands.send_lobby_help_menu(message)
+                    help_embed = commands.get_lobby_help_menu()
+                    await message.channel.send(embed=help_embed)
                 elif action == 'dm':
                     await commands.send_dm_starter(message)
                 elif action == 'players':
@@ -139,4 +140,5 @@ async def handle_message(message, client, commandMessageStarter):
                     except RuntimeError:
                         await message.channel.send('An error has occurred in creating the game! Reverting now!')
                     if wrote_to_json:
-                        await commands.send_lobby_help_menu(message)
+                        help_embed = commands.get_lobby_help_menu()
+                        await message.channel.send(embed=help_embed)
