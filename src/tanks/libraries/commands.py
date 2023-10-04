@@ -172,15 +172,7 @@ async def public_commands_no_game(message: discord.Message, command) -> bool:
     """
     embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     if command == 'help':
-        command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
-        embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
-                                                                     "reference! All commands may be done in "
-                                                                     "private as well using a direct message.",
-                              color=embed_color)
-        embed.add_field(name=f"{command_prefix}help", value="Gives a list of commands", inline=False)
-        embed.add_field(name=f"{command_prefix}rules", value="Gives the game rules and how to play", inline=False)
-        embed.add_field(name=f"{command_prefix}dm", value="Sends a direct message for privacy", inline=False)
-        embed.add_field(name=f"{command_prefix}start", value="Begins game setup lobby in this channel", inline=False)
+        embed = help_embed_no_game()
         await message.channel.send(embed=embed)
     elif command == 'rules':
         embed = make_rules_embed(embed_color)
@@ -194,6 +186,21 @@ async def public_commands_no_game(message: discord.Message, command) -> bool:
         unknown_command_response: str = ' Unknown command. Please use `*/help` to view a list of commands and options.'
         await message.channel.send(message.author.mention + unknown_command_response)
     return False
+
+
+def help_embed_no_game(embed_color=None) -> discord.Embed:
+    if embed_color is None:
+        embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
+    embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
+                                                                 "reference! All commands may be done in "
+                                                                 "private as well using a direct message.",
+                          color=embed_color)
+    embed.add_field(name=f"{command_prefix}help", value="Gives a list of commands", inline=False)
+    embed.add_field(name=f"{command_prefix}rules", value="Gives the game rules and how to play", inline=False)
+    embed.add_field(name=f"{command_prefix}dm", value="Sends a direct message for privacy", inline=False)
+    embed.add_field(name=f"{command_prefix}start", value="Begins game setup lobby in this channel", inline=False)
+    return embed
 
 
 async def send_dm_starter(message) -> None:
