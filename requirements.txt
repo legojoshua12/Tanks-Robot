@@ -2,5 +2,5 @@ discord.py~=2.3.2
 schedule~=1.2.0
 python-dotenv~=1.0.0
 cmapy~=0.6.6
-Pillow~=10.0.1
+Pillow~=10.1.0
 numpy~=1.26.0
