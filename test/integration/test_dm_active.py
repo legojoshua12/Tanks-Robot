@@ -1732,10 +1732,54 @@ class TestSingleActiveGame:
 
 class TestMultipleActiveGames:
     @pytest.mark.asyncio
-    async def test_multiple_board_dm(self, bot, command_prefix):
+    async def test_help_with_prefix(self, bot, command_prefix):
         await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"{command_prefix}board")
+        await channel.send(f"{command_prefix}help")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        embeds = dpytest.get_message(peek=True).embeds
+        assert len(embeds) == 1
+        new_embed = commands.dm_help_embed(embeds[0].color, True)
+        assert dpytest.verify().message().contains().embed(new_embed)
+
+    @pytest.mark.asyncio
+    async def test_rules_with_prefix(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}rules")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        embeds = dpytest.get_message(peek=True).embeds
+        assert len(embeds) == 1
+        new_embed = commands.make_rules_embed(embeds[0].color)
+        assert dpytest.verify().message().contains().embed(new_embed)
+
+    @pytest.mark.asyncio
+    async def test_rules_dm(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send("dm")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = "I'm already here talking to you! Use `help` to get a list of commands."
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_board(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        command: str = f"{command_prefix}board"
+        await channel.send(command)
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         await messageHandler.handle_message(mess, bot, command_prefix)
@@ -1744,7 +1788,7 @@ class TestMultipleActiveGames:
         mess = dpytest.get_message()
         assert mess.content == f"Please select a game {bot.guilds[0].members[2].mention}."
 
-        await channel.send(f"{command_prefix}board")
+        await channel.send(command)
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         server = jsonManager.get_player_server_channels(mess)[0]
@@ -1754,3 +1798,212 @@ class TestMultipleActiveGames:
         mess = dpytest.get_message()
         assert len(mess.attachments) == 1
         assert mess.attachments[0].filename == 'image.png'
+
+    @pytest.mark.asyncio
+    async def test_players(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        command: str = f"{command_prefix}players"
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        mess = dpytest.get_message()
+        assert mess.content == f"Please select a game {bot.guilds[0].members[2].mention}."
+
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        server = jsonManager.get_player_server_channels(mess)[0]
+        await commands.dm_multiple_commands(bot, mess, server[0], server[1])
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        message_embeds = dpytest.get_message(peek=True).embeds
+        assert len(message_embeds) == 1
+        assert dpytest.verify().message().embed(message_embeds[0])
+
+    @pytest.mark.asyncio
+    async def test_increase_range(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        command: str = f"{command_prefix}increase range"
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        mess = dpytest.get_message()
+        assert mess.content == f"Please select a game {bot.guilds[0].members[2].mention}."
+
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        server = jsonManager.get_player_server_channels(mess)[0]
+        previous_range = utils.JsonUtility.get_player_range(mess, server[0], server[1],
+                                                            str(bot.guilds[0].members[2].id))
+        await commands.dm_multiple_commands(bot, mess, server[0], server[1])
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"Your range is now {previous_range + 1} tiles {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+
+    @pytest.mark.asyncio
+    async def test_move(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id = str(bot.guilds[0].text_channels[0].id)
+        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+        i, j = 0, 0
+        for row in range(len(old_board)):
+            for col in range(len(old_board[row])):
+                if str(old_board[row][col]) == "1":
+                    i = row
+                    j = col
+                    break
+        if j == len(old_board[0]) - 1:
+            channel = await utils.JsonUtility.get_private_channel(bot, 2)
+            await channel.send(f"{command_prefix}move west")
+            mess = dpytest.get_message()
+            mess.author = bot.guilds[0].members[2]
+            server = jsonManager.get_player_server_channels(mess)[0]
+            await commands.dm_multiple_commands(bot, mess, server[0], server[1])
+            dpytest.get_message()
+            dpytest.get_message()
+            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+            i, j = 0, 0
+            for row in range(len(old_board)):
+                for col in range(len(old_board[row])):
+                    if str(old_board[row][col]) == "1":
+                        i = row
+                        j = col
+                        break
+
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}move east")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        server = jsonManager.get_player_server_channels(mess)[0]
+        await commands.dm_multiple_commands(bot, mess, server[0], server[1])
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"You have moved east 1 tile {mess.author.mention}!"
+        assert dpytest.verify().message().content(verifier)
+        response: discord.Message = dpytest.get_message()
+        assert len(response.attachments) == 1
+        assert response.attachments[0].filename == 'image.png'
+
+        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
+        assert old_board != new_board
+        k, w = 0, 0
+        for row in range(len(new_board)):
+            for col in range(len(new_board[row])):
+                if str(new_board[row][col]) == "1":
+                    k = row
+                    w = col
+                    break
+        assert k == i and w == (j + 1)
+
+    @pytest.mark.asyncio
+    async def test_shoot(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        enemy_player_number: int = 2
+        command: str = f"{command_prefix}shoot {enemy_player_number}"
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        mess = dpytest.get_message()
+        assert mess.content == f"Please select a game {bot.guilds[0].members[2].mention}."
+
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        server = jsonManager.get_player_server_channels(mess)[0]
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await commands.dm_multiple_commands(bot, mess, server[0], server[1])
+
+        verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot by {mess.author.mention}! "
+        verifier += "They now have 2♥ lives left."
+        verifier_dm: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+        response = dpytest.get_message()
+        second_response = dpytest.get_message()
+        assert response.channel.type == discord.ChannelType.private
+        assert response.content == verifier_dm
+        assert second_response.channel.type == discord.ChannelType.text
+        assert second_response.content == verifier
+
+    @pytest.mark.asyncio
+    async def test_vote(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        command: str = f"{command_prefix}vote 2"
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        mess = dpytest.get_message()
+        assert mess.content == f"Please select a game {bot.guilds[0].members[2].mention}."
+
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        server = jsonManager.get_player_server_channels(mess)[0]
+        guild_id: str = str(bot.guilds[0].id)
+        channel_id: str = str(bot.guilds[0].text_channels[0].id)
+        player_id: str = str(bot.guilds[0].members[2].id)
+        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
+                                                str(bot.guilds[0].members[2].id), 1)
+        await commands.dm_multiple_commands(bot, mess, server[0], server[1])
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        verifier: str = f"Your vote for {bot.guilds[0].members[3].mention} to receive 1 extra action has been counted."
+        assert dpytest.verify().message().content(verifier)
+
+        data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, player_id)
+        assert int(data['remainingVotes']) == 0
+        data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, str(bot.guilds[0].members[3].id))
+        assert int(data['votes']) == 1
+
+    @pytest.mark.asyncio
+    async def test_send(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        command: str = f"{command_prefix}send 2 1"
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        mess = dpytest.get_message()
+        assert mess.content == f"Please select a game {bot.guilds[0].members[2].mention}."
+
+        await channel.send(command)
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        server = jsonManager.get_player_server_channels(mess)[0]
+        previous_range = utils.JsonUtility.get_player_range(mess, server[0], server[1],
+                                                            str(bot.guilds[0].members[2].id))
+        await commands.dm_multiple_commands(bot, mess, server[0], server[1])
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        notification: str = f"{mess.author.mention} gave 1 actions to {bot.guilds[0].members[3].mention}"
+        assert dpytest.verify().message().content(notification)
+
+        data = utils.JsonUtility.get_player_stats(mess, bot.guilds[0].id, bot.guilds[0].channels[0].id,
+                                                  str(bot.guilds[0].members[2].id))
+        assert int(data['actions']) == 0
+        data = utils.JsonUtility.get_player_stats(mess, bot.guilds[0].id, bot.guilds[0].channels[0].id,
+                                                  str(bot.guilds[0].members[3].id))
+        assert int(data['actions']) == 2
