@@ -1993,8 +1993,6 @@ class TestMultipleActiveGames:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         server = jsonManager.get_player_server_channels(mess)[0]
-        previous_range = utils.JsonUtility.get_player_range(mess, server[0], server[1],
-                                                            str(bot.guilds[0].members[2].id))
         await commands.dm_multiple_commands(bot, mess, server[0], server[1])
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
