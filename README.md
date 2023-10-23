@@ -31,7 +31,7 @@ Tests are run in GitHub actions via tox and flake8.
 
 ## Remaining Work Before Beta
  - Switch database system to redis rather than a simple JSON file currently
- - Write integration tests for multiple game dms
+ - Write integration tests for multiple game dms :heavy_check_mark:
  - Integration test for handling new buttons on player cards
  - Support for / commands
  - Tests for daily upkeep
