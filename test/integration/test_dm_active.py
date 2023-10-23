@@ -7,7 +7,7 @@ import pytest
 
 import test.utilstest as utils
 
-from src.tanks.libraries import messageHandler, commands
+from src.tanks.libraries import messageHandler, commands, jsonManager
 
 
 class TestSingleActiveGame:
@@ -1732,6 +1732,25 @@ class TestSingleActiveGame:
 
 class TestMultipleActiveGames:
     @pytest.mark.asyncio
-    @pytest.mark.skip("not implemented")
-    async def test_unknown_command_no_prefix(self, bot, command_prefix):
-        assert True
+    async def test_multiple_board_dm(self, bot, command_prefix):
+        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+        channel = await utils.JsonUtility.get_private_channel(bot, 2)
+        await channel.send(f"{command_prefix}board")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        await messageHandler.handle_message(mess, bot, command_prefix)
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        mess = dpytest.get_message()
+        assert mess.content == f"Please select a game {bot.guilds[0].members[2].mention}."
+
+        await channel.send(f"{command_prefix}board")
+        mess = dpytest.get_message()
+        mess.author = bot.guilds[0].members[2]
+        server = jsonManager.get_player_server_channels(mess)[0]
+        await commands.dm_multiple_commands(bot, mess, server[0], server[1])
+
+        assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
+        mess = dpytest.get_message()
+        assert len(mess.attachments) == 1
+        assert mess.attachments[0].filename == 'image.png'

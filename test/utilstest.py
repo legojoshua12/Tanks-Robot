@@ -3,6 +3,7 @@ Utility setup for hard JSON values as well as configuring states of testing clas
 """
 import json
 
+import discord
 import discord.ext.test as dpytest
 
 from src.tanks.libraries import messageHandler
@@ -83,6 +84,68 @@ class JsonUtility:
         mess = dpytest.get_message()
         await messageHandler.handle_message(mess, bot, command_prefix)
         # Clear out the message queue
+        dpytest.get_message()
+        dpytest.get_message()
+
+    @staticmethod
+    async def start_multiple_sample_games(bot, command_prefix):
+        guild = bot.guilds[0]
+        channel = guild.channels[0]
+        for i in range(5):
+            await dpytest.member_join(name="Dummy", discrim=(i + 1))
+        author = guild.members[2]
+
+        await channel.send(f"{command_prefix}start")
+        mess = dpytest.get_message()
+        mess.author = author
+
+        jsonManager.create_game(mess)
+        jsonManager.add_player_to_game(mess, 1)
+
+        members_list = bot.guilds[0].members[3:]
+        channel = bot.guilds[0].text_channels[0]
+        for idx, member in enumerate(members_list):
+            await channel.send(f"{command_prefix}join")
+            mess = dpytest.get_message()
+            mess.author = bot.guilds[0].members[idx + 3]
+            await messageHandler.handle_message(mess, bot, command_prefix)
+            # Clear out the message queue
+            dpytest.get_message()
+
+        await channel.send(f"{command_prefix}start")
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
+        # Clear out the message queue
+        dpytest.get_message()
+        dpytest.get_message()
+
+        # Start second game
+        guild = bot.guilds[0]
+        http = bot.http
+        self = guild
+        name = "TextChannel_1"
+        channel = await http.create_channel(guild, channel_type=discord.ChannelType.text.value)
+        assert channel['type'] == discord.ChannelType.text
+        assert channel['name'] == name
+        channel = bot.guilds[0].channels[2]
+
+        await channel.send(f"{command_prefix}start")
+        mess = dpytest.get_message()
+        mess.author = guild.members[2]
+        jsonManager.create_game(mess)
+        jsonManager.add_player_to_game(mess, 1)
+
+        members_list = bot.guilds[0].members[3:]
+        for idx, member in enumerate(members_list):
+            await channel.send(f"{command_prefix}join")
+            mess = dpytest.get_message()
+            mess.author = bot.guilds[0].members[idx + 3]
+            await messageHandler.handle_message(mess, bot, command_prefix)
+            dpytest.get_message()
+
+        await channel.send(f"{command_prefix}start")
+        mess = dpytest.get_message()
+        await messageHandler.handle_message(mess, bot, command_prefix)
         dpytest.get_message()
         dpytest.get_message()
 
