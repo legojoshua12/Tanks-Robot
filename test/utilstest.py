@@ -122,7 +122,7 @@ class JsonUtility:
         # Start second game
         guild = bot.guilds[0]
         http = bot.http
-        self = guild
+        self = guild  # noqa: F841
         name = "TextChannel_1"
         channel = await http.create_channel(guild, channel_type=discord.ChannelType.text.value)
         assert channel['type'] == discord.ChannelType.text
