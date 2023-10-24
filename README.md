@@ -37,5 +37,5 @@ Tests are run in GitHub actions via tox and flake8.
  - Support for / commands
  - Tests for daily upkeep
  - Bot profile artwork
- - Win game state
- - Handling new game generation after a game is completed in a channel
+ - Win game state :heavy_check_mark:
+ - Handling new game generation after a game is completed in a channel :heavy_check_mark:

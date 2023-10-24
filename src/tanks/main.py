@@ -88,6 +88,9 @@ if __name__ == "__main__":
         elif is_game_present == "none":
             embed = commands.help_embed_no_game()
             await interaction.response.send_message(embed=embed, ephemeral=True)
+        elif is_game_present == "completed":
+            embed = commands.completed_game_help_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @tree.command(name="rules", description="List the rules for how to play tanks")
     async def rules_slash_command(interaction: discord.Interaction):
