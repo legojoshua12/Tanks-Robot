@@ -91,9 +91,9 @@ def is_player_in_multiple_games(message: discord.Message, user_id=None) -> bool:
     return False
 
 
-def is_player_in_game(message: discord.Message, user_id=None) -> bool:
+def is_player_in_game(message: discord.Message=None, user_id=None) -> bool:
     """Finds whether a player is in any game or not
-    :param message: The message of the user being located
+    :param message: (Optional) The message of the user being located
     :param user_id: (Optional) search by discord uuid instead
     """
     player_data = read_players_json()

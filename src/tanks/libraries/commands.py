@@ -133,7 +133,9 @@ async def dm_multiple_commands(client, message, guild_id, channel_id):
                                                             'list of commands and options.')
 
 
-def dm_help_embed(embed_color, in_game) -> discord.Embed:
+def dm_help_embed(embed_color=None, in_game=False) -> discord.Embed:
+    if embed_color is None:
+        embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
     embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
                                                                  "reference! Simply type one of these to get "
                                                                  "started.",

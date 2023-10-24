@@ -77,26 +77,37 @@ if __name__ == "__main__":
 
     @tree.command(name="help", description="Gives a list of all possible commands")
     async def help_slash_command(interaction: discord.Interaction):
-        is_game_present: str = jsonManager.check_if_game_is_in_channel(None,
-                                                                       interaction.guild_id, interaction.channel_id)
-        if is_game_present == "lobby":
-            embed = commands.get_lobby_help_menu()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-        elif is_game_present == "active":
-            embed = commands.active_game_help_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-        elif is_game_present == "none":
-            embed = commands.help_embed_no_game()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-        elif is_game_present == "completed":
-            embed = commands.completed_game_help_embed()
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+        if isinstance(interaction.channel, discord.channel.DMChannel):
+            is_in_games = jsonManager.is_player_in_game(message=None, user_id=interaction.user.id)
+            if is_in_games:
+                embed = commands.dm_help_embed(in_game=True)
+            else:
+                embed = commands.dm_help_embed()
+            await interaction.response.send_message(embed=embed)
+        else:
+            is_game_present: str = jsonManager.check_if_game_is_in_channel(None,
+                                                                           interaction.guild_id, interaction.channel_id)
+            if is_game_present == "lobby":
+                embed = commands.get_lobby_help_menu()
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            elif is_game_present == "active":
+                embed = commands.active_game_help_embed()
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            elif is_game_present == "none":
+                embed = commands.help_embed_no_game()
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            elif is_game_present == "completed":
+                embed = commands.completed_game_help_embed()
+                await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @tree.command(name="rules", description="List the rules for how to play tanks")
     async def rules_slash_command(interaction: discord.Interaction):
         embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
         embed = commands.make_rules_embed(embed_color)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        if isinstance(interaction.channel, discord.channel.DMChannel):
+            await interaction.response.send_message(embed=embed)
+        else:
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @client.event
     async def on_message(message) -> None:
