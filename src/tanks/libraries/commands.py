@@ -261,6 +261,38 @@ def get_lobby_help_menu() -> discord.Embed:
     return embed
 
 
+async def public_commands_finished(message, command):
+    command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
+    embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    if command == 'help':
+        embed = completed_game_help_embed(embed_color, command_prefix)
+        await message.channel.send(embed=embed)
+        return
+    elif command == 'rules':
+        embed = make_rules_embed(embed_color)
+        await message.channel.send(embed=embed)
+        return
+
+    data = jsonManager.read_games_json()
+    try:
+        data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)]
+    except KeyError:
+        await message.channel.send('You are not playing in this game ' + message.author.mention + '!')
+        return
+    if command == 'board':
+        return command
+    elif command == 'players':
+        return command
+    elif command == 'dm':
+        return command
+    elif command == 'start':
+        return command
+    else:
+        notification: str = f"{message.author.mention} Unknown command. "
+        notification += "Please use `*/help` to view a list of commands and options."
+        await message.channel.send(notification)
+
+
 async def public_commands_game(message, command):
     command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
     embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
@@ -378,6 +410,25 @@ def active_game_help_embed(embed_color=None, command_prefix=None) -> discord.Emb
                     value=f'Sends a player the number of specified actions '
                           f'(Example: {command_prefix}send @testsubject 2) '
                           f'(Example: {command_prefix}send 3 1)', inline=False)
+    return embed
+
+
+def completed_game_help_embed(embed_color=None, command_prefix=None) -> discord.Embed:
+    if command_prefix is None:
+        command_prefix = configUtils.read_value('botSettings', 'botCommandPrefix')
+    if embed_color is None:
+        embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+    embed = discord.Embed(title="Command Reference", description="Here is a list of bot commands for your "
+                                                                 "reference! Simply type one of these to get "
+                                                                 "started.",
+                          color=embed_color)
+    embed.add_field(name=f'{command_prefix}help', value="Gives a list of commands", inline=False)
+    embed.add_field(name=f'{command_prefix}rules', value="Gives the game rules and how to play", inline=False)
+    embed.add_field(name=f'{command_prefix}dm', value="Sends a direct message for privacy", inline=False)
+    embed.add_field(name=f'{command_prefix}board', value="Shows the board of the current game", inline=False)
+    embed.add_field(name=f'{command_prefix}players', value="Shows the players of the game and their accompanying "
+                                                           "statistics", inline=False)
+    embed.add_field(name=f"{command_prefix}start", value="Begins new game setup lobby in this channel", inline=False)
     return embed
 
 
@@ -643,13 +694,21 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                     if lives > 0:
                         # Send a DM message that the enemy was shot
                         await message.channel.send('Player ' + user.mention + ' has been shot! They now have ' +
-                                                   str(lives) + '\u2665 lives left.')
+                                                   str(lives) + ':heart: lives left.')
                         # Send a message in the general chat that someone was shot
                         channel = client.get_channel(int(channel_id))
                         await channel.send('Player ' + user.mention + ' has been shot by ' + message.author.mention +
-                                           '! They now have ' + str(lives) + '\u2665 lives left.')
+                                           '! They now have ' + str(lives) + ':heart: lives left.')
                     else:
-                        await jsonManager.kill_player(message, str(split_command[1]), user)
+                        jsonManager.kill_player(str(split_command[1]), user, guild_id=guild_id, channel_id=channel_id)
+                        channel = client.get_channel(int(channel_id))
+                        await channel.send(user.mention + ' is now dead! They have 0 :heart: lives left!')
+                        data = jsonManager.read_games_json()
+                        if jsonManager.check_win(data['games'][guild_id][channel_id]['board']['data']):
+                            jsonManager.mark_game_win(str(guild_id), str(channel_id))
+                            win_notification: str = (f"Congratulations to {message.author.mention} for winning! Thanks "
+                                                     f"to {message.guild.default_role.mention} who played!")
+                            await message.channel.send(win_notification)
                     break
         else:
             await message.channel.send(
@@ -676,9 +735,17 @@ async def shoot(message, data, command, client, guild_id=None, channel_id=None, 
                     if lives > 0:
                         await message.channel.send(
                             'Player ' + user.mention + ' has been shot! They now have ' + str(
-                                lives) + '\u2665 lives left.')
+                                lives) + ':heart: lives left.')
                     else:
-                        await jsonManager.kill_player(message, str(split_command[1]), user)
+                        jsonManager.kill_player(str(split_command[1]), user, message=message)
+                        await message.channel.send(user.mention + ' is now dead! They have 0 :heart: lives left!')
+                        data = jsonManager.read_games_json()
+                        if jsonManager.check_win(data['games'][str(message.guild.id)][str(message.channel.id)]
+                                                 ['board']['data']):
+                            jsonManager.mark_game_win(str(message.guild.id), str(message.channel.id))
+                            win_notification: str = (f"Congratulations to {message.author.mention} for winning! Thanks "
+                                                     f"to {message.guild.default_role} who played!")
+                            await message.channel.send(win_notification)
                     break
         else:
             await message.channel.send(

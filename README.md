@@ -28,6 +28,7 @@ Tests are run in GitHub actions via tox and flake8.
  - Set up a game with random map (mountains, rivers, hills, etc.)
  - Different kinds of tanks with different abilities
  - Fire mechanic that makes some tiles temporarily unusable
+ - Game statistics such as game duration, player who got the most/least votes, most/least aggressive, biggest trader, etc.
 
 ## Remaining Work Before Beta
  - Switch database system to redis rather than a simple JSON file currently

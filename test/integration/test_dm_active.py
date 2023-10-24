@@ -1154,8 +1154,8 @@ class TestSingleActiveGame:
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot by {mess.author.mention}! "
-        verifier += "They now have 2♥ lives left."
-        verifier_dm: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+        verifier += "They now have 2:heart: lives left."
+        verifier_dm = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
         response = dpytest.get_message()
         second_response = dpytest.get_message()
         assert response.channel.type == discord.ChannelType.private
@@ -1178,8 +1178,8 @@ class TestSingleActiveGame:
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot by {mess.author.mention}! "
-        verifier += "They now have 2♥ lives left."
-        verifier_dm: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+        verifier += "They now have 2:heart: lives left."
+        verifier_dm = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
         response = dpytest.get_message()
         second_response = dpytest.get_message()
         assert response.channel.type == discord.ChannelType.private
@@ -1931,8 +1931,8 @@ class TestMultipleActiveGames:
         await commands.dm_multiple_commands(bot, mess, server[0], server[1])
 
         verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot by {mess.author.mention}! "
-        verifier += "They now have 2♥ lives left."
-        verifier_dm: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+        verifier += "They now have 2:heart: lives left."
+        verifier_dm = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
         response = dpytest.get_message()
         second_response = dpytest.get_message()
         assert response.channel.type == discord.ChannelType.private

@@ -567,7 +567,7 @@ async def test_shoot_mention(bot, command_prefix):
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     utils.JsonUtility.move_players_together(guild_id, channel_id)
     await messageHandler.handle_message(mess, bot, command_prefix)
-    verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+    verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
     assert dpytest.verify().message().content(verifier)
 
 
@@ -584,7 +584,7 @@ async def test_shoot_number(bot, command_prefix):
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     utils.JsonUtility.move_players_together(guild_id, channel_id)
     await messageHandler.handle_message(mess, bot, command_prefix)
-    verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+    verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
     assert dpytest.verify().message().content(verifier)
 
 

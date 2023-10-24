@@ -60,6 +60,19 @@ def save_player_json(message: discord.Message, data: dict):
     return
 
 
+def remove_player_json(player_id: str, guild_id: str, channel_id: str) -> None:
+    """Removes a specific game from the player data json
+    :param player_id: String player id
+    :param guild_id: String guild id
+    :param channel_id: String channel id
+    """
+    players: dict = read_players_json()
+    players[player_id].remove([guild_id, channel_id])
+    with open('PlayerData.json', 'w', encoding='utf-8') as f:
+        json.dump(players, f, ensure_ascii=False, indent=4)
+    return
+
+
 def is_player_in_multiple_games(message: discord.Message, user_id=None) -> bool:
     """Checks for if a player is in multiple games or not
     :param message: The message of the user being checked
@@ -87,10 +100,12 @@ def is_player_in_game(message: discord.Message, user_id=None) -> bool:
     for player in player_data:
         if user_id is not None:
             if str(player) == str(user_id):
-                return True
+                if len(player_data[player]) > 0:
+                    return True
         elif message is not None:
             if str(player) == str(message.author.id):
-                return True
+                if len(player_data[player]) > 0:
+                    return True
     return False
 
 
@@ -179,20 +194,43 @@ def remove_player_from_game(message: discord.Message) -> bool:
     return True
 
 
-async def kill_player(message: discord.Message, playerNumber, user) -> None:
+def kill_player(playerNumber, user, message: discord.Message = None, guild_id: str = None,
+                channel_id: str = None) -> None:
     """Removed a player from the board that is being killed, but does not change their lives count
     :param message: The message sent by the player being killed
-    :param playerNumber: The game assigned player number of the player being killed
-    :param user: The ID of the user being killed
+    :param guild_id: The guild id of the game of the player being killed
+    :param channel_id: The channel id of the game of the player being killed
+    :param playerNumber: Killed player ID
+    :param user: Killed player user object
     """
     data = read_games_json()
-    board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+    if guild_id is None and channel_id is None:
+        board = data['games'][str(message.guild.id)][str(message.channel.id)]['board']['data']
+    else:
+        board = data['games'][str(guild_id)][str(channel_id)]['board']['data']
     for i in range(len(board)):
         for j in range(len(board[i])):
             if int(playerNumber) == board[i][j]:
                 board[i][j] = 0
-    save_board(message, board)
-    await message.channel.send(user.mention + ' is now dead! They have 0\u2665 lives left!')
+    save_board(message, board, guild_id, channel_id)
+
+
+def check_win(board_data) -> bool:
+    found_players: int = 0
+    for i in range(len(board_data)):
+        for j, value in enumerate(board_data[i]):
+            if value != 0:
+                found_players += 1
+    return True if found_players < 2 else False
+
+
+def mark_game_win(guild_id: str, channel_id: str) -> None:
+    data = read_games_json()
+    for player in data['games'][guild_id][channel_id]['players']:
+        remove_player_json(str(player), guild_id, channel_id)
+    data['games'][guild_id][channel_id]['gameStatus'] = "completed"
+    save_data(data)
+    pass
 
 
 def get_number_of_players_in_game(message: discord.Message) -> int:
