@@ -2,7 +2,6 @@ name: Tests
 
 on:
   - push
-  - pull_request
 
 jobs:
   test:
@@ -23,13 +22,4 @@ jobs:
         python -m pip install --upgrade pip
         pip install tox tox-gh-actions
     - name: Tox test suite
-      run: tox
-
-  re-run-on-push:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push'
-
-    steps:
-    - name: Re-run Tox test suite on push
       run: tox
