@@ -8,6 +8,7 @@ on:
 jobs:
   update-badge:
     runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@v3
       - name: Install Python 3.11
@@ -36,7 +37,6 @@ jobs:
           git fetch
           git checkout ${{ github.event.pull_request.head.ref }}
           git add coverage.svg -f
-          git commit -m "Update coverage badge"
-          git push origin ${{ github.event.pull_request.head.ref }}
+          git diff --cached --exit-code || git commit -m "Update coverage badge" && git push origin ${{ github.event.pull_request.head.ref }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}

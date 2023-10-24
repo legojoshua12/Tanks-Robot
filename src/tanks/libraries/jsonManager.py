@@ -110,6 +110,23 @@ def get_player_server_channel_single(message: discord.Message, user_id=None) -> 
     return False
 
 
+def get_player_server_channels(message: discord.Message, user_id=None) -> list[tuple[str, str]]:
+    """Attempts to provide the player guild and channel id for an assigned game from direct message context
+    :param message: The message of the player being checked
+    :param user_id: (Optional) Search by discord uuid instead
+    """
+    player_data = read_players_json()
+    located_servers = []
+    if user_id is not None:
+        located_servers = player_data[str(message.author.id)]
+    if message is not None:
+        located_servers = player_data[str(message.author.id)]
+    servers = []
+    for entry in located_servers:
+        servers.append(tuple(entry))
+    return servers
+
+
 def add_player_to_game(message: discord.Message, player_number: int) -> bool:
     """Adds a player to the game within the lobby
     :param message: The join command message
@@ -190,13 +207,18 @@ def get_number_of_players_in_game(message: discord.Message) -> int:
     return number_of_players
 
 
-def check_if_game_is_in_channel(message: discord.Message) -> str:
+def check_if_game_is_in_channel(message: discord.Message = None, guild_id=None, channel_id=None) -> str:
     """Returns the game state of a given command specified
     :param message: The message for grabbing the game state
+    :param guild_id: The guild id instead of using message
+    :param channel_id: The channel id instead of using message
     """
     data = read_games_json()
     try:
-        game_state = data['games'][str(message.guild.id)][str(message.channel.id)]['gameStatus']
+        if guild_id is None and channel_id is None:
+            game_state = data['games'][str(message.guild.id)][str(message.channel.id)]['gameStatus']
+        else:
+            game_state = data['games'][str(guild_id)][str(channel_id)]['gameStatus']
         return game_state
     except TypeError:
         return 'none'

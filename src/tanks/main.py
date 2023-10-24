@@ -1,17 +1,21 @@
 """This is the main function that should be run to start the robot"""
 import logging
+import random
 import sys
 import os
 from queue import Queue
 import schedule
 
 import discord
+import discord.ext
 import asyncio
 
 from dotenv import load_dotenv
 
-from src.tanks.libraries import configUtils, jsonManager, messageHandler, commands, dailyUpkeepManager
+from src.tanks.libraries import configUtils, jsonManager, messageHandler, dailyUpkeepManager, commands
 
+client = discord.Client(intents=discord.Intents.all())
+tree = discord.app_commands.CommandTree(client)
 messageQueue = Queue()
 dailyQueue = Queue()
 
@@ -50,12 +54,12 @@ if __name__ == "__main__":
     configUtils.initialize()
     jsonManager.initialize()
     commandMessageStarter = configUtils.read_value('botSettings', 'botCommandPrefix')
-    client = discord.Client(intents=discord.Intents.all())
 
     @client.event
     async def on_ready() -> None:
         """Runs when the robot has connected to discord and begin setup of status and queue handler"""
         print(f'{client.user} has connected to Discord!')
+        print('Initializing coroutine loops...')
         # First set up a coroutine for handling jobs
         asyncio.get_event_loop().create_task(__handle_queue__(
             client=client,
@@ -68,6 +72,28 @@ if __name__ == "__main__":
         asyncio.get_event_loop().create_task(check_schedule_time())
         # Set discord presence
         await client.change_presence(activity=discord.Game(name='Tanks'), status=discord.Status.online)
+        await tree.sync(guild=None)
+        print('Initialization complete, bot is now running! (づ｡◕‿‿◕｡)づ')
+
+    @tree.command(name="help", description="Gives a list of all possible commands")
+    async def help_slash_command(interaction: discord.Interaction):
+        is_game_present: str = jsonManager.check_if_game_is_in_channel(None,
+                                                                       interaction.guild_id, interaction.channel_id)
+        if is_game_present == "lobby":
+            embed = commands.get_lobby_help_menu()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        elif is_game_present == "active":
+            embed = commands.active_game_help_embed()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        elif is_game_present == "none":
+            embed = commands.help_embed_no_game()
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @tree.command(name="rules", description="List the rules for how to play tanks")
+    async def rules_slash_command(interaction: discord.Interaction):
+        embed_color = int('0x' + ("%06x" % random.randint(0, 0xFFFFFF)), 0)
+        embed = commands.make_rules_embed(embed_color)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @client.event
     async def on_message(message) -> None:
@@ -76,46 +102,6 @@ if __name__ == "__main__":
         if message.author == client.user:
             return
         messageQueue.put(message)
-
-    @client.event
-    async def on_reaction_add(reaction, user):
-        """Runs whenever a reaction is added to a message sent by this robot, then handles it with the correct action"""
-        if (reaction.message.author != client.user) or (user == client.user):
-            return
-        if len(reaction.message.embeds) > 0:
-            if isinstance(reaction.message.channel, discord.channel.DMChannel):
-                try:
-                    if ('U+{:X}'.format(ord(reaction.emoji))) == 'U+27A1':
-                        is_in_games = jsonManager.is_player_in_game(None, user.id)
-                        is_in_multiple_games = jsonManager.is_player_in_multiple_games(None, user.id)
-                        await reaction.message.delete()
-                        if is_in_games and not is_in_multiple_games:
-                            guild_id, channel_id = jsonManager.get_player_server_channel_single(None, user.id)
-                            player_index = str(int(reaction.message.embeds[0].fields[0].value[2:]) + 1)
-                            await commands.show_player_statistics(reaction.message, jsonManager.read_games_json(),
-                                                                  client, guild_id, channel_id, player_index)
-
-                    elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
-                        is_in_games = jsonManager.is_player_in_game(None, user.id)
-                        is_in_multiple_games = jsonManager.is_player_in_multiple_games(None, user.id)
-                        await reaction.message.delete()
-                        if is_in_games and not is_in_multiple_games:
-                            guild_id, channel_id = jsonManager.get_player_server_channel_single(None, user.id)
-                            player_index = str(int(reaction.message.embeds[0].fields[0].value[2:]) - 1)
-                            await commands.show_player_statistics(reaction.message, jsonManager.read_games_json(),
-                                                                  client, guild_id, channel_id, player_index)
-                except TypeError:
-                    return
-            else:
-                await reaction.message.remove_reaction(reaction.emoji, user)
-                try:
-                    data = jsonManager.read_games_json()
-                    if ('U+{:X}'.format(ord(reaction.emoji))) == 'U+27A1':
-                        await commands.flip_through_player_stats_card(reaction.message, data, 1, client)
-                    elif ('U+{:X}'.format(ord(reaction.emoji))) == 'U+2B05':
-                        await commands.flip_through_player_stats_card(reaction.message, data, -1, client)
-                except TypeError:
-                    return
 
     def add_daily_queue():
         """Adds a value to the daily queue for when it is time to start daily upkeep"""

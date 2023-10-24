@@ -8,6 +8,9 @@
 
 This is a robot for the game tanks inspired by [HalfBrick studios](https://www.halfbrick.com/).
 
+Here is a sample of a running game with players controlling their respective tank.
+![Sample Game](sample.png)
+
 ## Local Compiling
 In order to run a local instance of this robot, you need [Python 3.9](https://www.python.org/downloads/release/python-390/) or [higher](https://www.python.org/downloads/).
 All required libraries can be obtained with correct versioning for pip via the [requirements.txt](requirements.txt) file. If you would like to run the project and the tests, then use the [requirements_dev.txt](requirements_dev.txt) file.
@@ -21,11 +24,17 @@ You can add the token to your `.env` file to initialize the connection with the 
 All code within the robot is unit and integration tested and all tests can be run on a local machine before deployment to a [docker container](https://www.docker.com/) or [Heroku](https://www.heroku.com/).
 Tests are run in GitHub actions via tox and flake8.
 
-## Heroku Deployment
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-### Planned Features
+## Planned Features
  - Set up a game with random map (mountains, rivers, hills, etc.)
  - Different kinds of tanks with different abilities
  - Fire mechanic that makes some tiles temporarily unusable
+
+## Remaining Work Before Beta
+ - Switch database system to redis rather than a simple JSON file currently
+ - Write integration tests for multiple game dms :heavy_check_mark:
+ - Integration test for handling new buttons on player cards
+ - Support for / commands
+ - Tests for daily upkeep
+ - Bot profile artwork
+ - Win game state
+ - Handling new game generation after a game is completed in a channel
