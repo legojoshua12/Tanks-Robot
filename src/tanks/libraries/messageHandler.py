@@ -47,17 +47,16 @@ async def handle_message(message, client, commandMessageStarter):
                     new_player_number = len(data['games'][str(message.guild.id)][str(message.channel.id)]['players'])+1
                     is_present: bool = jsonManager.add_player_to_game(message, new_player_number)
                     if is_present:
-                        await message.channel.send(message.author.mention + ' is already in the game!')
+                        await message.channel.send('You have already joined the game ' + message.author.mention + '!')
                     else:
                         await message.channel.send('Adding ' + message.author.mention + ' to the new game of Tanks!')
                 elif action == 'leave':
-                    is_not_present: bool = jsonManager.remove_player_from_game(message)
-                    if is_not_present:
+                    is_present: bool = jsonManager.remove_player_from_game(message)
+                    if is_present:
+                        await message.channel.send(message.author.mention + ' left the game. :cry:')
+                    else:
                         await message.channel.send(message.author.mention + ' cannot leave when you are not in the '
                                                                             'game!')
-                    else:
-                        sad_emoji = '\U0001F622'
-                        await message.channel.send(message.author.mention + f' left the game. {sad_emoji}')
                 elif action == 'help':
                     help_embed = commands.get_lobby_help_menu()
                     await message.channel.send(embed=help_embed)

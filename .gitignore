@@ -130,9 +130,7 @@ dmypy.json
 .pyre/
 
 # Saved Games
-Games.json
 PlayerData.json
-SampleGame.json
 
 #IDEA settings
 .idea/

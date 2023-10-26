@@ -209,7 +209,7 @@ class JsonUtility:
     @staticmethod
     def get_game_board(guild_id: str, channel_id: str) -> list[list]:
         data = jsonManager.read_games_json()
-        return data['games'][guild_id][channel_id]['board']['data']
+        return data['games'][guild_id][channel_id]['board']
 
     @staticmethod
     def move_players_away(guild_id: str, channel_id: str) -> None:
@@ -229,7 +229,7 @@ class JsonUtility:
         board[0][0] = 1
         board[4][4] = 2
         data = jsonManager.read_games_json()
-        data['games'][guild_id][channel_id]['board']['data'] = board
+        data['games'][guild_id][channel_id]['board'] = board
         with open('Games.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 
@@ -251,7 +251,7 @@ class JsonUtility:
         board[0][0] = 1
         board[0][1] = 2
         data = jsonManager.read_games_json()
-        data['games'][guild_id][channel_id]['board']['data'] = board
+        data['games'][guild_id][channel_id]['board'] = board
         with open('Games.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
 

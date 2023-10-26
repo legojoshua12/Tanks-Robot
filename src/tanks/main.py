@@ -25,6 +25,7 @@ async def __handle_queue__(client=None, commandMessageStarter=None):
     Once it has been fully handled, it will grab the next message in the queue"""
     while True:
         if messageQueue.qsize() > 0:
+
             await messageHandler.handle_message(messageQueue.get(), client, commandMessageStarter)
         # This is a delay to slow down the processing speed of the queue if it is too processor intensive
         # Param is in seconds
