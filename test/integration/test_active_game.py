@@ -4,6 +4,7 @@ Tests for all bot interactions when an active game is created in a channel
 import discord
 import discord.ext.test as dpytest
 import pytest
+from unittest.mock import patch
 
 import test.utilstest as utils
 
@@ -11,8 +12,8 @@ from src.tanks.libraries import messageHandler, commands
 
 
 @pytest.mark.asyncio
-async def test_help_not_in_game(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_help_not_in_game(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}help")
     mess = dpytest.get_message()
@@ -25,14 +26,15 @@ async def test_help_not_in_game(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_help(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_help(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}help")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
     await messageHandler.handle_message(mess, bot, command_prefix)
+
     embeds = dpytest.get_message(peek=True).embeds
     assert len(embeds) == 1
     new_embed = commands.active_game_help_embed(embeds[0].color, command_prefix)
@@ -40,8 +42,8 @@ async def test_help(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_rules_not_in_game(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_rules_not_in_game(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}rules")
     mess = dpytest.get_message()
@@ -54,8 +56,8 @@ async def test_rules_not_in_game(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_rules(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_rules(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}rules")
     mess = dpytest.get_message()
@@ -68,8 +70,8 @@ async def test_rules(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_board(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_board(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}board")
     mess = dpytest.get_message()
@@ -81,8 +83,8 @@ async def test_board(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_players(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_players(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}players")
     mess = dpytest.get_message()
@@ -94,8 +96,8 @@ async def test_players(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_dm(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_dm(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}dm")
     mess = dpytest.get_message()
@@ -115,8 +117,8 @@ async def test_dm(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_increase_range_no_actions(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_increase_range_no_actions(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}increase range")
     mess = dpytest.get_message()
@@ -131,8 +133,8 @@ async def test_increase_range_no_actions(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_increase_range(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_increase_range(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}increase range")
     mess = dpytest.get_message()
@@ -144,8 +146,8 @@ async def test_increase_range(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_no_information(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_no_information(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}move")
     mess = dpytest.get_message()
@@ -157,8 +159,8 @@ async def test_move_no_information(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_too_many_args(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_too_many_args(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}move some info")
     mess = dpytest.get_message()
@@ -171,8 +173,8 @@ async def test_move_too_many_args(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_invalid_arg(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_invalid_arg(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     direction: str = "somewhere"
     await channel.send(f"{command_prefix}move {direction}")
@@ -185,8 +187,8 @@ async def test_move_invalid_arg(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_no_actions(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_no_actions(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}move north")
     mess = dpytest.get_message()
@@ -203,8 +205,8 @@ async def test_move_no_actions(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_north(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_north(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
     old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -257,8 +259,8 @@ async def test_move_north(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_south(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_south(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
     old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -311,8 +313,8 @@ async def test_move_south(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_west(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_west(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
     old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -365,8 +367,8 @@ async def test_move_west(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_east(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_east(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
     old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -419,8 +421,8 @@ async def test_move_east(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_easter_egg(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_easter_egg(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
     old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -439,8 +441,8 @@ async def test_move_easter_egg(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_move_not_alive(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_move_not_alive(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
     old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -460,8 +462,8 @@ async def test_move_not_alive(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_shoot_no_args(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_shoot_no_args(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}shoot")
     mess = dpytest.get_message()
@@ -472,8 +474,8 @@ async def test_shoot_no_args(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_shoot_too_many_args(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_shoot_too_many_args(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}shoot someone somewhere")
     mess = dpytest.get_message()
@@ -485,8 +487,8 @@ async def test_shoot_too_many_args(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_shoot_no_actions(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_shoot_no_actions(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}shoot 1")
     mess = dpytest.get_message()
@@ -501,8 +503,8 @@ async def test_shoot_no_actions(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_shoot_no_player(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_shoot_no_player(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     non_player: str = "someone"
     await channel.send(f"{command_prefix}shoot {non_player}")
@@ -515,8 +517,8 @@ async def test_shoot_no_player(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_shoot_self_mention(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_shoot_self_mention(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}shoot {bot.guilds[0].members[2].mention}")
     mess = dpytest.get_message()
@@ -527,8 +529,8 @@ async def test_shoot_self_mention(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_shoot_self_number(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_shoot_self_number(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}shoot 1")
     mess = dpytest.get_message()
@@ -539,8 +541,8 @@ async def test_shoot_self_number(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_shoot_out_of_range(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_shoot_out_of_range(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     enemy_player_number: int = 2
     await channel.send(f"{command_prefix}shoot {enemy_player_number}")
@@ -556,8 +558,8 @@ async def test_shoot_out_of_range(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_shoot_mention(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_shoot_mention(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}shoot {bot.guilds[0].members[3].mention}")
     mess = dpytest.get_message()
@@ -572,8 +574,8 @@ async def test_shoot_mention(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_shoot_number(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_shoot_number(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     enemy_player_number: int = 2
     await channel.send(f"{command_prefix}shoot {enemy_player_number}")
@@ -589,8 +591,8 @@ async def test_shoot_number(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_vote_alive(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_vote_alive(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}vote")
     mess = dpytest.get_message()
@@ -601,8 +603,8 @@ async def test_vote_alive(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_vote_no_info(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_vote_no_info(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}vote")
     mess = dpytest.get_message()
@@ -617,8 +619,8 @@ async def test_vote_no_info(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_vote_no_player(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_vote_no_player(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}vote")
     mess = dpytest.get_message()
@@ -633,8 +635,8 @@ async def test_vote_no_player(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_vote_non_existing_player(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_vote_non_existing_player(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}vote some_random_person")
     mess = dpytest.get_message()
@@ -649,8 +651,8 @@ async def test_vote_non_existing_player(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_vote_no_remaining(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_vote_no_remaining(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}vote {bot.guilds[0].members[2].id}")
     mess = dpytest.get_message()
@@ -665,8 +667,8 @@ async def test_vote_no_remaining(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_vote_self(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_vote_self(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}vote {bot.guilds[0].members[2].mention}")
     mess = dpytest.get_message()
@@ -683,8 +685,8 @@ async def test_vote_self(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_vote_number(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_vote_number(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}vote 2")
     mess = dpytest.get_message()
@@ -708,8 +710,8 @@ async def test_vote_number(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_vote_mention(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_vote_mention(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}vote {bot.guilds[0].members[3].mention}")
     mess = dpytest.get_message()
@@ -733,8 +735,8 @@ async def test_vote_mention(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_no_info(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_no_info(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send")
     mess = dpytest.get_message()
@@ -746,8 +748,8 @@ async def test_send_no_info(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_too_much_info(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_too_much_info(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send some random information")
     mess = dpytest.get_message()
@@ -759,8 +761,8 @@ async def test_send_too_much_info(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_no_player(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_no_player(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send some_random_player 1")
     mess = dpytest.get_message()
@@ -771,8 +773,8 @@ async def test_send_no_player(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_not_in_game_number(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_not_in_game_number(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send 6 1")
     mess = dpytest.get_message()
@@ -783,8 +785,8 @@ async def test_send_not_in_game_number(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_mention(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_mention(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send {bot.guilds[0].members[3].mention} 1")
     mess = dpytest.get_message()
@@ -800,8 +802,8 @@ async def test_send_mention(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_mention_not_in_game(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_mention_not_in_game(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send {bot.guilds[0].members[1].mention} 1")
     mess = dpytest.get_message()
@@ -817,8 +819,8 @@ async def test_send_mention_not_in_game(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_number(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_number(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send 2 1")
     mess = dpytest.get_message()
@@ -834,8 +836,8 @@ async def test_send_number(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_number_not_in_game(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_number_not_in_game(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send 6 1")
     mess = dpytest.get_message()
@@ -848,8 +850,8 @@ async def test_send_number_not_in_game(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_self(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_self(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send {bot.guilds[0].members[2].mention} 1")
     mess = dpytest.get_message()
@@ -860,8 +862,8 @@ async def test_send_self(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_self_player_number(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_self_player_number(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send 1 1")
     mess = dpytest.get_message()
@@ -872,8 +874,8 @@ async def test_send_self_player_number(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_send_no_actions(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_send_no_actions(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}send 2 1")
     mess = dpytest.get_message()
@@ -893,8 +895,8 @@ async def test_send_no_actions(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_command_not_in_game(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_command_not_in_game(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}test")
     mess = dpytest.get_message()
@@ -903,8 +905,8 @@ async def test_command_not_in_game(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_command_invalid_syntax(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_command_invalid_syntax(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}test")
     mess = dpytest.get_message()
@@ -916,8 +918,8 @@ async def test_command_invalid_syntax(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_ignored_message(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_ignored_message(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send('test')
     mess = dpytest.get_message()
@@ -926,8 +928,8 @@ async def test_ignored_message(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_mentioned(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_mentioned(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{bot.user.mention}")
     mess = dpytest.get_message()

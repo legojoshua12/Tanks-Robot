@@ -39,3 +39,4 @@ Tests are run in GitHub actions via tox and flake8.
  - Bot profile artwork
  - Win game state :heavy_check_mark:
  - Handling new game generation after a game is completed in a channel :heavy_check_mark:
+ - Switch to using Ruff 1.2 for the support for Black

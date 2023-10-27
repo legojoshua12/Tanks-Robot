@@ -5,10 +5,13 @@ import json
 
 import discord
 import discord.ext.test as dpytest
+from unittest.mock import patch, MagicMock
+
+import psycopg2
 
 from src.tanks.libraries import messageHandler
 from src.tanks.libraries import jsonManager
-from src.tanks.libraries.CustomIndentEncoder import MyEncoder
+from src.tanks.libraries.connectionPool import ConnectionPool
 
 
 class CodecUtility:
@@ -24,42 +27,6 @@ class JsonUtility:
         guild = bot.guilds[0]
         channel = guild.channels[0]
         for i in range(5):
-            await dpytest.member_join(name="Dummy", discrim=(i+1))
-        author = guild.members[2]
-
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        mess.author = author
-
-        jsonManager.create_game(mess)
-        jsonManager.add_player_to_game(mess, 1)
-
-    @staticmethod
-    async def remove_testapp_game(bot, command_prefix):
-        guild = bot.guilds[0]
-        channel = guild.channels[0]
-        await channel.send(f"{command_prefix}leave")
-
-    @staticmethod
-    async def add_many_players(bot, command_prefix):
-        guild = bot.guilds[0]
-        channel = guild.channels[0]
-        for i in range(21):
-            await dpytest.member_join(name="Dummy", discrim=(i+1))
-        author = guild.members[2]
-
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        mess.author = author
-
-        jsonManager.create_game(mess)
-        jsonManager.add_player_to_game(mess, 1)
-
-    @staticmethod
-    async def start_sample_game(bot, command_prefix):
-        guild = bot.guilds[0]
-        channel = guild.channels[0]
-        for i in range(5):
             await dpytest.member_join(name="Dummy", discrim=(i + 1))
         author = guild.members[2]
 
@@ -70,22 +37,78 @@ class JsonUtility:
         jsonManager.create_game(mess)
         jsonManager.add_player_to_game(mess, 1)
 
-        members_list = bot.guilds[0].members[3:]
-        channel = bot.guilds[0].text_channels[0]
-        for idx, member in enumerate(members_list):
-            await channel.send(f"{command_prefix}join")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[idx + 3]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            # Clear out the message queue
-            dpytest.get_message()
+    @staticmethod
+    async def add_many_players(bot, command_prefix):
+        guild = bot.guilds[0]
+        channel = guild.channels[0]
+        for i in range(21):
+            await dpytest.member_join(name="Dummy", discrim=(i + 1))
+        author = guild.members[2]
 
         await channel.send(f"{command_prefix}start")
         mess = dpytest.get_message()
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        # Clear out the message queue
-        dpytest.get_message()
-        dpytest.get_message()
+        mess.author = author
+
+        jsonManager.create_game(mess)
+        jsonManager.add_player_to_game(mess, 1)
+
+    @staticmethod
+    async def start_sample_game(bot, mock_cursor) -> None:
+        guild = bot.guilds[0]
+        for i in range(5):
+            await dpytest.member_join(name="Dummy", discrim=(i + 1))
+        members_list = bot.guilds[0].members[2:]
+        channel = bot.guilds[0].text_channels[0]
+        db_response = await JsonUtility.build_active_game_db_response(str(channel.id), members_list)
+
+        def execute_side_effect(instruction, args):
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
+
+        mock_cursor.execute.side_effect = execute_side_effect
+
+    @staticmethod
+    async def build_active_game_db_response(channel_id: str, members_list: list, actions=1) -> list:
+        players_data = {}
+        for i in range(len(members_list)):
+            players_data[str(members_list[i].id)] = {
+                            'hits': 0,
+                            'lives': 3,
+                            'moves': 1,
+                            'range': 1,
+                            'votes': 0,
+                            'actions': actions,
+                            'playerNumber': 1,
+                            'remainingVotes': 0
+                        }
+        db_response = [(channel_id,
+                        players_data,
+                        [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 2, 1, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+                        'active',
+                        {'1':
+                             [73, 2, 159],
+                         '2':
+                             [37, 5, 145],
+                         '3':
+                             [128, 91, 45],
+                         '4':
+                             [5, 211, 11],
+                         '5':
+                             [193, 43, 48]
+                         })
+                       ]
+        return db_response
 
     @staticmethod
     async def start_multiple_sample_games(bot, command_prefix):
@@ -153,15 +176,7 @@ class JsonUtility:
     def remove_player_actions(guild_id: str, channel_id: str, player_id: str) -> None:
         data = jsonManager.read_games_json()
         data['games'][guild_id][channel_id]['players'][player_id]['actions'] = 0
-        with open('Games.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
-
-    @staticmethod
-    def infinite_player_actions(guild_id: str, channel_id: str, player_id: str) -> None:
-        data = jsonManager.read_games_json()
-        data['games'][guild_id][channel_id]['players'][player_id]['actions'] = 999
-        with open('Games.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+        jsonManager.save_data(data['games'][guild_id][channel_id], guild_id, channel_id)
 
     @staticmethod
     def get_player_range(message, guild_id=None, channel_id=None, player_id=None) -> int:
@@ -171,16 +186,6 @@ class JsonUtility:
         else:
             return int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                            'range'])
-
-    @staticmethod
-    def get_player_number(message, guild_id=None, channel_id=None, player_id=None) -> int:
-        data = jsonManager.read_games_json()
-        if guild_id is not None and channel_id is not None:
-            players: list = data['games'][str(guild_id)][str(channel_id)]['players']
-            return int(players[str(player_id)]['playerNumber'])
-        else:
-            players: list = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
-            return int(players[str(message.author.id)]['playerNumber'])
 
     @staticmethod
     def get_player_stats(message, guild_id=None, channel_id=None, player_id=None) -> dict:
