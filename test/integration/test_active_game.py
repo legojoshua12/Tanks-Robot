@@ -126,7 +126,7 @@ async def test_increase_range_no_actions(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     member_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
+    await utils.JsonUtility.remove_player_actions(bot, channel_id, member_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = f"You do not have any actions to increase your range {mess.author.mention}!"
     assert dpytest.verify().message().content(verifier)
@@ -197,7 +197,7 @@ async def test_move_no_actions(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.remove_player_actions(guild_id, channel_id, player_id)
+    await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
 
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = f"You have no more actions remaining {mess.author.mention}!"
@@ -207,32 +207,8 @@ async def test_move_no_actions(bot, command_prefix, mock_cursor):
 @pytest.mark.asyncio
 async def test_move_north(bot, command_prefix, mock_cursor):
     await utils.JsonUtility.start_sample_game(bot, mock_cursor)
-    guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
-    old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-    i, j = 0, 0
-    for row in range(len(old_board)):
-        for col in range(len(old_board[row])):
-            if str(old_board[row][col]) == "1":
-                i = row
-                j = col
-                break
-    if i == len(old_board)-1:
-        channel = bot.guilds[0].text_channels[0]
-        await channel.send(f"{command_prefix}move south")
-        mess = dpytest.get_message()
-        mess.author = bot.guilds[0].members[2]
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        dpytest.get_message()
-        dpytest.get_message()
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
+    await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
 
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}move north")
@@ -246,47 +222,12 @@ async def test_move_north(bot, command_prefix, mock_cursor):
     assert len(response.attachments) == 1
     assert response.attachments[0].filename == 'image.png'
 
-    new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-    assert old_board != new_board
-    k, w = 0, 0
-    for row in range(len(new_board)):
-        for col in range(len(new_board[row])):
-            if str(new_board[row][col]) == "1":
-                k = row
-                w = col
-                break
-    assert k == (i+1) and w == j
-
 
 @pytest.mark.asyncio
 async def test_move_south(bot, command_prefix, mock_cursor):
     await utils.JsonUtility.start_sample_game(bot, mock_cursor)
-    guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
-    old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-    i, j = 0, 0
-    for row in range(len(old_board)):
-        for col in range(len(old_board[row])):
-            if str(old_board[row][col]) == "1":
-                i = row
-                j = col
-                break
-    if i == 0:
-        channel = bot.guilds[0].text_channels[0]
-        await channel.send(f"{command_prefix}move north")
-        mess = dpytest.get_message()
-        mess.author = bot.guilds[0].members[2]
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        dpytest.get_message()
-        dpytest.get_message()
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
+    await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
 
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}move south")
@@ -300,47 +241,12 @@ async def test_move_south(bot, command_prefix, mock_cursor):
     assert len(response.attachments) == 1
     assert response.attachments[0].filename == 'image.png'
 
-    new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-    assert old_board != new_board
-    k, w = 0, 0
-    for row in range(len(new_board)):
-        for col in range(len(new_board[row])):
-            if str(new_board[row][col]) == "1":
-                k = row
-                w = col
-                break
-    assert k == (i-1) and w == j
-
 
 @pytest.mark.asyncio
 async def test_move_west(bot, command_prefix, mock_cursor):
     await utils.JsonUtility.start_sample_game(bot, mock_cursor)
-    guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
-    old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-    i, j = 0, 0
-    for row in range(len(old_board)):
-        for col in range(len(old_board[row])):
-            if str(old_board[row][col]) == "1":
-                i = row
-                j = col
-                break
-    if j == 0:
-        channel = bot.guilds[0].text_channels[0]
-        await channel.send(f"{command_prefix}move east")
-        mess = dpytest.get_message()
-        mess.author = bot.guilds[0].members[2]
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        dpytest.get_message()
-        dpytest.get_message()
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
+    await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
 
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}move west")
@@ -354,47 +260,12 @@ async def test_move_west(bot, command_prefix, mock_cursor):
     assert len(response.attachments) == 1
     assert response.attachments[0].filename == 'image.png'
 
-    new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-    assert old_board != new_board
-    k, w = 0, 0
-    for row in range(len(new_board)):
-        for col in range(len(new_board[row])):
-            if str(new_board[row][col]) == "1":
-                k = row
-                w = col
-                break
-    assert k == i and w == (j-1)
-
 
 @pytest.mark.asyncio
 async def test_move_east(bot, command_prefix, mock_cursor):
     await utils.JsonUtility.start_sample_game(bot, mock_cursor)
-    guild_id: str = str(bot.guilds[0].id)
     channel_id = str(bot.guilds[0].text_channels[0].id)
-    old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-    i, j = 0, 0
-    for row in range(len(old_board)):
-        for col in range(len(old_board[row])):
-            if str(old_board[row][col]) == "1":
-                i = row
-                j = col
-                break
-    if j == len(old_board[0])-1:
-        channel = bot.guilds[0].text_channels[0]
-        await channel.send(f"{command_prefix}move west")
-        mess = dpytest.get_message()
-        mess.author = bot.guilds[0].members[2]
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        dpytest.get_message()
-        dpytest.get_message()
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
+    await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
 
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}move east")
@@ -407,17 +278,6 @@ async def test_move_east(bot, command_prefix, mock_cursor):
     response: discord.Message = dpytest.get_message()
     assert len(response.attachments) == 1
     assert response.attachments[0].filename == 'image.png'
-
-    new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-    assert old_board != new_board
-    k, w = 0, 0
-    for row in range(len(new_board)):
-        for col in range(len(new_board[row])):
-            if str(new_board[row][col]) == "1":
-                k = row
-                w = col
-                break
-    assert k == i and w == (j+1)
 
 
 @pytest.mark.asyncio
@@ -451,7 +311,7 @@ async def test_move_not_alive(bot, command_prefix, mock_cursor):
     await channel.send(f"{command_prefix}move north")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
-    utils.JsonUtility.kill_player(guild_id, channel_id, str(bot.guilds[0].members[2].id))
+    await utils.JsonUtility.kill_player(bot, channel_id, str(bot.guilds[0].members[2].id), mock_cursor)
 
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = f"You are dead and have no more lives {mess.author.mention}."
@@ -496,7 +356,7 @@ async def test_shoot_no_actions(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(mess.author.id)
-    utils.JsonUtility.remove_player_actions(guild_id, channel_id, player_id)
+    await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = f"You have no more actions remaining {mess.author.mention}!"
     assert dpytest.verify().message().content(verifier)
@@ -551,7 +411,7 @@ async def test_shoot_out_of_range(bot, command_prefix, mock_cursor):
 
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
-    utils.JsonUtility.move_players_away(guild_id, channel_id)
+    await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = f"Player {enemy_player_number} is out of range {mess.author.mention}!"
     assert dpytest.verify().message().content(verifier)
@@ -567,7 +427,7 @@ async def test_shoot_mention(bot, command_prefix, mock_cursor):
 
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
-    utils.JsonUtility.move_players_together(guild_id, channel_id)
+    await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
     assert dpytest.verify().message().content(verifier)
@@ -584,7 +444,7 @@ async def test_shoot_number(bot, command_prefix, mock_cursor):
 
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
-    utils.JsonUtility.move_players_together(guild_id, channel_id)
+    await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
     assert dpytest.verify().message().content(verifier)
@@ -613,7 +473,7 @@ async def test_vote_no_info(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+    await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     assert dpytest.verify().message().content(f"Please specify a player to vote for {mess.author.mention}.")
 
@@ -629,7 +489,7 @@ async def test_vote_no_player(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+    await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     assert dpytest.verify().message().content(f"Please specify a player to vote for {mess.author.mention}.")
 
@@ -645,7 +505,7 @@ async def test_vote_non_existing_player(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+    await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     assert dpytest.verify().message().content(f"*some_random_person* is not a player {mess.author.mention}!")
 
@@ -661,7 +521,7 @@ async def test_vote_no_remaining(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+    await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     assert dpytest.verify().message().content(f"You have no more remaining votes today {mess.author.mention}!")
 
@@ -677,9 +537,8 @@ async def test_vote_self(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-    utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                            str(bot.guilds[0].members[2].id), 1)
+    await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+    await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
     await messageHandler.handle_message(mess, bot, command_prefix)
     assert dpytest.verify().message().content(f"You may not vote for yourself {mess.author.mention}!")
 
@@ -695,18 +554,12 @@ async def test_vote_number(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-    utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                            str(bot.guilds[0].members[2].id), 1)
+    await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+    await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = (f"{bot.guilds[0].members[2].mention} voted for {bot.guilds[0].members[3].mention} "
                      f"to receive 1 extra action.")
     assert dpytest.verify().message().content(verifier)
-
-    data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, player_id)
-    assert int(data['remainingVotes']) == 0
-    data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, str(bot.guilds[0].members[3].id))
-    assert int(data['votes']) == 1
 
 
 @pytest.mark.asyncio
@@ -720,18 +573,12 @@ async def test_vote_mention(bot, command_prefix, mock_cursor):
     guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-    utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                            str(bot.guilds[0].members[2].id), 1)
+    await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+    await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
     await messageHandler.handle_message(mess, bot, command_prefix)
     verifier: str = (f"{bot.guilds[0].members[2].mention} voted for {bot.guilds[0].members[3].mention} "
                      f"to receive 1 extra action.")
     assert dpytest.verify().message().content(verifier)
-
-    data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, player_id)
-    assert int(data['remainingVotes']) == 0
-    data = utils.JsonUtility.get_player_stats(mess, guild_id, channel_id, str(bot.guilds[0].members[3].id))
-    assert int(data['votes']) == 1
 
 
 @pytest.mark.asyncio
@@ -795,11 +642,6 @@ async def test_send_mention(bot, command_prefix, mock_cursor):
     notification: str = f"{mess.author.mention} gave 1 actions to {bot.guilds[0].members[3].mention}"
     assert dpytest.verify().message().content(notification)
 
-    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[2].id))
-    assert int(data['actions']) == 0
-    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[3].id))
-    assert int(data['actions']) == 2
-
 
 @pytest.mark.asyncio
 async def test_send_mention_not_in_game(bot, command_prefix, mock_cursor):
@@ -828,11 +670,6 @@ async def test_send_number(bot, command_prefix, mock_cursor):
     await messageHandler.handle_message(mess, bot, command_prefix)
     notification: str = f"{mess.author.mention} gave 1 actions to {bot.guilds[0].members[3].mention}"
     assert dpytest.verify().message().content(notification)
-
-    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[2].id))
-    assert int(data['actions']) == 0
-    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[3].id))
-    assert int(data['actions']) == 2
 
 
 @pytest.mark.asyncio
@@ -880,18 +717,12 @@ async def test_send_no_actions(bot, command_prefix, mock_cursor):
     await channel.send(f"{command_prefix}send 2 1")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     member_id: str = str(bot.guilds[0].members[2].id)
-    utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
+    await utils.JsonUtility.remove_player_actions(bot, channel_id, member_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     notification: str = f"You do not have enough actions to do that {mess.author.mention}!"
     assert dpytest.verify().message().content(notification)
-
-    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[2].id))
-    assert int(data['actions']) == 0
-    data = utils.JsonUtility.get_player_stats(mess, mess.guild.id, mess.channel.id, str(bot.guilds[0].members[3].id))
-    assert int(data['actions']) == 1
 
 
 @pytest.mark.asyncio

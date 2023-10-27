@@ -26,6 +26,8 @@ def run_around_tests() -> None:
     f.close()
     yield
     # Runs after each test
+    if os.path.exists("Games.json"):
+        os.remove("Games.json")
     if os.path.exists("PlayerData.json"):
         os.remove("PlayerData.json")
 

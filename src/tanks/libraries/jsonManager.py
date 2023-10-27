@@ -391,8 +391,8 @@ def save_data(data: dict, guild_id: str, channel_id: str) -> None:
 
     players = json.dumps(data['players'])
     board = json.dumps(data['board'])
-    game_status = json.dumps(data['game_status'])
-    player_colors = json.dumps(data['player_colors'])
+    game_status = json.dumps(data['gameStatus'])
+    player_colors = json.dumps(data['playerColors'])
     update_query = f'''
         UPDATE "{table_name}" SET players = %s, board = %s, game_status = %s, player_colors = %s WHERE channel_id = %s
         '''
@@ -447,7 +447,7 @@ def update_status(message: discord.Message) -> None:
         connection_pool.putconn(connection)
 
 
-def update_player_range(message: discord.Message, data, guild_id=None, channel_id=None) -> None:
+def update_player_range(message: discord.Message, data, guild_id=None, channel_id=None) -> dict:
     """Removes a player action and gives them an extra range in the game specified
     :param message: The message of the player having range increased
     :param data: The original complete dataset of all games
@@ -457,8 +457,8 @@ def update_player_range(message: discord.Message, data, guild_id=None, channel_i
     connection_pool = ConnectionPool.get_instance()
     connection = connection_pool.getconn()
     if guild_id is None and channel_id is None:
-        guild: str = str(message.guild.id)
-        channel: str = str(message.channel.id)
+        guild_id: str = str(message.guild.id)
+        channel_id: str = str(message.channel.id)
 
     table_name = f"{guild_id}"
     actions: int = int(data['games'][guild_id][channel_id]['players'][str(message.author.id)]['actions']) - 1
