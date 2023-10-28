@@ -1732,8 +1732,8 @@ class TestSingleActiveGame:
 
 class TestMultipleActiveGames:
     @pytest.mark.asyncio
-    async def test_help_with_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_help_with_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}help")
         mess = dpytest.get_message()

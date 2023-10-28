@@ -1,17 +1,10 @@
 """
 Utility setup for hard JSON values as well as configuring states of testing classes for fixtures
 """
-import json
-
 import discord
 import discord.ext.test as dpytest
-from unittest.mock import patch, MagicMock
 
-import psycopg2
-
-from src.tanks.libraries import messageHandler
 from src.tanks.libraries import jsonManager
-from src.tanks.libraries.connectionPool import ConnectionPool
 
 
 class CodecUtility:
@@ -32,7 +25,7 @@ class JsonUtility:
         db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
 
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -49,7 +42,7 @@ class JsonUtility:
         db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
 
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -66,7 +59,7 @@ class JsonUtility:
         db_response = await JsonUtility.build_active_game_db_response(str(channel.id), members_list, True)
 
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -166,50 +159,7 @@ class JsonUtility:
         members_list = bot.guilds[0].members[2:]
         channel = bot.guilds[0].text_channels[0]
         first_game_data = await JsonUtility.build_active_game_db_response(str(channel.id), members_list, True)
-        second_game_data = await JsonUtility.build_active_game_db_response(str(channel.id), members_list, True)
-        # TODO merge lists here
-        db_response = []
 
-        def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
-                mock_cursor.fetchall.return_value = [(str(guild.id),)]
-            else:
-                mock_cursor.fetchall.return_value = db_response
-
-        mock_cursor.execute.side_effect = execute_side_effect
-
-
-        guild = bot.guilds[0]
-        channel = guild.channels[0]
-        for i in range(5):
-            await dpytest.member_join(name="Dummy", discrim=(i + 1))
-        author = guild.members[2]
-
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        mess.author = author
-
-        jsonManager.create_game(mess)
-        jsonManager.add_player_to_game(mess, 1)
-
-        members_list = bot.guilds[0].members[3:]
-        channel = bot.guilds[0].text_channels[0]
-        for idx, member in enumerate(members_list):
-            await channel.send(f"{command_prefix}join")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[idx + 3]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            # Clear out the message queue
-            dpytest.get_message()
-
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        # Clear out the message queue
-        dpytest.get_message()
-        dpytest.get_message()
-
-        # Start second game
         guild = bot.guilds[0]
         http = bot.http
         self = guild  # noqa: F841
@@ -218,26 +168,17 @@ class JsonUtility:
         assert channel['type'] == discord.ChannelType.text
         assert channel['name'] == name
         channel = bot.guilds[0].channels[2]
+        second_game_data = await JsonUtility.build_active_game_db_response(str(channel.id), members_list, True)
 
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        mess.author = guild.members[2]
-        jsonManager.create_game(mess)
-        jsonManager.add_player_to_game(mess, 1)
+        db_response = [first_game_data[0], second_game_data[0]]
 
-        members_list = bot.guilds[0].members[3:]
-        for idx, member in enumerate(members_list):
-            await channel.send(f"{command_prefix}join")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[idx + 3]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
+        def execute_side_effect(instruction, args):
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
 
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        dpytest.get_message()
-        dpytest.get_message()
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
     async def remove_player_actions(bot, channel_id: str, user_id: str, mock_cursor) -> None:
@@ -249,7 +190,7 @@ class JsonUtility:
                                                                       (str(user_id), 'actions', 0))
 
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -285,7 +226,7 @@ class JsonUtility:
                                                                       (str(user_id), 'actions', 0, 'lives', 0))
 
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -305,7 +246,7 @@ class JsonUtility:
                                                                           'remainingVotes', votes))
 
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -326,7 +267,7 @@ class JsonUtility:
                                                                       )
 
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -343,7 +284,7 @@ class JsonUtility:
                                                                       )
 
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'public'":
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response

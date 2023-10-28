@@ -1,5 +1,7 @@
 """Handles reading the config file and providing values when given a key"""
 import os
+import sys
+import logging
 from configparser import ConfigParser
 
 config = ConfigParser()
@@ -8,9 +10,11 @@ config = ConfigParser()
 def initialize():
     """Calls a shutdown if a config file cannot be located"""
     if os.path.exists('config.ini'):
-        print('Config file located, initializing...')
+        if str(read_value('startGame', 'adminTesting')).lower() == 'true':
+            logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+        logging.info('Config file located, initializing...')
     else:
-        print('Config file not located, exiting...')
+        logging.critical('Config file not located, exiting...')
         exit()
 
 

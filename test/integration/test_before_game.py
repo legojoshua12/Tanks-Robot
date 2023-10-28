@@ -33,8 +33,8 @@ async def test_rules(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_dm(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_dm(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}dm")
     mess = dpytest.get_message()

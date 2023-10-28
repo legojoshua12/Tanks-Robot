@@ -32,14 +32,16 @@ async def __handle_queue__(client=None, commandMessageStarter=None):
         await asyncio.sleep(1)
 
 if __name__ == "__main__":
+    print('Starting application...')
     # This is a clean windows shutdown procedure as to not throw memory heap errors
     if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith('win'):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     # Setup .env for instancing
     if os.path.exists('../../.env'):
-        print('Env file located, initializing...')
+        logging.info('Env file located, initializing...')
         load_dotenv()
+
         TOKEN = os.getenv('DISCORD_TOKEN')
         if TOKEN == '':
             logging.critical('DISCORD_TOKEN is not set, please set one first before continuing')
@@ -51,7 +53,7 @@ if __name__ == "__main__":
         logging.critical('Exiting, please set a DISCORD_TOKEN in the env file')
         exit()
 
-    print('Discord Version Info: ' + str(discord.version_info))
+    logging.info('Discord Version Info: ' + str(discord.version_info))
     configUtils.initialize()
     jsonManager.initialize()
     commandMessageStarter = configUtils.read_value('botSettings', 'botCommandPrefix')
@@ -59,8 +61,8 @@ if __name__ == "__main__":
     @client.event
     async def on_ready() -> None:
         """Runs when the robot has connected to discord and begin setup of status and queue handler"""
-        print(f'{client.user} has connected to Discord!')
-        print('Initializing coroutine loops...')
+        logging.info(f'{client.user} has connected to Discord!')
+        logging.info('Initializing coroutine loops...')
         # First set up a coroutine for handling jobs
         asyncio.get_event_loop().create_task(__handle_queue__(
             client=client,
@@ -74,7 +76,8 @@ if __name__ == "__main__":
         # Set discord presence
         await client.change_presence(activity=discord.Game(name='Tanks'), status=discord.Status.online)
         await tree.sync(guild=None)
-        print('Initialization complete, bot is now running! (づ｡◕‿‿◕｡)づ')
+        logging.info('Initialization complete and bot running')
+        print('Connected and running with discord, have fun! (づ｡◕‿‿◕｡)づ')
 
     @tree.command(name="help", description="Gives a list of all possible commands")
     async def help_slash_command(interaction: discord.Interaction):
@@ -132,7 +135,7 @@ if __name__ == "__main__":
             await asyncio.sleep(1)
 
     # Start main program and connect to discord
-    print('Connecting to discord...')
+    logging.info('Connecting to discord...')
 
     # noinspection PyUnboundLocalVariable
     client.run(TOKEN)
