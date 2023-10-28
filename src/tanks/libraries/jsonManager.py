@@ -51,37 +51,67 @@ def create_game(message: discord.Message) -> dict:
     return read_games_json()
 
 
-def save_player_json(message: discord.Message, data: dict):
+def save_player_json(message: discord.Message, player_ids: list[str]) -> None:
     """Appends over old player data if there is an update or cancels writing if that player does not exist
     :param message: The message by the player whose data is being overwritten
-    :param data: The new complete dataset with {'games': ...}
+    :param player_ids: List of player id strings having a message guild id and channel id added
     """
     players: dict = read_players_json()
-    players_data: dict = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
     server_data: tuple[str, str] = (str(message.guild.id), str(message.channel.id))
-    for player in players_data:
-        if str(player) not in players:
-            players[str(player)] = [server_data]
-        else:
-            old_data = players[str(player)]
-            old_data.append(server_data)
-            players[str(player)] = old_data
-    with open('PlayerData.json', 'w', encoding='utf-8') as f:
-        json.dump(players, f, ensure_ascii=False, indent=4)
+    connection_pool = ConnectionPool.get_instance()
+    connection = connection_pool.getconn()
+    try:
+        for player in player_ids:
+            if str(player) not in players:
+                insert_query = f'''
+                        INSERT INTO player_data.player_data (user_id, games)
+                        VALUES (%s, %s)
+                    '''
+                query_database(connection, insert_query, str(player), [server_data])
+            else:
+                insert_query = f'''
+                                    UPDATE player_data.player_data SET games = %s WHERE user_id = %s
+                                '''
+                servers: list = get_player_server_channels(message, str(player))
+                servers.insert(0, server_data)
+                query_database(connection, insert_query, servers, str(player))
+    except psycopg2.Error as _:
+        pass
+    finally:
+        connection_pool.putconn(connection)
     return
 
 
-def remove_player_json(player_id: str, guild_id: str, channel_id: str) -> None:
+def remove_player_json(player_id: str, game: tuple) -> None:
     """Removes a specific game from the player data json
     :param player_id: String player id
-    :param guild_id: String guild id
-    :param channel_id: String channel id
+    :param game: Exact match of tuple to be removed from player data
     """
-    players: dict = read_players_json()
-    players[player_id].remove([guild_id, channel_id])
-    with open('PlayerData.json', 'w', encoding='utf-8') as f:
-        json.dump(players, f, ensure_ascii=False, indent=4)
-    return
+    player_data = read_players_json()[player_id]
+    connection_pool = ConnectionPool.get_instance()
+    connection = connection_pool.getconn()
+
+    if len(player_data) == 1:
+        delete_query = f'''
+            DELETE FROM player_data.player_data WHERE user_id = %s
+        '''
+        try:
+            query_database(connection, delete_query, player_id)
+        except psycopg2.Error as _:
+            pass
+        finally:
+            connection_pool.putconn(connection)
+    else:
+        update_query = f'''
+                    UPDATE player_data.player_data SET games = %s WHERE user_id = %s
+                '''
+        player_data.remove(game)
+        try:
+            query_database(connection, update_query, player_data, player_id)
+        except psycopg2.Error as _:
+            pass
+        finally:
+            connection_pool.putconn(connection)
 
 
 def is_player_in_multiple_games(message: discord.Message, user_id=None) -> bool:
@@ -275,7 +305,7 @@ def mark_game_win(guild_id: str, channel_id: str) -> None:
     table_name = f"{guild_id}"
 
     for player in data['games'][guild_id][channel_id]['players']:
-        remove_player_json(str(player), guild_id, channel_id)
+        remove_player_json(str(player), (guild_id, channel_id))
 
     data['games'][guild_id][channel_id]['gameStatus'] = "completed"
     update_query = f'''
@@ -502,8 +532,7 @@ def initialize() -> None:
         create_player_data_table = f'''
                 CREATE TABLE IF NOT EXISTS player_data.player_data (
                     user_id TEXT PRIMARY KEY NOT NULL,
-                    guild_id TEXT NOT NULL,
-                    channel_id TEXT NOT NULL
+                    games TEXT NOT NULL
                 )
             '''
         query_database(connection, create_player_data_table)
@@ -555,20 +584,21 @@ def read_games_json() -> dict:
 def read_players_json() -> dict:
     """A quick storage of all games a certain player is in for handling dms
     :return: Every player's data ever"""
-    data = {}
+    data: dict = {}
     connection_pool = ConnectionPool.get_instance()
     connection = connection_pool.getconn()
     try:
         val = query_database(connection, f'SELECT * FROM player_data.player_data')
         for i in range(len(val)):
             if str(val[i][0]) not in data:
-                new_player_data = [[
-                    str(val[i][1]), str(val[i][2])
-                ]]
+                new_player_data = [
+                    str(val[i][1])
+                ]
                 data[str(val[i][0])].update(new_player_data)
             else:
                 old_list = data[str(val[i][0])]
-                old_list.insert(0, [])
+                old_list.insert(0, str(val[i][1]))
+                data[str(val[i][0])] = old_list
     except psycopg2.Error as _:
         pass
     finally:

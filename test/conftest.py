@@ -19,11 +19,6 @@ from src.tanks.libraries.connectionPool import ConnectionPool
 def run_around_tests() -> None:
     """Fixture for each test setup and teardown of json file."""
     # Runs before each test
-    if os.path.exists("PlayerData.json"):
-        os.remove("PlayerData.json")
-    with open('PlayerData.json', 'w') as f:
-        f.write('{}')
-    f.close()
     yield
     # Runs after each test
     if os.path.exists("Games.json"):

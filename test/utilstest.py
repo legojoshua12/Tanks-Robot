@@ -33,6 +33,30 @@ class JsonUtility:
         mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
+    async def start_games_json_lobby(bot, mock_cursor):
+        guild = bot.guilds[0]
+        channel = guild.channels[0]
+        insert_query_executed = False
+        for i in range(5):
+            await dpytest.member_join(name="Dummy", discrim=(i + 1))
+        members_list = bot.guilds[0].members[2:]
+        db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
+
+        def execute_side_effect(instruction, args):
+            nonlocal insert_query_executed
+            if not insert_query_executed:
+                if "INSERT INTO" in instruction:
+                    insert_query_executed = True
+                mock_cursor.fetchall.return_value = []
+            else:
+                if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                    mock_cursor.fetchall.return_value = [(str(guild.id),)]
+                else:
+                    mock_cursor.fetchall.return_value = db_response
+
+        mock_cursor.execute.side_effect = execute_side_effect
+
+    @staticmethod
     async def add_many_players(bot, mock_cursor):
         guild = bot.guilds[0]
         channel = guild.channels[0]

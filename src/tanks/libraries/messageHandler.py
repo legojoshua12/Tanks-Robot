@@ -87,8 +87,11 @@ async def handle_message(message, client, commandMessageStarter):
 
                             rendered_board = renderPipeline.construct_image(board, player_colors)
                             data = jsonManager.read_games_json()
-                            jsonManager.save_player_json(message, data)
-                            data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+                            guild_id: str = str(message.guild.id)
+                            channel_id: str = str(message.channel.id)
+                            player_ids: list[str] = list(data['games'][guild_id][channel_id]['players'].keys())
+                            jsonManager.save_player_json(message, player_ids)
+                            data = data['games'][guild_id][channel_id]['players']
                             mention_string = 'Welcome to tanks '
                             index = 0
                             for player in data:
