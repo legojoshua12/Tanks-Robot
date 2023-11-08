@@ -15,18 +15,6 @@ import src.tanks.libraries.configUtils as cfgUtils
 from src.tanks.libraries.connectionPool import ConnectionPool
 
 
-@pytest.fixture(autouse=True)
-def run_around_tests() -> None:
-    """Fixture for each test setup and teardown of json file."""
-    # Runs before each test
-    yield
-    # Runs after each test
-    if os.path.exists("Games.json"):
-        os.remove("Games.json")
-    if os.path.exists("PlayerData.json"):
-        os.remove("PlayerData.json")
-
-
 @pytest.fixture
 def mock_db_connection():
     with patch.object(ConnectionPool, '_connection_pool', None):
