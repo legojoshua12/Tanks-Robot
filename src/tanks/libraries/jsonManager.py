@@ -613,7 +613,7 @@ def read_games_json() -> dict:
     try:
         table_names = query_database(connection, statement)
         if table_names is not None:
-            for entry in table_names:
+            for idx, entry in enumerate(table_names):
                 table_name: str = str(entry[0])
                 val = query_database(connection, f'SELECT * FROM games."{table_name}"')
                 if val is not None:
