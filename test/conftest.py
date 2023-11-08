@@ -102,7 +102,7 @@ async def full_bot(request):
 
     if mark is not None:
         for extension in mark.args:
-            await b.load_extension("test.integration.internal." + extension)
+            await b.load_extension("test.unit.internal." + extension)
 
     dpytest.configure(b)
     return b
