@@ -5,8 +5,6 @@ import logging
 import cmapy
 import random
 
-from psycopg2.pool import PoolError
-
 from src.tanks.libraries.connectionPool import ConnectionPool, query_database
 
 import discord

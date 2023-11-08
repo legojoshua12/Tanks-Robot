@@ -1,5 +1,5 @@
 # Tanks-Robot
-![Python Version](https://img.shields.io/badge/Python_Version-3.9_|_3.10_|_3.11-informational?style=flat&logo=python&logoColor=white&color=11BB11)
+![Python Version](https://img.shields.io/badge/Python_Version-3.10_|_3.11-informational?style=flat&logo=python&logoColor=white&color=11BB11)
 ![PR Status](https://img.shields.io/badge/PRs-Welcome-informational?style=flat&logo=git&logoColor=white&color=11BB11)
 ![Tests Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/tests.yml/badge.svg?branch=database)
 ![Lint Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/lint.yml/badge.svg?branch=database)
@@ -12,7 +12,7 @@ Here is a sample of a running game with players controlling their respective tan
 ![Sample Game](sample.png)
 
 ## Local Compiling
-In order to run a local instance of this robot, you need [Python 3.9](https://www.python.org/downloads/release/python-390/) or [higher](https://www.python.org/downloads/).
+In order to run a local instance of this robot, you need [Python 3.10](https://www.python.org/downloads/release/python-3100/) or [higher](https://www.python.org/downloads/).
 All required libraries can be obtained with correct versioning for pip via the [requirements.txt](requirements.txt) file. If you would like to run the project and the tests, then use the [requirements_dev.txt](requirements_dev.txt) file.
 
 The libraries referenced come with lower level libraries needed for operation and pip will automatically install those as needed.
@@ -31,7 +31,8 @@ Tests are run in GitHub actions via tox and flake8.
  - Game statistics such as game duration, player who got the most/least votes, most/least aggressive, biggest trader, etc.
 
 ## Remaining Work Before Beta
- - Switch database system to redis rather than a simple JSON file currently
+ - Switch database system to postgres rather than a simple JSON file currently :heavy_check_mark:
+ - Add redis caching layer for accelerated performance and query times
  - Write integration tests for multiple game dms :heavy_check_mark:
  - Integration test for handling new buttons on player cards
  - Support for / commands
