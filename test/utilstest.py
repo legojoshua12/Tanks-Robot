@@ -16,16 +16,24 @@ class CodecUtility:
 # TODO add definition annotations for documentation
 class JsonUtility:
     @staticmethod
-    async def set_games_json_lobby(bot, mock_cursor):
+    async def set_games_json_lobby(bot, mock_cursor, members_list=None):
         guild = bot.guilds[0]
         channel = guild.channels[0]
-        for i in range(5):
-            await dpytest.member_join(name="Dummy", discrim=(i + 1))
-        members_list = bot.guilds[0].members[2:]
+        if members_list is None:
+            for i in range(5):
+                await dpytest.member_join(name="Dummy", discrim=(i + 1))
+            members_list = bot.guilds[0].members[2:]
         db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel.id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -42,6 +50,7 @@ class JsonUtility:
         members_list = bot.guilds[0].members[2:]
         db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
             nonlocal insert_query_executed
             if not insert_query_executed:
@@ -57,6 +66,40 @@ class JsonUtility:
         mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
+    async def start_games_json_active(bot, mock_cursor, members_list=None):
+        guild = bot.guilds[0]
+        channel = guild.channels[0]
+        insert_query_executed = False
+        if members_list is None:
+            for i in range(5):
+                await dpytest.member_join(name="Dummy", discrim=(i + 1))
+            members_list = bot.guilds[0].members[2:]
+        channel = bot.guilds[0].text_channels[0]
+        db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
+        complete_response = await JsonUtility.build_active_game_db_response(str(channel.id), members_list)
+
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            nonlocal insert_query_executed
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel.id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                if not insert_query_executed:
+                    if "SET player_colors =" in instruction:
+                        insert_query_executed = True
+                        mock_cursor.fetchall.return_value = []
+                    mock_cursor.fetchall.return_value = db_response
+                else:
+                    mock_cursor.fetchall.return_value = complete_response
+        mock_cursor.execute.side_effect = execute_side_effect
+
+    @staticmethod
     async def add_many_players(bot, mock_cursor):
         guild = bot.guilds[0]
         channel = guild.channels[0]
@@ -65,6 +108,7 @@ class JsonUtility:
         members_list = bot.guilds[0].members[2:]
         db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
             if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
@@ -74,16 +118,23 @@ class JsonUtility:
         mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
-    async def start_sample_game(bot, mock_cursor) -> None:
+    async def start_sample_game(bot, mock_cursor, players_together=True) -> None:
         guild = bot.guilds[0]
         for i in range(5):
             await dpytest.member_join(name="Dummy", discrim=(i + 1))
         members_list = bot.guilds[0].members[2:]
         channel = bot.guilds[0].text_channels[0]
-        db_response = await JsonUtility.build_active_game_db_response(str(channel.id), members_list, True)
+        db_response = await JsonUtility.build_active_game_db_response(str(channel.id), members_list, players_together)
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel.id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -101,7 +152,7 @@ class JsonUtility:
                 'range': 1,
                 'votes': 0,
                 'actions': 1,
-                'playerNumber': (i+1),
+                'playerNumber': (i + 1),
                 'remainingVotes': 0
             }
         for arg in args:
@@ -109,32 +160,32 @@ class JsonUtility:
                 continue
             if len(arg) < 3:
                 continue
-            if (len(arg)-1) % 2 != 0:
+            if (len(arg) - 1) % 2 != 0:
                 continue
-            for i in range(int((len(arg)-1)/2)):
-                players_data[arg[0]][arg[(i*2)+1]] = arg[(i*2)+2]
+            for i in range(int((len(arg) - 1) / 2)):
+                players_data[arg[0]][arg[(i * 2) + 1]] = arg[(i * 2) + 2]
         if players_together:
             board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 2, 1, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 2, 1, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
         else:
             board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 2, 0, 0, 1, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 2, 0, 0, 1, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
         db_response = [(channel_id,
                         players_data,
                         board,
@@ -176,13 +227,15 @@ class JsonUtility:
         return db_response
 
     @staticmethod
-    async def start_multiple_sample_games(bot, mock_cursor):
+    async def start_multiple_sample_games(bot, mock_cursor, players_together=True):
         guild = bot.guilds[0]
         for i in range(5):
             await dpytest.member_join(name="Dummy", discrim=(i + 1))
         members_list = bot.guilds[0].members[2:]
         channel = bot.guilds[0].text_channels[0]
-        first_game_data = await JsonUtility.build_active_game_db_response(str(channel.id), members_list, True)
+        first_guild_id: str = str(guild.id)
+        first_channel_id: str = str(channel.id)
+        first_game_data = await JsonUtility.build_active_game_db_response(first_channel_id, members_list, players_together)
 
         guild = bot.guilds[0]
         http = bot.http
@@ -192,12 +245,21 @@ class JsonUtility:
         assert channel['type'] == discord.ChannelType.text
         assert channel['name'] == name
         channel = bot.guilds[0].channels[2]
-        second_game_data = await JsonUtility.build_active_game_db_response(str(channel.id), members_list, True)
+        second_guild_id: str = str(guild.id)
+        second_channel_id: str = str(channel.id)
+        second_game_data = await JsonUtility.build_active_game_db_response(second_channel_id, members_list, True)
 
         db_response = [first_game_data[0], second_game_data[0]]
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({first_guild_id},{first_channel_id})","({second_guild_id},{second_channel_id})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -213,8 +275,15 @@ class JsonUtility:
                                                                       True,
                                                                       (str(user_id), 'actions', 0))
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -249,11 +318,19 @@ class JsonUtility:
                                                                       True,
                                                                       (str(user_id), 'actions', 0, 'lives', 0))
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
+
         mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
@@ -269,17 +346,77 @@ class JsonUtility:
                                                                           'lives', 0,
                                                                           'remainingVotes', votes))
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
+
         mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
     def get_game_board(guild_id: str, channel_id: str) -> list[list]:
         data = jsonManager.read_games_json()
         return data['games'][guild_id][channel_id]['board']
+
+    @staticmethod
+    def get_game_board_example(direction: str) -> list[list]:
+        match direction.lower():
+            case 'north':
+                board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                return board
+            case 'south':
+                board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                         [0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                return board
+            case 'west':
+                board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 2, 0, 1, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                return board
+            case 'east':
+                board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 2, 0, 0, 0, 1, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                return board
 
     @staticmethod
     async def move_players_away(bot, channel_id: str, mock_cursor) -> None:
@@ -290,8 +427,15 @@ class JsonUtility:
                                                                       False
                                                                       )
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response
@@ -307,8 +451,15 @@ class JsonUtility:
                                                                       True
                                                                       )
 
+        # noinspection PyUnusedLocal
         def execute_side_effect(instruction, args):
-            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
                 mock_cursor.fetchall.return_value = [(str(guild.id),)]
             else:
                 mock_cursor.fetchall.return_value = db_response

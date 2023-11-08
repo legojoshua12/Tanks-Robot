@@ -84,6 +84,8 @@ async def direct_message_commands(message, command, client) -> None:
 
 
 async def dm_multiple_commands(client, message, guild_id, channel_id):
+    guild_id = str(guild_id)
+    channel_id = str(channel_id)
     command = message.content
     if command.startswith(configUtils.read_value('botSettings', 'botCommandPrefix')):
         command = command[len(configUtils.read_value('botSettings', 'botCommandPrefix')):].lower()

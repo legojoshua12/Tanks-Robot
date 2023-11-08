@@ -41,6 +41,13 @@ def mock_db_connection():
             yield mock_pool, mock_cursor, db_response
 
 
+@pytest.fixture
+def mock_putconn():
+    connection_pool = ConnectionPool.get_instance()
+    with patch.object(connection_pool, 'putconn') as mock_putconn:
+        yield mock_putconn
+
+
 @pytest.fixture(autouse=True)
 def setup_database_tasks(mock_db_connection):
     mock_pool, mock_cursor, db_response = mock_db_connection

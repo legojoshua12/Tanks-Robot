@@ -35,7 +35,7 @@ def query_database(connection, instruction: str, *args) -> Union[List, None]:
         connection.commit()
         result = cursor.fetchall()
         if len(result) < 1 or result is None:
-            return result
+            return None
         return result
     except Exception as _:
         connection.rollback()

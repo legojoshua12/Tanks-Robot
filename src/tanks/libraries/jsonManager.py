@@ -5,6 +5,8 @@ import logging
 import cmapy
 import random
 
+from psycopg2.pool import PoolError
+
 from src.tanks.libraries.connectionPool import ConnectionPool, query_database
 
 import discord
@@ -47,6 +49,11 @@ def create_game(message: discord.Message) -> dict:
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
     return read_games_json()
 
@@ -78,8 +85,12 @@ def save_player_json(message: discord.Message, player_ids: list[str]) -> None:
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
-    return
 
 
 def remove_player_json(player_id: str, game: tuple) -> None:
@@ -100,6 +111,11 @@ def remove_player_json(player_id: str, game: tuple) -> None:
         except psycopg2.Error as _:
             pass
         finally:
+            if not connection.closed:
+                try:
+                    connection.cursor.close()
+                except AttributeError as _:
+                    pass
             connection_pool.putconn(connection)
     else:
         update_query = f'''
@@ -111,6 +127,11 @@ def remove_player_json(player_id: str, game: tuple) -> None:
         except psycopg2.Error as _:
             pass
         finally:
+            if not connection.closed:
+                try:
+                    connection.cursor.close()
+                except AttributeError as _:
+                    pass
             connection_pool.putconn(connection)
 
 
@@ -174,7 +195,7 @@ def get_player_server_channels(message: discord.Message, user_id=None) -> list[t
     player_data = read_players_json()
     located_servers = []
     if user_id is not None:
-        located_servers = player_data[str(message.author.id)]
+        located_servers = player_data[str(user_id)]
     if message is not None:
         located_servers = player_data[str(message.author.id)]
     servers = []
@@ -223,6 +244,11 @@ def add_player_to_game(message: discord.Message, player_number: int) -> bool:
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
     return False
 
@@ -262,6 +288,11 @@ def remove_player_from_game(message: discord.Message) -> bool:
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
     return False
 
@@ -316,6 +347,11 @@ def mark_game_win(guild_id: str, channel_id: str) -> None:
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
 
 
@@ -372,6 +408,11 @@ def save_board(message: discord.Message, board: list[list], guild_id=None, chann
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
 
 
@@ -401,6 +442,11 @@ def save_player(message: discord.Message, userId, playerInfo, guild_id=None, cha
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
 
 
@@ -428,6 +474,11 @@ def save_data(data: dict, guild_id: str, channel_id: str) -> None:
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
 
 
@@ -471,6 +522,11 @@ def update_status(message: discord.Message) -> None:
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
 
 
@@ -500,6 +556,11 @@ def update_player_range(message: discord.Message, data, guild_id=None, channel_i
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
     return data
 
@@ -553,30 +614,37 @@ def read_games_json() -> dict:
     statement: str = "SELECT tablename FROM pg_tables WHERE schemaname = 'games'"
     try:
         table_names = query_database(connection, statement)
-        for idx, entry in enumerate(table_names):
-            table_name: str = str(entry[0])
-            val = query_database(connection, f'SELECT * FROM games."{table_name}"')
-            for i in range(len(val)):
-                if table_name not in data['games']:
-                    new_guild = {
-                        table_name: {}
-                    }
-                    data['games'].update(new_guild)
-                if str(val[i][0]) not in data['games'][table_name]:
-                    new_channel = {
-                        str(val[i][0]): {}
-                    }
-                    data['games'][str(table_name)].update(new_channel)
-                new_setup = {
-                    'players': dict(val[i][1]),
-                    'board': list(val[i][2]),
-                    'gameStatus': str(val[i][3]),
-                    'playerColors': dict(val[i][4])
-                }
-                data['games'][table_name][str(val[i][0])] = new_setup
+        if table_names is not None:
+            for idx, entry in enumerate(table_names):
+                table_name: str = str(entry[0])
+                val = query_database(connection, f'SELECT * FROM games."{table_name}"')
+                if val is not None:
+                    for i in range(len(val)):
+                        if table_name not in data['games']:
+                            new_guild = {
+                                table_name: {}
+                            }
+                            data['games'].update(new_guild)
+                        if str(val[i][0]) not in data['games'][table_name]:
+                            new_channel = {
+                                str(val[i][0]): {}
+                            }
+                            data['games'][str(table_name)].update(new_channel)
+                        new_setup = {
+                            'players': dict(val[i][1]),
+                            'board': list(val[i][2]),
+                            'gameStatus': str(val[i][3]),
+                            'playerColors': dict(val[i][4])
+                        }
+                        data['games'][table_name][str(val[i][0])] = new_setup
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
     return data
 
@@ -585,22 +653,34 @@ def read_players_json() -> dict:
     """A quick storage of all games a certain player is in for handling dms
     :return: Every player's data ever"""
     data: dict = {}
+    # {'193150004255260672': [(663485510064537611,1158156688847798344)]
     connection_pool = ConnectionPool.get_instance()
     connection = connection_pool.getconn()
     try:
         val = query_database(connection, f'SELECT * FROM player_data.player_data')
-        for i in range(len(val)):
-            if str(val[i][0]) not in data:
-                new_player_data = [
-                    str(val[i][1])
-                ]
-                data[str(val[i][0])].update(new_player_data)
-            else:
-                old_list = data[str(val[i][0])]
-                old_list.insert(0, str(val[i][1]))
-                data[str(val[i][0])] = old_list
+        if val is not None:
+            for i in range(len(val)):
+                if str(val[i][0]) not in data:
+                    new_player_data = val[i][1]
+                    stripped_data = new_player_data.strip('{}"')
+                    values = stripped_data.replace(')', '').replace('"', '').replace('(', '').split(",")
+                    converted_data = [(int(values[i]), int(values[i + 1])) for i in range(0, len(values), 2)]
+                    data[str(val[i][0])] = converted_data
+                else:
+                    old_list = data[str(val[i][0])]
+                    new_player_data = val[i][1]
+                    stripped_data = new_player_data.strip('{}"')
+                    values = stripped_data.replace(')', '').replace('"', '').replace('(', '').split(",")
+                    converted_data = [(int(values[i]), int(values[i + 1])) for i in range(0, len(values), 2)]
+                    old_list.insert(0, converted_data)
+                    data[str(val[i][0])] = old_list
     except psycopg2.Error as _:
         pass
     finally:
+        if not connection.closed:
+            try:
+                connection.cursor.close()
+            except AttributeError as _:
+                pass
         connection_pool.putconn(connection)
     return data
