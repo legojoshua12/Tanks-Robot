@@ -175,7 +175,6 @@ class TestSingleActiveGame:
         await channel.send("increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         member_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.remove_player_actions(bot, channel_id, member_id, mock_cursor)
@@ -192,7 +191,6 @@ class TestSingleActiveGame:
         await channel.send(f"{command_prefix}increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         member_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.remove_player_actions(bot, channel_id, member_id, mock_cursor)
@@ -243,7 +241,6 @@ class TestSingleActiveGame:
         await channel.send("increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         await utils.JsonUtility.kill_player(bot, channel_id, str(bot.guilds[0].members[2].id), mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
@@ -259,7 +256,6 @@ class TestSingleActiveGame:
         await channel.send(f"{command_prefix}increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         await utils.JsonUtility.kill_player(bot, channel_id, str(bot.guilds[0].members[2].id), mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
@@ -358,7 +354,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
@@ -376,7 +371,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
@@ -720,7 +714,6 @@ class TestSingleActiveGame:
         await channel.send("shoot 1")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(mess.author.id)
         await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
@@ -737,7 +730,6 @@ class TestSingleActiveGame:
         await channel.send(f"{command_prefix}shoot 1")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(mess.author.id)
         await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
@@ -838,7 +830,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
@@ -855,7 +846,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
@@ -979,7 +969,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -995,7 +984,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -1011,7 +999,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -1027,7 +1014,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -1044,7 +1030,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -1061,7 +1046,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -1077,7 +1061,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -1093,7 +1076,6 @@ class TestSingleActiveGame:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
         await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -1640,7 +1622,6 @@ class TestMultipleActiveGames:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         server = jsonManager.get_player_server_channels(mess)[0]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
         await commands.dm_multiple_commands(bot, mess, server[0], server[1])

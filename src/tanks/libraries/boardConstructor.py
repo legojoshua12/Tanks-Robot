@@ -12,7 +12,7 @@ def construct_board_data(players) -> list[list]:
     board = []
     for i in range(players * 2):
         board.append([])
-        for j in range(players * 2):
+        for _ in range(players * 2):
             board[i].append(0)
     return board
 

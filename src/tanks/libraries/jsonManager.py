@@ -68,13 +68,13 @@ def save_player_json(message: discord.Message, player_ids: list[str]) -> None:
     try:
         for player in player_ids:
             if str(player) not in players:
-                insert_query = f'''
+                insert_query = '''
                         INSERT INTO player_data.player_data (user_id, games)
                         VALUES (%s, %s)
                     '''
                 query_database(connection, insert_query, str(player), [server_data])
             else:
-                insert_query = f'''
+                insert_query = '''
                                     UPDATE player_data.player_data SET games = %s WHERE user_id = %s
                                 '''
                 servers: list = get_player_server_channels(message, str(player))
@@ -101,7 +101,7 @@ def remove_player_json(player_id: str, game: tuple) -> None:
     connection = connection_pool.getconn()
 
     if len(player_data) == 1:
-        delete_query = f'''
+        delete_query = '''
             DELETE FROM player_data.player_data WHERE user_id = %s
         '''
         try:
@@ -116,7 +116,7 @@ def remove_player_json(player_id: str, game: tuple) -> None:
                     pass
             connection_pool.putconn(connection)
     else:
-        update_query = f'''
+        update_query = '''
                     UPDATE player_data.player_data SET games = %s WHERE user_id = %s
                 '''
         player_data.remove(game)
@@ -321,7 +321,7 @@ def check_win(board_data: list[list[int]]) -> bool:
     """
     found_players: int = 0
     for i in range(len(board_data)):
-        for j, value in enumerate(board_data[i]):
+        for _, value in enumerate(board_data[i]):
             if value != 0:
                 found_players += 1
     return True if found_players < 2 else False
@@ -577,7 +577,7 @@ def initialize() -> None:
             logging.error('Unable to query database error, no response received...')
             logging.critical('Uncaught exception, exiting now...')
             exit()
-        if type(response) is list:
+        if isinstance(response, list):
             if len(response) == 0:
                 logging.error('Unable to query database error, no response received...')
                 logging.critical('Uncaught exception, exiting now...')
@@ -588,7 +588,7 @@ def initialize() -> None:
         create_player_data_schema = 'CREATE SCHEMA IF NOT EXISTS player_data'
         query_database(connection, create_game_schema)
         query_database(connection, create_player_data_schema)
-        create_player_data_table = f'''
+        create_player_data_table = '''
                 CREATE TABLE IF NOT EXISTS player_data.player_data (
                     user_id TEXT PRIMARY KEY NOT NULL,
                     games TEXT NOT NULL
@@ -613,7 +613,7 @@ def read_games_json() -> dict:
     try:
         table_names = query_database(connection, statement)
         if table_names is not None:
-            for idx, entry in enumerate(table_names):
+            for entry in table_names:
                 table_name: str = str(entry[0])
                 val = query_database(connection, f'SELECT * FROM games."{table_name}"')
                 if val is not None:
@@ -651,11 +651,10 @@ def read_players_json() -> dict:
     """A quick storage of all games a certain player is in for handling dms
     :return: Every player's data ever"""
     data: dict = {}
-    # {'193150004255260672': [(663485510064537611,1158156688847798344)]
     connection_pool = ConnectionPool.get_instance()
     connection = connection_pool.getconn()
     try:
-        val = query_database(connection, f'SELECT * FROM player_data.player_data')
+        val = query_database(connection, 'SELECT * FROM player_data.player_data')
         if val is not None:
             for i in range(len(val)):
                 if str(val[i][0]) not in data:

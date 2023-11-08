@@ -1,6 +1,6 @@
 import psycopg2
 import os
-from psycopg2 import pool
+from psycopg2 import pool  # noqa F401
 from typing import Union, List
 
 

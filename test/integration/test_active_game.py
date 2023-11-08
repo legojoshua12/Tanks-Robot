@@ -4,7 +4,6 @@ Tests for all bot interactions when an active game is created in a channel
 import discord
 import discord.ext.test as dpytest
 import pytest
-from unittest.mock import patch
 
 import test.utilstest as utils
 
@@ -123,7 +122,6 @@ async def test_increase_range_no_actions(bot, command_prefix, mock_cursor):
     await channel.send(f"{command_prefix}increase range")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     member_id: str = str(bot.guilds[0].members[2].id)
     await utils.JsonUtility.remove_player_actions(bot, channel_id, member_id, mock_cursor)
@@ -194,7 +192,6 @@ async def test_move_no_actions(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
     await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
@@ -353,7 +350,6 @@ async def test_shoot_no_actions(bot, command_prefix, mock_cursor):
     await channel.send(f"{command_prefix}shoot 1")
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(mess.author.id)
     await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
@@ -409,7 +405,6 @@ async def test_shoot_out_of_range(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
@@ -425,7 +420,6 @@ async def test_shoot_mention(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
@@ -442,7 +436,6 @@ async def test_shoot_number(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
@@ -470,7 +463,6 @@ async def test_vote_no_info(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
     await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -486,7 +478,6 @@ async def test_vote_no_player(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
     await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -502,7 +493,6 @@ async def test_vote_non_existing_player(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
     await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -518,7 +508,6 @@ async def test_vote_no_remaining(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
     await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -534,7 +523,6 @@ async def test_vote_self(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
     await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -551,7 +539,6 @@ async def test_vote_number(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
     await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
@@ -570,7 +557,6 @@ async def test_vote_mention(bot, command_prefix, mock_cursor):
     mess = dpytest.get_message()
     mess.author = bot.guilds[0].members[2]
 
-    guild_id: str = str(bot.guilds[0].id)
     channel_id: str = str(bot.guilds[0].text_channels[0].id)
     player_id: str = str(bot.guilds[0].members[2].id)
     await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)

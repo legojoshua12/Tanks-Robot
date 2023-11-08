@@ -1,7 +1,4 @@
 """Completes the daily upkeep with a call from the main class coroutine"""
-import os
-import psycopg2
-
 from datetime import datetime
 
 from src.tanks.libraries import jsonManager, configUtils

@@ -1,6 +1,6 @@
 # Tanks-Robot
 ![Python Version](https://img.shields.io/badge/Python_Version-3.10_|_3.11-informational?style=flat&logo=python&logoColor=white&color=11BB11)
-![PR Status](https://img.shields.io/badge/PRs-Welcome-informational?style=flat&logo=git&logoColor=white&color=11BB11)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Tests Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/tests.yml/badge.svg?branch=database)
 ![Lint Status](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/lint.yml/badge.svg?branch=database)
 ![CodeQL](https://github.com/legojoshua12/Tanks-Robot/actions/workflows/github-code-scanning/codeql/badge.svg?branch=database)
