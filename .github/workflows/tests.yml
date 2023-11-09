@@ -46,9 +46,3 @@ jobs:
         pip install tox tox-gh-actions
     - name: Tox test suite
       run: tox
-      env:
-        TEST_DB_NAME: 'foobar'
-        TEST_DB_USER: 'postgres'
-        TEST_DB_PASSWORD: 'postgres'
-        TEST_DB_HOST: '127.0.0.1'
-        TEST_DB_PORT: '5432'
