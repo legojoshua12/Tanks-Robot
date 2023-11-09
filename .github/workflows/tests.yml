@@ -10,17 +10,17 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: ['3.10', '3.11']
+
     services:
       postgres:
-        image: postgres:latest
-        ports:
-          - 5432:5432
-        environment:
-          TEST_DB_NAME: testdb
-          TEST_DB_USER: testuser
-          TEST_DB_PASSWORD: testpassword
-          TEST_DB_HOST: testhost
-          TEST_DB_PORT: testport
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
@@ -34,3 +34,8 @@ jobs:
         pip install tox tox-gh-actions
     - name: Tox test suite
       run: tox
+      env:
+        TEST_DB_NAME: 'postgres'
+        TEST_DB_USER: 'postgres'
+        TEST_DB_PASSWORD: 'postgres'
+        TEST_DB_PORT: '5432'
