@@ -38,6 +38,11 @@ jobs:
         pip install tox tox-gh-actions
     - name: Print environment variables
       run: echo "TEST_DB_USER=$TEST_DB_USER, TEST_DB_PASSWORD=$TEST_DB_PASSWORD, TEST_DB_HOST=$TEST_DB_HOST, TEST_DB_PORT=$TEST_DB_PORT"
+      env:
+        TEST_DB_NAME: 'foobar'
+        TEST_DB_USER: 'postgres'
+        TEST_DB_PASSWORD: 'postgres'
+        TEST_DB_PORT: '5432'
     - name: Tox test suite
       run: |
         set -x
