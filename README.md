@@ -34,10 +34,10 @@ Tests are run in GitHub actions via tox and flake8.
  - Switch database system to postgres rather than a simple JSON file currently :heavy_check_mark:
  - Add redis caching layer for accelerated performance and query times
  - Write integration tests for multiple game dms :heavy_check_mark:
- - Integration test for handling new buttons on player cards
+ - Unit test for handling new buttons on player cards and verifying style
  - Support for / commands
  - Tests for daily upkeep
  - Bot profile artwork
  - Win game state :heavy_check_mark:
  - Handling new game generation after a game is completed in a channel :heavy_check_mark:
- - Switch to using Ruff 1.2 for the support for Black
+ - Switch to using Ruff 1.2 for the support for Black :heavy_check_mark:
