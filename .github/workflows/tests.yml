@@ -28,6 +28,12 @@ jobs:
       run: |
         chmod +x ./setup_env.sh
         ./setup_env.sh
+      env:
+        TEST_DB_NAME: 'postgres'
+        TEST_DB_USER: 'postgres'
+        TEST_DB_PASSWORD: 'postgres'
+        TEST_DB_HOST: '127.0.0.1'
+        TEST_DB_PORT: '5432'
     - name: Install project dependencies
       run: |
         python -m pip install --upgrade pip
