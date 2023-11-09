@@ -68,6 +68,11 @@ def db_response(mock_db_connection):
 def setUpIntegrationDatabase() -> None:
     load_dotenv()
     database_name: str = os.getenv('TEST_DB_NAME')
+    print("DB_NAME:", os.getenv('TEST_DB_NAME'))
+    print("DB_USER:", os.getenv('TEST_DB_USER'))
+    print("DB_PASSWORD:", os.getenv('TEST_DB_PASSWORD'))
+    print("DB_HOST:", os.getenv('TEST_DB_HOST'))
+    print("DB_PORT:", os.getenv('TEST_DB_PORT'))
     conn = psycopg2.connect(
         dbname='postgres',
         user=os.getenv('TEST_DB_USER'),

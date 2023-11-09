@@ -3,19 +3,8 @@ Tests as a real database is stood up for testing purposes
 """
 import discord.ext.test as dpytest
 import pytest
-import os
 
 from src.tanks.libraries import messageHandler, commands
-
-
-@pytest.mark.integration
-def test_print_env_variables(live_bot, command_prefix, setUpIntegrationDatabase):
-    print("DB_NAME:", os.getenv('TEST_DB_NAME'))
-    print("DB_USER:", os.getenv('TEST_DB_USER'))
-    print("DB_PASSWORD:", os.getenv('TEST_DB_PASSWORD'))
-    print("DB_HOST:", os.getenv('TEST_DB_HOST'))
-    print("DB_PORT:", os.getenv('TEST_DB_PORT'))
-    assert False
 
 
 @pytest.mark.asyncio
