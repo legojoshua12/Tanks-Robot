@@ -7,7 +7,7 @@
 echo "Waiting for $1 to be available..."
 hostport=$1
 shift
-timeout=15
+timeout=60
 while ! nc -z $(echo $hostport | tr ":" " "); do
   sleep 1
   timeout=$(($timeout - 1))
