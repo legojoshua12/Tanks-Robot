@@ -36,18 +36,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install tox tox-gh-actions
-    - name: Wait for PostgreSQL to be ready
-      run: |
-        chmod +x wait-for-postgres.sh
-        ./wait-for-postgres.sh $TEST_DB_HOST:$TEST_DB_PORT
-      env:
-        TEST_DB_HOST: '127.0.0.1'
-        TEST_DB_PORT: '5432'
     - name: Tox test suite
       run: tox
       env:
         TEST_DB_NAME: 'foobar'
         TEST_DB_USER: 'postgres'
         TEST_DB_PASSWORD: 'postgres'
-        TEST_DB_HOST: '127.0.0.1'
+        TEST_DB_HOST: '/tmp/'
         TEST_DB_PORT: '5432'
