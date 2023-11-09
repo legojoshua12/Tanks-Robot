@@ -9,7 +9,7 @@ from src.tanks.libraries import messageHandler, commands
 
 
 @pytest.mark.integration
-def test_print_env_variables():
+def test_print_env_variables(live_bot, command_prefix, setUpIntegrationDatabase):
     print("DB_NAME:", os.getenv('TEST_DB_NAME'))
     print("DB_USER:", os.getenv('TEST_DB_USER'))
     print("DB_PASSWORD:", os.getenv('TEST_DB_PASSWORD'))
