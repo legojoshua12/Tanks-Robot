@@ -40,6 +40,9 @@ jobs:
       run: |
         chmod +x wait-for-postgres.sh
         ./wait-for-postgres.sh $TEST_DB_HOST:$TEST_DB_PORT -t 60
+      env:
+        TEST_DB_HOST: '127.0.0.1'
+        TEST_DB_PORT: '5432'
     - name: Tox test suite
       run: tox
       env:
