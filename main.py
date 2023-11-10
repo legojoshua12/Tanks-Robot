@@ -38,7 +38,7 @@ if __name__ == "__main__":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     # Setup .env for instancing
-    if os.path.exists('../../.env'):
+    if os.path.exists('.env'):
         logging.info('Env file located, initializing...')
         load_dotenv()
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
             exit()
     else:
         logging.critical('Env file not located, generating now...')
-        with open('../../.env', 'w') as f:
+        with open('.env', 'w') as f:
             f.write('DISCORD_TOKEN=')
         logging.critical('Exiting, please set a DISCORD_TOKEN in the env file')
         exit()

@@ -27,7 +27,7 @@ def write_value(section, key, value):
     config.read('config.ini')
     config.set(section, key, value)
 
-    with open('../../../config.ini', 'w') as f:
+    with open('./config.ini', 'w') as f:
         config.write(f)
 
 

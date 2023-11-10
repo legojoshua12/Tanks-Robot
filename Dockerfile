@@ -12,8 +12,8 @@ COPY src /app/src
 COPY requirements.txt /app
 COPY config.ini /app
 COPY .env /app
+COPY main.py /app
 
 RUN pip install -r requirements.txt
-RUN mv /app/src/tanks/main.py /app
 
-CMD ["python3", "main.py"]
+CMD ["python3", "/app/main.py"]

@@ -6,7 +6,7 @@ import asyncio
 import discord.ext.test as dpytest
 import pytest
 
-from src.tanks import main
+import main
 from src.tanks.libraries import messageHandler
 
 
