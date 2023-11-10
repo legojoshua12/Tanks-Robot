@@ -1,6 +1,19 @@
-FROM python:3.11-bullseye
-COPY requirements_dev.txt /app/
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /app
 WORKDIR /app
-RUN pip install -r requirements_dev.txt
-COPY . .
-CMD ["python3", "src/tanks/main.py"]
+
+COPY src /app/src
+COPY requirements.txt /app
+COPY config.ini /app
+COPY .env /app
+
+RUN pip install -r requirements.txt
+RUN mv /app/src/tanks/main.py /app
+
+CMD ["python3", "main.py"]
