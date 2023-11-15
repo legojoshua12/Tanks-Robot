@@ -42,9 +42,9 @@ if __name__ == "__main__":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     # Setup .env for instancing
-    if os.path.exists('.env'):
+    if os.path.exists('/etc/secrets/.env'):
         logging.info('Env file located, initializing...')
-        load_dotenv()
+        load_dotenv(dotenv_path="/etc/secrets/.env")
 
         TOKEN = os.getenv('DISCORD_TOKEN')
         if TOKEN == '':
@@ -52,7 +52,7 @@ if __name__ == "__main__":
             exit()
     else:
         logging.critical('Env file not located, generating now...')
-        with open('.env', 'w') as f:
+        with open('/etc/secrets/.env', 'w') as f:
             f.write('DISCORD_TOKEN=')
         logging.critical('Exiting, please set a DISCORD_TOKEN in the env file')
         exit()

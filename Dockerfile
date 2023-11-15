@@ -11,9 +11,6 @@ WORKDIR /app
 COPY src /app/src
 COPY requirements.txt /app
 COPY config.ini /app
-COPY .env /app
 COPY main.py /app
 
 RUN pip install -r requirements.txt
-
-CMD ["python3", "/app/main.py"]
