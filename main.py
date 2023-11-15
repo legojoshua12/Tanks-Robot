@@ -42,6 +42,7 @@ if __name__ == "__main__":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     # Setup .env for instancing
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
     if os.path.exists('/etc/secrets/.env'):
         logging.info('Env file located, initializing...')
         load_dotenv(dotenv_path="/etc/secrets/.env")
