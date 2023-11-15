@@ -10,11 +10,15 @@ import discord
 import discord.ext
 import asyncio
 
+from flask import Flask
+import threading
+
 from dotenv import load_dotenv
 
 from src.tanks.libraries import configUtils, jsonManager, messageHandler, dailyUpkeepManager, commands
 
 client = discord.Client(intents=discord.Intents.all())
+app = Flask(__name__)
 tree = discord.app_commands.CommandTree(client)
 messageQueue = Queue()
 dailyQueue = Queue()
@@ -57,6 +61,17 @@ if __name__ == "__main__":
     configUtils.initialize()
     jsonManager.initialize()
     commandMessageStarter = configUtils.read_value('botSettings', 'botCommandPrefix')
+
+    @app.route('/health', methods=['GET'])
+    def health_check():
+        return 'OK'
+
+    def run_flask_health_check():
+        app.run(host='0.0.0.0', port=5000)
+
+    def run_bot():
+        # noinspection PyUnboundLocalVariable
+        client.run(TOKEN)
 
     @client.event
     async def on_ready() -> None:
@@ -137,5 +152,11 @@ if __name__ == "__main__":
     # Start main program and connect to discord
     logging.info('Connecting to discord...')
 
-    # noinspection PyUnboundLocalVariable
-    client.run(TOKEN)
+    flask_thread = threading.Thread(target=run_flask_health_check)
+    discord_thread = threading.Thread(target=run_bot)
+
+    flask_thread.start()
+    discord_thread.start()
+
+    flask_thread.join()
+    discord_thread.join()
