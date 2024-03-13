@@ -60,7 +60,9 @@ async def dailyActionsAndVoteUpkeep(client) -> None:
                 extra_vote_msg = "and all others received a vote for the day!"
                 await client.get_channel(id=int(channel)).send(upkeep_finished_msg + extra_action_msg + extra_vote_msg)
     new_data = {'games': data}
-    jsonManager.save_data(new_data)
+    for guild in new_data['games']:
+        for channel in new_data['games'][guild]:
+            jsonManager.save_data(new_data['games'][guild][channel], str(guild), str(channel))
 
     # Print time finished to process if admin
     if str(configUtils.read_value('startGame', 'adminTesting')).lower() == 'true':

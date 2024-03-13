@@ -12,8 +12,8 @@ from src.tanks.libraries import messageHandler, commands, jsonManager
 
 class TestSingleActiveGame:
     @pytest.mark.asyncio
-    async def test_unknown_command_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_unknown_command_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("hello")
         mess = dpytest.get_message()
@@ -26,8 +26,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_unknown_command_with_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_unknown_command_with_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}hello")
         mess = dpytest.get_message()
@@ -40,8 +40,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_help_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_help_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("help")
         mess = dpytest.get_message()
@@ -55,8 +55,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().contains().embed(new_embed)
 
     @pytest.mark.asyncio
-    async def test_help_with_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_help_with_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}help")
         mess = dpytest.get_message()
@@ -70,8 +70,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().contains().embed(new_embed)
 
     @pytest.mark.asyncio
-    async def test_rules_with_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_rules_with_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}rules")
         mess = dpytest.get_message()
@@ -85,8 +85,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().contains().embed(new_embed)
 
     @pytest.mark.asyncio
-    async def test_rules_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_rules_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("rules")
         mess = dpytest.get_message()
@@ -100,8 +100,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().contains().embed(new_embed)
 
     @pytest.mark.asyncio
-    async def test_rules_dm(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_rules_dm(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("dm")
         mess = dpytest.get_message()
@@ -113,8 +113,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_board_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_board_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("board")
         mess = dpytest.get_message()
@@ -127,8 +127,8 @@ class TestSingleActiveGame:
         assert mess.attachments[0].filename == 'image.png'
 
     @pytest.mark.asyncio
-    async def test_single_board_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_board_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}board")
         mess = dpytest.get_message()
@@ -141,8 +141,8 @@ class TestSingleActiveGame:
         assert mess.attachments[0].filename == 'image.png'
 
     @pytest.mark.asyncio
-    async def test_single_board_players_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_board_players_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("players")
         mess = dpytest.get_message()
@@ -155,8 +155,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().embed(message_embeds[0])
 
     @pytest.mark.asyncio
-    async def test_single_players_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_players_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}players")
         mess = dpytest.get_message()
@@ -169,16 +169,15 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().embed(message_embeds[0])
 
     @pytest.mark.asyncio
-    async def test_single_increase_range_no_actions_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_increase_range_no_actions_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         member_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
+        await utils.JsonUtility.remove_player_actions(bot, channel_id, member_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -186,16 +185,15 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_increase_range_no_actions_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_increase_range_no_actions_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         member_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
+        await utils.JsonUtility.remove_player_actions(bot, channel_id, member_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -203,8 +201,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_increase_range_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_increase_range_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("increase range")
         mess = dpytest.get_message()
@@ -220,8 +218,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_increase_range_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_increase_range_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}increase range")
         mess = dpytest.get_message()
@@ -237,15 +235,14 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_increase_range_dead_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_increase_range_dead_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, str(bot.guilds[0].members[2].id))
+        await utils.JsonUtility.kill_player(bot, channel_id, str(bot.guilds[0].members[2].id), mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -253,15 +250,14 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_increase_range_dead_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_increase_range_dead_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}increase range")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, str(bot.guilds[0].members[2].id))
+        await utils.JsonUtility.kill_player(bot, channel_id, str(bot.guilds[0].members[2].id), mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -269,8 +265,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_move_no_information_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_no_information_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("move")
         mess = dpytest.get_message()
@@ -282,8 +278,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_move_no_information_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_no_information_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}move")
         mess = dpytest.get_message()
@@ -295,8 +291,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_move_too_many_args_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_too_many_args_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("move some info")
         mess = dpytest.get_message()
@@ -309,8 +305,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_move_too_many_args_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_too_many_args_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}move some info")
         mess = dpytest.get_message()
@@ -323,8 +319,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_move_invalid_arg_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_invalid_arg_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         direction: str = "somewhere"
         await channel.send(f"move {direction}")
@@ -337,8 +333,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_move_invalid_arg_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_invalid_arg_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         direction: str = "somewhere"
         await channel.send(f"{command_prefix}move {direction}")
@@ -351,17 +347,16 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_move_no_actions_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_no_actions_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("move north")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.remove_player_actions(guild_id, channel_id, player_id)
+        await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -369,17 +364,16 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_move_no_actions_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_no_actions_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}move north")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.remove_player_actions(guild_id, channel_id, player_id)
+        await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -387,440 +381,200 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_move_north_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_north_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor, False)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
-        if i == len(old_board) - 1:
-            channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send("move south")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[2]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
-            dpytest.get_message()
-            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-            i, j = 0, 0
-            for row in range(len(old_board)):
-                for col in range(len(old_board[row])):
-                    if str(old_board[row][col]) == "1":
-                        i = row
-                        j = col
-                        break
+        direction: str = 'north'
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send("move north")
+        await channel.send(f"move {direction}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"You have moved north 1 tile {mess.author.mention}!"
+        verifier: str = f"You have moved {direction} 1 tile {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
         response: discord.Message = dpytest.get_message()
         assert len(response.attachments) == 1
         assert response.attachments[0].filename == 'image.png'
 
-        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        assert old_board != new_board
-        k, w = 0, 0
-        for row in range(len(new_board)):
-            for col in range(len(new_board[row])):
-                if str(new_board[row][col]) == "1":
-                    k = row
-                    w = col
-                    break
-        assert k == (i + 1) and w == j
+        expected_sql_query = f'UPDATE games."{guild_id}" SET board = %s WHERE channel_id = %s'
+        sql_args = (f'{utils.JsonUtility.get_game_board_example(direction)}', channel_id)
+        mock_cursor.execute.assert_any_call(expected_sql_query, sql_args)
 
     @pytest.mark.asyncio
-    async def test_single_move_north_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_north_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor, False)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
-        if i == len(old_board) - 1:
-            channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send(f"{command_prefix}move south")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[2]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
-            dpytest.get_message()
-            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-            i, j = 0, 0
-            for row in range(len(old_board)):
-                for col in range(len(old_board[row])):
-                    if str(old_board[row][col]) == "1":
-                        i = row
-                        j = col
-                        break
+        direction: str = 'north'
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"{command_prefix}move north")
+        await channel.send(f"{command_prefix}move {direction}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"You have moved north 1 tile {mess.author.mention}!"
+        verifier: str = f"You have moved {direction} 1 tile {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
         response: discord.Message = dpytest.get_message()
         assert len(response.attachments) == 1
         assert response.attachments[0].filename == 'image.png'
 
-        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        assert old_board != new_board
-        k, w = 0, 0
-        for row in range(len(new_board)):
-            for col in range(len(new_board[row])):
-                if str(new_board[row][col]) == "1":
-                    k = row
-                    w = col
-                    break
-        assert k == (i + 1) and w == j
+        expected_sql_query = f'UPDATE games."{guild_id}" SET board = %s WHERE channel_id = %s'
+        sql_args = (f'{utils.JsonUtility.get_game_board_example(direction)}', channel_id)
+        mock_cursor.execute.assert_any_call(expected_sql_query, sql_args)
 
     @pytest.mark.asyncio
-    async def test_single_move_south_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_south_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor, False)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
-        if i == 0:
-            channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send("move north")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[2]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
-            dpytest.get_message()
-            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-            i, j = 0, 0
-            for row in range(len(old_board)):
-                for col in range(len(old_board[row])):
-                    if str(old_board[row][col]) == "1":
-                        i = row
-                        j = col
-                        break
+        direction: str = 'south'
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send("move south")
+        await channel.send(f"move {direction}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"You have moved south 1 tile {mess.author.mention}!"
+        verifier: str = f"You have moved {direction} 1 tile {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
         response: discord.Message = dpytest.get_message()
         assert len(response.attachments) == 1
         assert response.attachments[0].filename == 'image.png'
 
-        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        assert old_board != new_board
-        k, w = 0, 0
-        for row in range(len(new_board)):
-            for col in range(len(new_board[row])):
-                if str(new_board[row][col]) == "1":
-                    k = row
-                    w = col
-                    break
-        assert k == (i - 1) and w == j
+        expected_sql_query = f'UPDATE games."{guild_id}" SET board = %s WHERE channel_id = %s'
+        sql_args = (f'{utils.JsonUtility.get_game_board_example(direction)}', channel_id)
+        mock_cursor.execute.assert_any_call(expected_sql_query, sql_args)
 
     @pytest.mark.asyncio
-    async def test_single_move_south_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_south_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor, False)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
-        if i == 0:
-            channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send(f"{command_prefix}move north")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[2]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
-            dpytest.get_message()
-            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-            i, j = 0, 0
-            for row in range(len(old_board)):
-                for col in range(len(old_board[row])):
-                    if str(old_board[row][col]) == "1":
-                        i = row
-                        j = col
-                        break
+        direction: str = 'south'
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"{command_prefix}move south")
+        await channel.send(f"{command_prefix}move {direction}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"You have moved south 1 tile {mess.author.mention}!"
+        verifier: str = f"You have moved {direction} 1 tile {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
         response: discord.Message = dpytest.get_message()
         assert len(response.attachments) == 1
         assert response.attachments[0].filename == 'image.png'
 
-        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        assert old_board != new_board
-        k, w = 0, 0
-        for row in range(len(new_board)):
-            for col in range(len(new_board[row])):
-                if str(new_board[row][col]) == "1":
-                    k = row
-                    w = col
-                    break
-        assert k == (i - 1) and w == j
+        expected_sql_query = f'UPDATE games."{guild_id}" SET board = %s WHERE channel_id = %s'
+        sql_args = (f'{utils.JsonUtility.get_game_board_example(direction)}', channel_id)
+        mock_cursor.execute.assert_any_call(expected_sql_query, sql_args)
 
     @pytest.mark.asyncio
-    async def test_single_move_west_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_west_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor, False)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
-        if j == 0:
-            channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send("move east")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[2]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
-            dpytest.get_message()
-            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-            i, j = 0, 0
-            for row in range(len(old_board)):
-                for col in range(len(old_board[row])):
-                    if str(old_board[row][col]) == "1":
-                        i = row
-                        j = col
-                        break
+        direction: str = 'west'
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send("move west")
+        await channel.send(f"move {direction}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"You have moved west 1 tile {mess.author.mention}!"
+        verifier: str = f"You have moved {direction} 1 tile {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
         response: discord.Message = dpytest.get_message()
         assert len(response.attachments) == 1
         assert response.attachments[0].filename == 'image.png'
 
-        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        assert old_board != new_board
-        k, w = 0, 0
-        for row in range(len(new_board)):
-            for col in range(len(new_board[row])):
-                if str(new_board[row][col]) == "1":
-                    k = row
-                    w = col
-                    break
-        assert k == i and w == (j - 1)
+        expected_sql_query = f'UPDATE games."{guild_id}" SET board = %s WHERE channel_id = %s'
+        sql_args = (f'{utils.JsonUtility.get_game_board_example(direction)}', channel_id)
+        mock_cursor.execute.assert_any_call(expected_sql_query, sql_args)
 
     @pytest.mark.asyncio
-    async def test_single_move_west_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_west_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor, False)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
-        if j == 0:
-            channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send(f"{command_prefix}move east")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[2]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
-            dpytest.get_message()
-            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-            i, j = 0, 0
-            for row in range(len(old_board)):
-                for col in range(len(old_board[row])):
-                    if str(old_board[row][col]) == "1":
-                        i = row
-                        j = col
-                        break
+        direction: str = 'west'
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"{command_prefix}move west")
+        await channel.send(f"{command_prefix}move {direction}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"You have moved west 1 tile {mess.author.mention}!"
+        verifier: str = f"You have moved {direction} 1 tile {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
         response: discord.Message = dpytest.get_message()
         assert len(response.attachments) == 1
         assert response.attachments[0].filename == 'image.png'
 
-        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        assert old_board != new_board
-        k, w = 0, 0
-        for row in range(len(new_board)):
-            for col in range(len(new_board[row])):
-                if str(new_board[row][col]) == "1":
-                    k = row
-                    w = col
-                    break
-        assert k == i and w == (j - 1)
+        expected_sql_query = f'UPDATE games."{guild_id}" SET board = %s WHERE channel_id = %s'
+        sql_args = (f'{utils.JsonUtility.get_game_board_example(direction)}', channel_id)
+        mock_cursor.execute.assert_any_call(expected_sql_query, sql_args)
 
     @pytest.mark.asyncio
-    async def test_single_move_east_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_east_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor, False)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
-        if j == len(old_board[0]) - 1:
-            channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send("move west")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[2]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
-            dpytest.get_message()
-            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-            i, j = 0, 0
-            for row in range(len(old_board)):
-                for col in range(len(old_board[row])):
-                    if str(old_board[row][col]) == "1":
-                        i = row
-                        j = col
-                        break
+        direction: str = 'east'
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send("move east")
+        await channel.send(f"move {direction}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"You have moved east 1 tile {mess.author.mention}!"
+        verifier: str = f"You have moved {direction} 1 tile {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
         response: discord.Message = dpytest.get_message()
         assert len(response.attachments) == 1
         assert response.attachments[0].filename == 'image.png'
 
-        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        assert old_board != new_board
-        k, w = 0, 0
-        for row in range(len(new_board)):
-            for col in range(len(new_board[row])):
-                if str(new_board[row][col]) == "1":
-                    k = row
-                    w = col
-                    break
-        assert k == i and w == (j + 1)
+        expected_sql_query = f'UPDATE games."{guild_id}" SET board = %s WHERE channel_id = %s'
+        sql_args = (f'{utils.JsonUtility.get_game_board_example(direction)}', channel_id)
+        mock_cursor.execute.assert_any_call(expected_sql_query, sql_args)
 
     @pytest.mark.asyncio
-    async def test_single_move_east_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_east_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor, False)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
-        if j == len(old_board[0]) - 1:
-            channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send(f"{command_prefix}move west")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[2]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
-            dpytest.get_message()
-            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-            i, j = 0, 0
-            for row in range(len(old_board)):
-                for col in range(len(old_board[row])):
-                    if str(old_board[row][col]) == "1":
-                        i = row
-                        j = col
-                        break
+        direction: str = 'east'
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"{command_prefix}move east")
+        await channel.send(f"{command_prefix}move {direction}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"You have moved east 1 tile {mess.author.mention}!"
+        verifier: str = f"You have moved {direction} 1 tile {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
         response: discord.Message = dpytest.get_message()
         assert len(response.attachments) == 1
         assert response.attachments[0].filename == 'image.png'
 
-        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        assert old_board != new_board
-        k, w = 0, 0
-        for row in range(len(new_board)):
-            for col in range(len(new_board[row])):
-                if str(new_board[row][col]) == "1":
-                    k = row
-                    w = col
-                    break
-        assert k == i and w == (j + 1)
+        expected_sql_query = f'UPDATE games."{guild_id}" SET board = %s WHERE channel_id = %s'
+        sql_args = (f'{utils.JsonUtility.get_game_board_example(direction)}', channel_id)
+        mock_cursor.execute.assert_any_call(expected_sql_query, sql_args)
 
     @pytest.mark.asyncio
-    async def test_single_move_easter_egg_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_easter_egg_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
         old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -839,8 +593,8 @@ class TestSingleActiveGame:
         assert old_board == new_board
 
     @pytest.mark.asyncio
-    async def test_single_move_easter_egg_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_easter_egg_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
         old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -859,8 +613,8 @@ class TestSingleActiveGame:
         assert old_board == new_board
 
     @pytest.mark.asyncio
-    async def test_single_move_not_alive_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_not_alive_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
         old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -869,7 +623,7 @@ class TestSingleActiveGame:
         await channel.send(f"{command_prefix}move north")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        utils.JsonUtility.kill_player(guild_id, channel_id, str(bot.guilds[0].members[2].id))
+        await utils.JsonUtility.kill_player(bot, channel_id, str(bot.guilds[0].members[2].id), mock_cursor)
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         verifier: str = f"You are dead and have no more lives {mess.author.mention}."
@@ -879,8 +633,8 @@ class TestSingleActiveGame:
         assert old_board == new_board
 
     @pytest.mark.asyncio
-    async def test_single_move_not_alive_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_move_not_alive_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
         old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
@@ -889,7 +643,7 @@ class TestSingleActiveGame:
         await channel.send(f"{command_prefix}move north")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        utils.JsonUtility.kill_player(guild_id, channel_id, str(bot.guilds[0].members[2].id))
+        await utils.JsonUtility.kill_player(bot, channel_id, str(bot.guilds[0].members[2].id), mock_cursor)
 
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -900,8 +654,8 @@ class TestSingleActiveGame:
         assert old_board == new_board
 
     @pytest.mark.asyncio
-    async def test_single_shoot_no_args_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_no_args_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("shoot")
         mess = dpytest.get_message()
@@ -913,8 +667,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_no_args_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_no_args_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}shoot")
         mess = dpytest.get_message()
@@ -926,8 +680,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_too_many_args_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_too_many_args_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("shoot someone somewhere")
         mess = dpytest.get_message()
@@ -940,8 +694,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_too_many_args_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_too_many_args_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}shoot someone somewhere")
         mess = dpytest.get_message()
@@ -954,16 +708,15 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_no_actions_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_no_actions_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("shoot 1")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(mess.author.id)
-        utils.JsonUtility.remove_player_actions(guild_id, channel_id, player_id)
+        await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -971,16 +724,15 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_no_actions_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_no_actions_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}shoot 1")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(mess.author.id)
-        utils.JsonUtility.remove_player_actions(guild_id, channel_id, player_id)
+        await utils.JsonUtility.remove_player_actions(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -988,8 +740,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_no_player_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_no_player_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         non_player: str = "someone"
         await channel.send(f"shoot {non_player}")
@@ -1002,8 +754,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_no_player_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_no_player_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         non_player: str = "someone"
         await channel.send(f"{command_prefix}shoot {non_player}")
@@ -1016,8 +768,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_self_mention_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_self_mention_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}shoot {bot.guilds[0].members[2].mention}")
         mess = dpytest.get_message()
@@ -1030,8 +782,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_self_mention_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_self_mention_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"shoot {bot.guilds[0].members[2].mention}")
         mess = dpytest.get_message()
@@ -1044,8 +796,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_self_number_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_self_number_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("shoot 1")
         mess = dpytest.get_message()
@@ -1057,8 +809,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_self_number_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_self_number_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}shoot 1")
         mess = dpytest.get_message()
@@ -1070,50 +822,47 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_out_of_range_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_out_of_range_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         enemy_player_number: int = 2
         await channel.send(f"shoot {enemy_player_number}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
-        utils.JsonUtility.move_players_away(guild_id, channel_id)
+        await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         verifier: str = f"Player {enemy_player_number} is out of range {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_out_of_range_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_out_of_range_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         enemy_player_number: int = 2
         await channel.send(f"{command_prefix}shoot {enemy_player_number}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
-        utils.JsonUtility.move_players_away(guild_id, channel_id)
+        await utils.JsonUtility.move_players_away(bot, channel_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         verifier: str = f"Player {enemy_player_number} is out of range {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_mention_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_mention_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"shoot {bot.guilds[0].members[3].mention}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
-        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -1122,16 +871,15 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_mention_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_mention_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}shoot {bot.guilds[0].members[3].mention}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
-        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -1140,22 +888,21 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_shoot_number_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_number_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         enemy_player_number: int = 2
         await channel.send(f"shoot {enemy_player_number}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
-        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot by {mess.author.mention}! "
-        verifier += "They now have 2♥ lives left."
-        verifier_dm: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+        verifier += "They now have 2:heart: lives left."
+        verifier_dm = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
         response = dpytest.get_message()
         second_response = dpytest.get_message()
         assert response.channel.type == discord.ChannelType.private
@@ -1164,22 +911,21 @@ class TestSingleActiveGame:
         assert second_response.content == verifier
 
     @pytest.mark.asyncio
-    async def test_single_shoot_number_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_shoot_number_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         enemy_player_number: int = 2
         await channel.send(f"{command_prefix}shoot {enemy_player_number}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
-        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
 
         verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot by {mess.author.mention}! "
-        verifier += "They now have 2♥ lives left."
-        verifier_dm: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+        verifier += "They now have 2:heart: lives left."
+        verifier_dm = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
         response = dpytest.get_message()
         second_response = dpytest.get_message()
         assert response.channel.type == discord.ChannelType.private
@@ -1188,8 +934,8 @@ class TestSingleActiveGame:
         assert second_response.content == verifier
 
     @pytest.mark.asyncio
-    async def test_single_vote_alive_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_alive_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("vote")
         mess = dpytest.get_message()
@@ -1202,8 +948,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_vote_alive_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_alive_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}vote")
         mess = dpytest.get_message()
@@ -1216,149 +962,139 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_vote_no_info_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_no_info_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("vote")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"Please specify a player to vote for {mess.author.mention}.")
 
     @pytest.mark.asyncio
-    async def test_single_vote_no_info_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_no_info_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}vote")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"Please specify a player to vote for {mess.author.mention}.")
 
     @pytest.mark.asyncio
-    async def test_single_vote_no_player_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_no_player_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("vote")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"Please specify a player to vote for {mess.author.mention}.")
 
     @pytest.mark.asyncio
-    async def test_single_vote_no_player_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_no_player_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}vote")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"Please specify a player to vote for {mess.author.mention}.")
 
     @pytest.mark.asyncio
-    async def test_single_vote_non_existing_player_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_non_existing_player_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         bad_name: str = "some_random_person"
         await channel.send(f"vote {bad_name}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"*{bad_name}* is not a player {mess.author.mention}!")
 
     @pytest.mark.asyncio
-    async def test_single_vote_non_existing_player_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_non_existing_player_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         bad_name: str = "some_random_person"
         await channel.send(f"{command_prefix}vote {bad_name}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"*{bad_name}* is not a player {mess.author.mention}!")
 
     @pytest.mark.asyncio
-    async def test_single_vote_no_remaining_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_no_remaining_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"vote {bot.guilds[0].members[2].id}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"You have no more remaining votes today {mess.author.mention}!")
 
     @pytest.mark.asyncio
-    async def test_single_vote_no_remaining_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_no_remaining_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}vote {bot.guilds[0].members[2].id}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"You have no more remaining votes today {mess.author.mention}!")
 
     @pytest.mark.asyncio
-    async def test_single_vote_self_mention_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_self_mention_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"vote {bot.guilds[0].members[2].mention}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-        utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                                str(bot.guilds[0].members[2].id), 1)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+        await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         verifier: str = (f"You cannot vote for players using @ in a direct message {mess.author.mention}! "
@@ -1366,19 +1102,17 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_vote_self_mention_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_self_mention_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}vote {bot.guilds[0].members[2].mention}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-        utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                                str(bot.guilds[0].members[2].id), 1)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+        await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         verifier: str = (f"You cannot vote for players using @ in a direct message {mess.author.mention}! "
@@ -1386,44 +1120,40 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_vote_self_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_self_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("vote 1")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-        utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                                str(bot.guilds[0].members[2].id), 1)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+        await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"You may not vote for yourself {mess.author.mention}!")
 
     @pytest.mark.asyncio
-    async def test_single_vote_self_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_self_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}vote 1")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
 
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-        utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                                str(bot.guilds[0].members[2].id), 1)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+        await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         assert dpytest.verify().message().content(f"You may not vote for yourself {mess.author.mention}!")
 
     @pytest.mark.asyncio
-    async def test_single_vote_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("vote 2")
         mess = dpytest.get_message()
@@ -1432,9 +1162,8 @@ class TestSingleActiveGame:
         guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-        utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                                str(bot.guilds[0].members[2].id), 1)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+        await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         verifier: str = f"Your vote for {bot.guilds[0].members[3].mention} to receive 1 extra action has been counted."
@@ -1446,8 +1175,8 @@ class TestSingleActiveGame:
         assert int(data['votes']) == 1
 
     @pytest.mark.asyncio
-    async def test_single_vote_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_vote_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}vote 2")
         mess = dpytest.get_message()
@@ -1456,9 +1185,8 @@ class TestSingleActiveGame:
         guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-        utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                                str(bot.guilds[0].members[2].id), 1)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+        await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         verifier: str = f"Your vote for {bot.guilds[0].members[3].mention} to receive 1 extra action has been counted."
@@ -1470,8 +1198,8 @@ class TestSingleActiveGame:
         assert int(data['votes']) == 1
 
     @pytest.mark.asyncio
-    async def test_single_send_no_info_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_no_info_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send")
         mess = dpytest.get_message()
@@ -1483,8 +1211,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
-    async def test_single_send_no_info_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_no_info_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("send")
         mess = dpytest.get_message()
@@ -1496,8 +1224,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
-    async def test_single_send_too_much_info_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_too_much_info_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("send some random information")
         mess = dpytest.get_message()
@@ -1509,8 +1237,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
-    async def test_single_send_too_much_info_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_too_much_info_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send some random information")
         mess = dpytest.get_message()
@@ -1522,8 +1250,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
-    async def test_single_send_no_player_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_no_player_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("send some_random_player 1")
         mess = dpytest.get_message()
@@ -1534,8 +1262,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
-    async def test_single_send_no_player_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_no_player_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send some_random_player 1")
         mess = dpytest.get_message()
@@ -1546,8 +1274,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
-    async def test_single_send_mention_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_mention_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"send {bot.guilds[0].members[3].mention} 1")
         mess = dpytest.get_message()
@@ -1559,8 +1287,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_send_mention_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_mention_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send {bot.guilds[0].members[3].mention} 1")
         mess = dpytest.get_message()
@@ -1572,8 +1300,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_send_mention_not_in_game_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_mention_not_in_game_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"send {bot.guilds[0].members[1].mention} 1")
         mess = dpytest.get_message()
@@ -1585,8 +1313,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_send_mention_not_in_game_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_mention_not_in_game_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send {bot.guilds[0].members[1].mention} 1")
         mess = dpytest.get_message()
@@ -1598,8 +1326,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_send_not_in_game_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_not_in_game_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("send 6 1")
         mess = dpytest.get_message()
@@ -1610,8 +1338,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_send_not_in_game_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_not_in_game_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send 6 1")
         mess = dpytest.get_message()
@@ -1622,8 +1350,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_single_send_number_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_number_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("send 2 1")
         mess = dpytest.get_message()
@@ -1641,8 +1369,8 @@ class TestSingleActiveGame:
         assert int(data['actions']) == 2
 
     @pytest.mark.asyncio
-    async def test_single_send_number_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_number_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send 2 1")
         mess = dpytest.get_message()
@@ -1660,8 +1388,8 @@ class TestSingleActiveGame:
         assert int(data['actions']) == 2
 
     @pytest.mark.asyncio
-    async def test_single_send_self_player_number_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_self_player_number_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("send 1 1")
         mess = dpytest.get_message()
@@ -1672,8 +1400,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
-    async def test_single_send_self_player_number_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_self_player_number_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send 1 1")
         mess = dpytest.get_message()
@@ -1684,8 +1412,8 @@ class TestSingleActiveGame:
         assert dpytest.verify().message().content(notification)
 
     @pytest.mark.asyncio
-    async def test_single_send_no_actions_dm_no_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_no_actions_dm_no_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("send 2 1")
         mess = dpytest.get_message()
@@ -1693,7 +1421,7 @@ class TestSingleActiveGame:
         guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         member_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
+        await utils.JsonUtility.remove_player_actions(bot, channel_id, member_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         notification: str = f"You do not have enough actions to do that {mess.author.mention}!"
@@ -1707,8 +1435,8 @@ class TestSingleActiveGame:
         assert int(data['actions']) == 1
 
     @pytest.mark.asyncio
-    async def test_single_send_no_actions_dm_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_sample_game(bot, command_prefix)
+    async def test_single_send_no_actions_dm_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_sample_game(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}send 2 1")
         mess = dpytest.get_message()
@@ -1716,7 +1444,7 @@ class TestSingleActiveGame:
         guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         member_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.remove_player_actions(guild_id, channel_id, member_id)
+        await utils.JsonUtility.remove_player_actions(bot, channel_id, member_id, mock_cursor)
         await messageHandler.handle_message(mess, bot, command_prefix)
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
         notification: str = f"You do not have enough actions to do that {mess.author.mention}!"
@@ -1732,8 +1460,8 @@ class TestSingleActiveGame:
 
 class TestMultipleActiveGames:
     @pytest.mark.asyncio
-    async def test_help_with_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_help_with_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}help")
         mess = dpytest.get_message()
@@ -1747,8 +1475,8 @@ class TestMultipleActiveGames:
         assert dpytest.verify().message().contains().embed(new_embed)
 
     @pytest.mark.asyncio
-    async def test_rules_with_prefix(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_rules_with_prefix(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send(f"{command_prefix}rules")
         mess = dpytest.get_message()
@@ -1762,8 +1490,8 @@ class TestMultipleActiveGames:
         assert dpytest.verify().message().contains().embed(new_embed)
 
     @pytest.mark.asyncio
-    async def test_rules_dm(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_rules_dm(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         await channel.send("dm")
         mess = dpytest.get_message()
@@ -1775,8 +1503,8 @@ class TestMultipleActiveGames:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_board(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_board(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         command: str = f"{command_prefix}board"
         await channel.send(command)
@@ -1800,8 +1528,8 @@ class TestMultipleActiveGames:
         assert mess.attachments[0].filename == 'image.png'
 
     @pytest.mark.asyncio
-    async def test_players(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_players(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         command: str = f"{command_prefix}players"
         await channel.send(command)
@@ -1825,8 +1553,8 @@ class TestMultipleActiveGames:
         assert dpytest.verify().message().embed(message_embeds[0])
 
     @pytest.mark.asyncio
-    async def test_increase_range(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_increase_range(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         command: str = f"{command_prefix}increase range"
         await channel.send(command)
@@ -1851,64 +1579,33 @@ class TestMultipleActiveGames:
         assert dpytest.verify().message().content(verifier)
 
     @pytest.mark.asyncio
-    async def test_move(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_move(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor, False)
         guild_id: str = str(bot.guilds[0].id)
         channel_id = str(bot.guilds[0].text_channels[0].id)
-        old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        i, j = 0, 0
-        for row in range(len(old_board)):
-            for col in range(len(old_board[row])):
-                if str(old_board[row][col]) == "1":
-                    i = row
-                    j = col
-                    break
-        if j == len(old_board[0]) - 1:
-            channel = await utils.JsonUtility.get_private_channel(bot, 2)
-            await channel.send(f"{command_prefix}move west")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[2]
-            server = jsonManager.get_player_server_channels(mess)[0]
-            await commands.dm_multiple_commands(bot, mess, server[0], server[1])
-            dpytest.get_message()
-            dpytest.get_message()
-            old_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-            i, j = 0, 0
-            for row in range(len(old_board)):
-                for col in range(len(old_board[row])):
-                    if str(old_board[row][col]) == "1":
-                        i = row
-                        j = col
-                        break
 
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
-        await channel.send(f"{command_prefix}move east")
+        direction: str = 'east'
+        await channel.send(f"{command_prefix}move {direction}")
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         server = jsonManager.get_player_server_channels(mess)[0]
         await commands.dm_multiple_commands(bot, mess, server[0], server[1])
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
-        verifier: str = f"You have moved east 1 tile {mess.author.mention}!"
+        verifier: str = f"You have moved {direction} 1 tile {mess.author.mention}!"
         assert dpytest.verify().message().content(verifier)
         response: discord.Message = dpytest.get_message()
         assert len(response.attachments) == 1
         assert response.attachments[0].filename == 'image.png'
 
-        new_board = utils.JsonUtility.get_game_board(guild_id, channel_id)
-        assert old_board != new_board
-        k, w = 0, 0
-        for row in range(len(new_board)):
-            for col in range(len(new_board[row])):
-                if str(new_board[row][col]) == "1":
-                    k = row
-                    w = col
-                    break
-        assert k == i and w == (j + 1)
+        expected_sql_query = f'UPDATE games."{guild_id}" SET board = %s WHERE channel_id = %s'
+        sql_args = (f'{utils.JsonUtility.get_game_board_example(direction)}', channel_id)
+        mock_cursor.execute.assert_any_call(expected_sql_query, sql_args)
 
     @pytest.mark.asyncio
-    async def test_shoot(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_shoot(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         enemy_player_number: int = 2
         command: str = f"{command_prefix}shoot {enemy_player_number}"
@@ -1925,14 +1622,13 @@ class TestMultipleActiveGames:
         mess = dpytest.get_message()
         mess.author = bot.guilds[0].members[2]
         server = jsonManager.get_player_server_channels(mess)[0]
-        guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
-        utils.JsonUtility.move_players_together(guild_id, channel_id)
+        await utils.JsonUtility.move_players_together(bot, channel_id, mock_cursor)
         await commands.dm_multiple_commands(bot, mess, server[0], server[1])
 
         verifier: str = f"Player {bot.guilds[0].members[3].mention} has been shot by {mess.author.mention}! "
-        verifier += "They now have 2♥ lives left."
-        verifier_dm: str = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2♥ lives left."
+        verifier += "They now have 2:heart: lives left."
+        verifier_dm = f"Player {bot.guilds[0].members[3].mention} has been shot! They now have 2:heart: lives left."
         response = dpytest.get_message()
         second_response = dpytest.get_message()
         assert response.channel.type == discord.ChannelType.private
@@ -1941,8 +1637,8 @@ class TestMultipleActiveGames:
         assert second_response.content == verifier
 
     @pytest.mark.asyncio
-    async def test_vote(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_vote(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         command: str = f"{command_prefix}vote 2"
         await channel.send(command)
@@ -1961,9 +1657,8 @@ class TestMultipleActiveGames:
         guild_id: str = str(bot.guilds[0].id)
         channel_id: str = str(bot.guilds[0].text_channels[0].id)
         player_id: str = str(bot.guilds[0].members[2].id)
-        utils.JsonUtility.kill_player(guild_id, channel_id, player_id)
-        utils.JsonUtility.give_dead_player_vote(str(bot.guilds[0].id), str(bot.guilds[0].text_channels[0].id),
-                                                str(bot.guilds[0].members[2].id), 1)
+        await utils.JsonUtility.kill_player(bot, channel_id, player_id, mock_cursor)
+        await utils.JsonUtility.give_dead_player_vote(bot, channel_id, player_id, mock_cursor, 1)
         await commands.dm_multiple_commands(bot, mess, server[0], server[1])
 
         assert dpytest.get_message(peek=True).channel.type == discord.ChannelType.private
@@ -1976,8 +1671,8 @@ class TestMultipleActiveGames:
         assert int(data['votes']) == 1
 
     @pytest.mark.asyncio
-    async def test_send(self, bot, command_prefix):
-        await utils.JsonUtility.start_multiple_sample_games(bot, command_prefix)
+    async def test_send(self, bot, command_prefix, mock_cursor):
+        await utils.JsonUtility.start_multiple_sample_games(bot, mock_cursor)
         channel = await utils.JsonUtility.get_private_channel(bot, 2)
         command: str = f"{command_prefix}send 2 1"
         await channel.send(command)

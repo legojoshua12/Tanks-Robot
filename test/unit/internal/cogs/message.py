@@ -1,4 +1,4 @@
-from src.tanks import main
+import main
 
 import discord.ext.commands.bot
 from discord.ext import commands

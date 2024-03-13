@@ -1,14 +1,10 @@
 """
 Utility setup for hard JSON values as well as configuring states of testing classes for fixtures
 """
-import json
-
 import discord
 import discord.ext.test as dpytest
 
-from src.tanks.libraries import messageHandler
 from src.tanks.libraries import jsonManager
-from src.tanks.libraries.CustomIndentEncoder import MyEncoder
 
 
 class CodecUtility:
@@ -20,106 +16,227 @@ class CodecUtility:
 # TODO add definition annotations for documentation
 class JsonUtility:
     @staticmethod
-    async def set_games_json_lobby(bot, command_prefix):
+    async def set_games_json_lobby(bot, mock_cursor, members_list=None):
         guild = bot.guilds[0]
         channel = guild.channels[0]
+        if members_list is None:
+            for i in range(5):
+                await dpytest.member_join(name="Dummy", discrim=(i + 1))
+            members_list = bot.guilds[0].members[2:]
+        db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
+
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel.id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
+
+        mock_cursor.execute.side_effect = execute_side_effect
+
+    @staticmethod
+    async def start_games_json_lobby(bot, mock_cursor):
+        guild = bot.guilds[0]
+        channel = guild.channels[0]
+        insert_query_executed = False
         for i in range(5):
-            await dpytest.member_join(name="Dummy", discrim=(i+1))
-        author = guild.members[2]
+            await dpytest.member_join(name="Dummy", discrim=(i + 1))
+        members_list = bot.guilds[0].members[2:]
+        db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
 
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        mess.author = author
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            nonlocal insert_query_executed
+            if not insert_query_executed:
+                if "INSERT INTO" in instruction:
+                    insert_query_executed = True
+                mock_cursor.fetchall.return_value = []
+            else:
+                if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                    mock_cursor.fetchall.return_value = [(str(guild.id),)]
+                else:
+                    mock_cursor.fetchall.return_value = db_response
 
-        jsonManager.create_game(mess)
-        jsonManager.add_player_to_game(mess, 1)
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
-    async def remove_testapp_game(bot, command_prefix):
+    async def start_games_json_active(bot, mock_cursor, members_list=None):
         guild = bot.guilds[0]
         channel = guild.channels[0]
-        await channel.send(f"{command_prefix}leave")
+        insert_query_executed = False
+        if members_list is None:
+            for i in range(5):
+                await dpytest.member_join(name="Dummy", discrim=(i + 1))
+            members_list = bot.guilds[0].members[2:]
+        channel = bot.guilds[0].text_channels[0]
+        db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
+        complete_response = await JsonUtility.build_active_game_db_response(str(channel.id), members_list)
+
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            nonlocal insert_query_executed
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel.id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                if not insert_query_executed:
+                    if "SET player_colors =" in instruction:
+                        insert_query_executed = True
+                        mock_cursor.fetchall.return_value = []
+                    mock_cursor.fetchall.return_value = db_response
+                else:
+                    mock_cursor.fetchall.return_value = complete_response
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
-    async def add_many_players(bot, command_prefix):
+    async def add_many_players(bot, mock_cursor):
         guild = bot.guilds[0]
         channel = guild.channels[0]
         for i in range(21):
-            await dpytest.member_join(name="Dummy", discrim=(i+1))
-        author = guild.members[2]
+            await dpytest.member_join(name="Dummy", discrim=(i + 1))
+        members_list = bot.guilds[0].members[2:]
+        db_response = await JsonUtility.build_lobby_db_response(str(channel.id), members_list)
 
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        mess.author = author
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            if instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
 
-        jsonManager.create_game(mess)
-        jsonManager.add_player_to_game(mess, 1)
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
-    async def start_sample_game(bot, command_prefix):
+    async def start_sample_game(bot, mock_cursor, players_together=True) -> None:
         guild = bot.guilds[0]
-        channel = guild.channels[0]
         for i in range(5):
             await dpytest.member_join(name="Dummy", discrim=(i + 1))
-        author = guild.members[2]
-
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        mess.author = author
-
-        jsonManager.create_game(mess)
-        jsonManager.add_player_to_game(mess, 1)
-
-        members_list = bot.guilds[0].members[3:]
+        members_list = bot.guilds[0].members[2:]
         channel = bot.guilds[0].text_channels[0]
-        for idx, member in enumerate(members_list):
-            await channel.send(f"{command_prefix}join")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[idx + 3]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            # Clear out the message queue
-            dpytest.get_message()
+        db_response = await JsonUtility.build_active_game_db_response(str(channel.id), members_list, players_together)
 
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        # Clear out the message queue
-        dpytest.get_message()
-        dpytest.get_message()
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel.id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
+
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
-    async def start_multiple_sample_games(bot, command_prefix):
+    async def build_active_game_db_response(channel_id: str, members_list: list, players_together=True, *args) -> list:
+        players_data = {}
+        for i in range(len(members_list)):
+            players_data[str(members_list[i].id)] = {
+                'hits': 0,
+                'lives': 3,
+                'moves': 1,
+                'range': 1,
+                'votes': 0,
+                'actions': 1,
+                'playerNumber': (i + 1),
+                'remainingVotes': 0
+            }
+        for arg in args:
+            if type(arg) is not tuple:
+                continue
+            if len(arg) < 3:
+                continue
+            if (len(arg) - 1) % 2 != 0:
+                continue
+            for i in range(int((len(arg) - 1) / 2)):
+                players_data[arg[0]][arg[(i * 2) + 1]] = arg[(i * 2) + 2]
+        if players_together:
+            board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 2, 1, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        else:
+            board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 2, 0, 0, 1, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        db_response = [(channel_id,
+                        players_data,
+                        board,
+                        'active',
+                        {'1':
+                             [73, 2, 159],
+                         '2':
+                             [37, 5, 145],
+                         '3':
+                             [128, 91, 45],
+                         '4':
+                             [5, 211, 11],
+                         '5':
+                             [193, 43, 48]
+                         })
+                       ]
+        return db_response
+
+    @staticmethod
+    async def build_lobby_db_response(channel_id: str, members_list: list) -> list:
+        players_data = {}
+        for i in range(len(members_list)):
+            players_data[str(members_list[i].id)] = {
+                'hits': 0,
+                'lives': 3,
+                'moves': 1,
+                'range': 1,
+                'votes': 0,
+                'actions': 1,
+                'playerNumber': 1,
+                'remainingVotes': 0
+            }
+        db_response = [(channel_id,
+                        players_data,
+                        [],
+                        'lobby',
+                        {})
+                       ]
+        return db_response
+
+    @staticmethod
+    async def start_multiple_sample_games(bot, mock_cursor, players_together=True):
         guild = bot.guilds[0]
-        channel = guild.channels[0]
         for i in range(5):
             await dpytest.member_join(name="Dummy", discrim=(i + 1))
-        author = guild.members[2]
-
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        mess.author = author
-
-        jsonManager.create_game(mess)
-        jsonManager.add_player_to_game(mess, 1)
-
-        members_list = bot.guilds[0].members[3:]
+        members_list = bot.guilds[0].members[2:]
         channel = bot.guilds[0].text_channels[0]
-        for idx, member in enumerate(members_list):
-            await channel.send(f"{command_prefix}join")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[idx + 3]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            # Clear out the message queue
-            dpytest.get_message()
+        first_guild_id: str = str(guild.id)
+        first_channel_id: str = str(channel.id)
+        first_game_data = await JsonUtility.build_active_game_db_response(first_channel_id, members_list, players_together)
 
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        # Clear out the message queue
-        dpytest.get_message()
-        dpytest.get_message()
-
-        # Start second game
         guild = bot.guilds[0]
         http = bot.http
         self = guild  # noqa: F841
@@ -128,40 +245,50 @@ class JsonUtility:
         assert channel['type'] == discord.ChannelType.text
         assert channel['name'] == name
         channel = bot.guilds[0].channels[2]
+        second_guild_id: str = str(guild.id)
+        second_channel_id: str = str(channel.id)
+        second_game_data = await JsonUtility.build_active_game_db_response(second_channel_id, members_list, True)
 
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        mess.author = guild.members[2]
-        jsonManager.create_game(mess)
-        jsonManager.add_player_to_game(mess, 1)
+        db_response = [first_game_data[0], second_game_data[0]]
 
-        members_list = bot.guilds[0].members[3:]
-        for idx, member in enumerate(members_list):
-            await channel.send(f"{command_prefix}join")
-            mess = dpytest.get_message()
-            mess.author = bot.guilds[0].members[idx + 3]
-            await messageHandler.handle_message(mess, bot, command_prefix)
-            dpytest.get_message()
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({first_guild_id},{first_channel_id})","({second_guild_id},{second_channel_id})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
 
-        await channel.send(f"{command_prefix}start")
-        mess = dpytest.get_message()
-        await messageHandler.handle_message(mess, bot, command_prefix)
-        dpytest.get_message()
-        dpytest.get_message()
-
-    @staticmethod
-    def remove_player_actions(guild_id: str, channel_id: str, player_id: str) -> None:
-        data = jsonManager.read_games_json()
-        data['games'][guild_id][channel_id]['players'][player_id]['actions'] = 0
-        with open('Games.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
-    def infinite_player_actions(guild_id: str, channel_id: str, player_id: str) -> None:
-        data = jsonManager.read_games_json()
-        data['games'][guild_id][channel_id]['players'][player_id]['actions'] = 999
-        with open('Games.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+    async def remove_player_actions(bot, channel_id: str, user_id: str, mock_cursor) -> None:
+        guild = bot.guilds[0]
+        members_list = bot.guilds[0].members[2:]
+        db_response = await JsonUtility.build_active_game_db_response(channel_id,
+                                                                      members_list,
+                                                                      True,
+                                                                      (str(user_id), 'actions', 0))
+
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
+
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
     def get_player_range(message, guild_id=None, channel_id=None, player_id=None) -> int:
@@ -171,16 +298,6 @@ class JsonUtility:
         else:
             return int(data['games'][str(message.guild.id)][str(message.channel.id)]['players'][str(message.author.id)][
                            'range'])
-
-    @staticmethod
-    def get_player_number(message, guild_id=None, channel_id=None, player_id=None) -> int:
-        data = jsonManager.read_games_json()
-        if guild_id is not None and channel_id is not None:
-            players: list = data['games'][str(guild_id)][str(channel_id)]['players']
-            return int(players[str(player_id)]['playerNumber'])
-        else:
-            players: list = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
-            return int(players[str(message.author.id)]['playerNumber'])
 
     @staticmethod
     def get_player_stats(message, guild_id=None, channel_id=None, player_id=None) -> dict:
@@ -193,67 +310,161 @@ class JsonUtility:
             return players[str(message.author.id)]
 
     @staticmethod
-    def kill_player(guild_id: str, channel_id: str, player_id: str) -> None:
-        data = jsonManager.read_games_json()
-        data['games'][guild_id][channel_id]['players'][player_id]['lives'] = 0
-        with open('Games.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+    async def kill_player(bot, channel_id: str, user_id: str, mock_cursor) -> None:
+        guild = bot.guilds[0]
+        members_list = bot.guilds[0].members[2:]
+        db_response = await JsonUtility.build_active_game_db_response(channel_id,
+                                                                      members_list,
+                                                                      True,
+                                                                      (str(user_id), 'actions', 0, 'lives', 0))
+
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
+
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
-    def give_dead_player_vote(guild_id: str, channel_id: str, player_id: str, votes: int = 1) -> None:
-        data = jsonManager.read_games_json()
-        data['games'][guild_id][channel_id]['players'][player_id]['remainingVotes'] = votes
-        with open('Games.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+    async def give_dead_player_vote(bot, channel_id: str, user_id: str, mock_cursor, votes: int = 1) -> None:
+        guild = bot.guilds[0]
+        members_list = bot.guilds[0].members[2:]
+        db_response = await JsonUtility.build_active_game_db_response(channel_id,
+                                                                      members_list,
+                                                                      True,
+                                                                      (
+                                                                          str(user_id),
+                                                                          'actions', 0,
+                                                                          'lives', 0,
+                                                                          'remainingVotes', votes))
+
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
+
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
     def get_game_board(guild_id: str, channel_id: str) -> list[list]:
         data = jsonManager.read_games_json()
-        return data['games'][guild_id][channel_id]['board']['data']
+        return data['games'][guild_id][channel_id]['board']
 
     @staticmethod
-    def move_players_away(guild_id: str, channel_id: str) -> None:
-        board: list[list] = JsonUtility.get_game_board(guild_id, channel_id)
-        board_x: int = len(board)
-        board_y: int = len(board[0])
-        found_single: bool = False
-        for x in range(board_x):
-            for y in range(board_y):
-                if int(board[x][y]) == 1 or int(board[x][y]) == 2:
-                    board[x][y] = 0
-                    if found_single:
-                        break
-                    else:
-                        found_single = True
-
-        board[0][0] = 1
-        board[4][4] = 2
-        data = jsonManager.read_games_json()
-        data['games'][guild_id][channel_id]['board']['data'] = board
-        with open('Games.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+    def get_game_board_example(direction: str) -> list[list]:
+        match direction.lower():
+            case 'north':
+                board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                return board
+            case 'south':
+                board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                         [0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                return board
+            case 'west':
+                board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 2, 0, 1, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                return board
+            case 'east':
+                board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 5, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 2, 0, 0, 0, 1, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                return board
 
     @staticmethod
-    def move_players_together(guild_id: str, channel_id: str) -> None:
-        board: list[list] = JsonUtility.get_game_board(guild_id, channel_id)
-        board_x: int = len(board)
-        board_y: int = len(board[0])
-        found_single: bool = False
-        for x in range(board_x):
-            for y in range(board_y):
-                if int(board[x][y]) == 1 or int(board[x][y]) == 2:
-                    board[x][y] = 0
-                    if found_single:
-                        break
-                    else:
-                        found_single = True
+    async def move_players_away(bot, channel_id: str, mock_cursor) -> None:
+        guild = bot.guilds[0]
+        members_list = bot.guilds[0].members[2:]
+        db_response = await JsonUtility.build_active_game_db_response(channel_id,
+                                                                      members_list,
+                                                                      False
+                                                                      )
 
-        board[0][0] = 1
-        board[0][1] = 2
-        data = jsonManager.read_games_json()
-        data['games'][guild_id][channel_id]['board']['data'] = board
-        with open('Games.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4, cls=MyEncoder)
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
+
+        mock_cursor.execute.side_effect = execute_side_effect
+
+    @staticmethod
+    async def move_players_together(bot, channel_id: str, mock_cursor) -> None:
+        guild = bot.guilds[0]
+        members_list = bot.guilds[0].members[2:]
+        db_response = await JsonUtility.build_active_game_db_response(channel_id,
+                                                                      members_list,
+                                                                      True
+                                                                      )
+
+        # noinspection PyUnusedLocal
+        def execute_side_effect(instruction, args):
+            if "player_data.player_data" in instruction:
+                response = []
+                for member in members_list:
+                    response_list: str = f'{{"({str(guild.id)},{str(channel_id)})"}}'
+                    response.append((str(member.id), response_list))
+                mock_cursor.fetchall.return_value = response
+            elif instruction == "SELECT tablename FROM pg_tables WHERE schemaname = 'games'":
+                mock_cursor.fetchall.return_value = [(str(guild.id),)]
+            else:
+                mock_cursor.fetchall.return_value = db_response
+
+        mock_cursor.execute.side_effect = execute_side_effect
 
     @staticmethod
     async def get_private_channel(bot, member_id: int = 0):

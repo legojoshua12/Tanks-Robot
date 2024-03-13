@@ -1,0 +1,9 @@
+#!/bin/bash
+
+{
+  echo TEST_DB_NAME=$TEST_DB_NAME
+  echo TEST_DB_USER=$TEST_DB_USER
+  echo TEST_DB_PASSWORD=$TEST_DB_PASSWORD
+  echo TEST_DB_HOST=$TEST_DB_HOST
+  echo TEST_DB_PORT=$TEST_DB_PORT
+} >> .env

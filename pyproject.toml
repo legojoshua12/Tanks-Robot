@@ -6,3 +6,18 @@ build-backend = "setuptools.build_meta"
 markers = [
     "cogs",
 ]
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "B"]
+ignore = ["B904", "F401", "F403"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402"]
+"setup.py" = ["E402"]
+"**/{tests,docs,tools}/*" = ["E402"]

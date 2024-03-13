@@ -33,8 +33,8 @@ async def test_rules(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_dm(bot, command_prefix):
-    await utils.JsonUtility.start_sample_game(bot, command_prefix)
+async def test_dm(bot, command_prefix, mock_cursor):
+    await utils.JsonUtility.start_sample_game(bot, mock_cursor)
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}dm")
     mess = dpytest.get_message()
@@ -54,10 +54,11 @@ async def test_dm(bot, command_prefix):
 
 
 @pytest.mark.asyncio
-async def test_start_game(bot, command_prefix):
+async def test_start_game(bot, command_prefix, mock_cursor):
     channel = bot.guilds[0].text_channels[0]
     await channel.send(f"{command_prefix}start")
     mess = dpytest.get_message()
+    await utils.JsonUtility.start_games_json_lobby(bot, mock_cursor)
     await messageHandler.handle_message(mess, bot, command_prefix)
     assert dpytest.verify().message().content("Starting a game...")
     assert dpytest.verify().message().content(f"Adding {mess.author.mention} to the new game of Tanks!")

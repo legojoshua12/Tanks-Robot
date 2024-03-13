@@ -56,15 +56,8 @@ coverage.svg
 *.mo
 *.pot
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
+# Linting stuff:
+.ruff_cache
 
 # Scrapy stuff:
 .scrapy
@@ -110,6 +103,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+setup.sh
 
 # Spyder project settings
 .spyderproject
@@ -128,11 +122,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Saved Games
-Games.json
-PlayerData.json
-SampleGame.json
 
 #IDEA settings
 .idea/

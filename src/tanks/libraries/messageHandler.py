@@ -47,17 +47,16 @@ async def handle_message(message, client, commandMessageStarter):
                     new_player_number = len(data['games'][str(message.guild.id)][str(message.channel.id)]['players'])+1
                     is_present: bool = jsonManager.add_player_to_game(message, new_player_number)
                     if is_present:
-                        await message.channel.send(message.author.mention + ' is already in the game!')
+                        await message.channel.send('You have already joined the game ' + message.author.mention + '!')
                     else:
                         await message.channel.send('Adding ' + message.author.mention + ' to the new game of Tanks!')
                 elif action == 'leave':
-                    is_not_present: bool = jsonManager.remove_player_from_game(message)
-                    if is_not_present:
+                    is_present: bool = jsonManager.remove_player_from_game(message)
+                    if is_present:
+                        await message.channel.send(message.author.mention + ' left the game. :cry:')
+                    else:
                         await message.channel.send(message.author.mention + ' cannot leave when you are not in the '
                                                                             'game!')
-                    else:
-                        sad_emoji = '\U0001F622'
-                        await message.channel.send(message.author.mention + f' left the game. {sad_emoji}')
                 elif action == 'help':
                     help_embed = commands.get_lobby_help_menu()
                     await message.channel.send(embed=help_embed)
@@ -88,8 +87,11 @@ async def handle_message(message, client, commandMessageStarter):
 
                             rendered_board = renderPipeline.construct_image(board, player_colors)
                             data = jsonManager.read_games_json()
-                            jsonManager.save_player_json(message, data)
-                            data = data['games'][str(message.guild.id)][str(message.channel.id)]['players']
+                            guild_id: str = str(message.guild.id)
+                            channel_id: str = str(message.channel.id)
+                            player_ids: list[str] = list(data['games'][guild_id][channel_id]['players'].keys())
+                            jsonManager.save_player_json(message, player_ids)
+                            data = data['games'][guild_id][channel_id]['players']
                             mention_string = 'Welcome to tanks '
                             index = 0
                             for player in data:
@@ -131,6 +133,31 @@ async def handle_message(message, client, commandMessageStarter):
             elif is_game_present == 'none':
                 possible_command = await commands.public_commands_no_game(message, command)
                 if possible_command:
+                    wrote_to_json: bool = False
+                    try:
+                        jsonManager.create_game(message)
+                        jsonManager.add_player_to_game(message, 1)
+                        await message.channel.send('Adding ' + message.author.mention + ' to the new game of Tanks!')
+                        wrote_to_json = True
+                    except RuntimeError:
+                        await message.channel.send('An error has occurred in creating the game! Reverting now!')
+                    if wrote_to_json:
+                        help_embed = commands.get_lobby_help_menu()
+                        await message.channel.send(embed=help_embed)
+
+            elif is_game_present == 'completed':
+                action = await commands.public_commands_finished(message, command)
+                if action == 'board':
+                    games_json = jsonManager.read_games_json()
+                    player_colors = games_json['games'][str(message.guild.id)][str(message.channel.id)]['playerColors']
+                    rendered_board = renderPipeline.construct_image(jsonManager.get_board(message), player_colors)
+                    await commands.display_board(message, rendered_board)
+                elif action == 'players':
+                    await commands.show_player_statistics(message, jsonManager.read_games_json(), client)
+                elif action == 'dm':
+                    await commands.send_dm_starter(message)
+                elif action == 'start':
+                    await message.channel.send('Starting a game...')
                     wrote_to_json: bool = False
                     try:
                         jsonManager.create_game(message)
